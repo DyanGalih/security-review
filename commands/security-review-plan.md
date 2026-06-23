@@ -13,7 +13,7 @@ $ARGUMENTS
 Review the current Spec-Kit plan artifact before implementation begins. Focus on the planning documents, not source code, and identify any design choices that would weaken security, create ambiguity, or make secure implementation harder later.
 If `flash-mem` is available, use `flash-mem prepare-context` and the canonical memory tools (`get_project_summary`, `search_memory`, `get_relevant_context`). If `flash-mem` is not installed, fall back to the MCP tools exposed by `spec-kit-memory-hub`; do not shell out to `npx memory-hub` directly.
 
-When project memory exists, use it as design context. Compare the plan against the project memory hub, architecture decisions, and any repository-native memory artifacts the team uses to preserve intent.
+When project memory exists, use it as design context. Compare the plan against the project flash-mem, architecture decisions, and any repository-native memory artifacts the team uses to preserve intent.
 
 ## Flash-Mem Security Context Retrieval
 
@@ -72,7 +72,7 @@ Avoid retrieving redundant memories.
 
 ## Scope
 
-Before reviewing the design, check the Spec-Kit memory hub context.
+Before reviewing the design, check the Spec-Kit Flash-Mem context.
 
 ### Optimizer-Aware Flow
 
@@ -107,17 +107,19 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 - Authentication, authorization, and session decisions are safe
 - Data flow, privacy, and minimization concerns are addressed
 - Dependency and platform choices do not create avoidable risk
-- Validation, logging, and error handling expectations are explicit
-- Secrets handling and deployment hardening are considered
-- The plan can be implemented without introducing ambiguous security decisions later
-- Historical security context is respected, and issues already accepted, mitigated, or marked as false positives are treated as already covered rather than new gaps
+   - Validation, logging, and error handling expectations are explicit
+   - Secrets handling and deployment hardening are considered
+   - Advanced Framework Alignment: Map designs against ASVS requirements, explicitly check for SANS/CWE Top 25 deep architectural flaws, and model specific MITRE ATT&CK techniques.
+   - Ecosystem Rules: Ensure the plan acknowledges language-specific pitfalls (e.g. memory safety in C/C++, prototype pollution in JS).
+   - The plan can be implemented without introducing ambiguous security decisions later
+   - Historical security context is respected, and issues already accepted, mitigated, or marked as false positives are treated as already covered rather than new gaps
 
 ## Steps
 
 1. Locate the active Spec-Kit feature directory for the current work.
 2. If more than one candidate plan artifact exists, ask the user which one to review before proceeding.
 3. Read `plan.md` and any related design artifacts.
-4. Compare the plan against the project memory hub context.
+4. Compare the plan against the project Flash-Mem context.
 5. Report secure-by-design gaps, unsafe assumptions, and any follow-up changes needed before implementation.
 
 ## Document Header
@@ -140,6 +142,8 @@ low_count: <integer>
 informational_count: <integer>
 owasp_categories: [<A01>, <A05>, ...]
 cwe_ids: [<CWE-89>, ...]
+asvs_requirements: [<V2.1.1>, ...]
+mitre_techniques: [<T1190>, ...]
 field_summaries:
   document_type: "Always 'security-review'. Allows indexers to skip non-review documents."
   review_type: "Which command generated this document: audit, branch, staged, plan, tasks, or followup."
@@ -152,6 +156,8 @@ field_summaries:
   informational_count: "Number of Informational findings."
   owasp_categories: "OWASP Top 10 2025 categories (A01-A10) that have at least one finding."
   cwe_ids: "CWE identifiers referenced in this document."
+  asvs_requirements: "ASVS v4.0 requirements mapped to findings."
+  mitre_techniques: "MITRE ATT&CK techniques applicable to findings."
   finding_id: "Unique finding identifier (SEC-NNN) for cross-referencing and task linkage."
   location: "File path and line number of the vulnerable code (path/to/file.ext:line)."
   owasp_category: "OWASP Top 10 2025 category for this finding (AXX:2025-Name)."
@@ -181,7 +187,7 @@ After providing the report, finalize with:
 
 ---
 
-## Memory Hub INDEX.md Row
+## flash-mem INDEX.md Row
 
 After the report, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
 

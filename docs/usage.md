@@ -21,7 +21,7 @@ From your Spec-Kit project, open your agent and run:
 That triggers a full review of the current project context and produces a security report with findings, remediation guidance, and follow-up tasks.
 
 Use this when you want the whole repository reviewed rather than only a staged diff or branch diff.
-It is the best fit for secure-by-design re-reviews when you want the implementation checked against the project memory hub, design notes, and Copilot instructions.
+It is the best fit for secure-by-design re-reviews when you want the implementation checked against flash-mem, design notes, and Copilot instructions.
 If the project also uses [spec-kit-memory-hub](https://github.com/DyanGalih/spec-kit-memory-hub), the command can use those repo-native memory artifacts as extra context.
 Use it after `/speckit.plan` and `/speckit.tasks` when you want a code-level re-review of the implemented design.
 

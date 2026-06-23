@@ -81,7 +81,7 @@ Avoid retrieving redundant memories.
 
 ## Memory and Design Context
 
-Before reviewing the code, check the Spec-Kit memory hub context.
+Before reviewing the code, check the Spec-Kit Flash-Mem context.
 
 ### Optimizer-Aware Flow
 
@@ -419,6 +419,21 @@ Check for:
 
 ---
 
+## 6. Advanced Security Frameworks
+
+### OWASP ASVS & CWE Top 25
+- Map findings to specific ASVS v4.0.3 requirements (e.g., V2.1.1) to provide rigorous verification.
+- Explicitly check for deep software flaws documented in the SANS/CWE Top 25 Most Dangerous Software Errors.
+
+### Language-Specific & Ecosystem Rules
+- Identify the primary languages/frameworks of the target files.
+- Apply ecosystem-specific secure coding standards (e.g., CERT C/C++, Rust safe abstractions, Node.js prototype pollution checks).
+
+### MITRE ATT&CK / D3FEND
+- Map identified vulnerabilities to concrete attacker tactics and techniques (e.g., T1190 - Exploit Public-Facing Application).
+
+---
+
 ## Document Header
 
 Before writing the report body, emit a YAML frontmatter block at the very start of the output document. Populate all values from your analysis. Copy the `field_summaries` section verbatim — it is static schema documentation that enables any LLM or indexer reading only the header to understand the full field schema without parsing the report body.
@@ -439,6 +454,8 @@ low_count: <integer>
 informational_count: <integer>
 owasp_categories: [<A01>, <A05>, ...]
 cwe_ids: [<CWE-89>, ...]
+asvs_requirements: [<V2.1.1>, ...]
+mitre_techniques: [<T1190>, ...]
 field_summaries:
   document_type: "Always 'security-review'. Allows indexers to skip non-review documents."
   review_type: "Which command generated this document: audit, branch, staged, plan, tasks, or followup."
@@ -451,6 +468,8 @@ field_summaries:
   informational_count: "Number of Informational findings."
   owasp_categories: "OWASP Top 10 2025 categories (A01-A10) that have at least one finding."
   cwe_ids: "CWE identifiers referenced in this document."
+  asvs_requirements: "ASVS v4.0 requirements mapped to findings."
+  mitre_techniques: "MITRE ATT&CK techniques applicable to findings."
   finding_id: "Unique finding identifier (SEC-NNN) for cross-referencing and task linkage."
   location: "File path and line number of the vulnerable code (path/to/file.ext:line)."
   owasp_category: "OWASP Top 10 2025 category for this finding (AXX:2025-Name)."
@@ -503,6 +522,9 @@ Produce a comprehensive **SECURITY REVIEW REPORT** with the following structure:
 **Location:** `path/to/file.ext:line_number`
 **OWASP Category:** AXX:2025-Category Name
 **CWE:** CWE-XXX
+**ASVS Requirement:** V2.1.1 (if applicable)
+**MITRE Technique:** T1190 (if applicable)
+**Reference Link:** https://... (direct link to OWASP, CWE, or ASVS item)
 **CVSS Score:** X.X (if applicable)
 
 #### Description
@@ -780,7 +802,7 @@ These tasks should be ready to import into Spec-Kit's task tracking system.
 9. **Proactive Durable Memory Preservation**: If systemic vulnerabilities or reusable security patterns were identified, you **MUST** proactively use `flash-mem capture_artifact_memory` as the final action. If `flash-mem` is unavailable, fall back to the corresponding `spec-kit-memory-hub` capture flow.
 10. **Avoid Duplicate Findings**: If historical evidence already records the issue as accepted risk, mitigated, or a false positive, classify it accordingly instead of creating a new finding.
 
-## Memory Hub INDEX.md Row
+## flash-mem INDEX.md Row
 
 After the report, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
 

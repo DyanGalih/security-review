@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.6.0
+
+- Bumped the extension version to `1.6.0`.
+- Integrated OWASP ASVS v4.0.3, SANS/CWE Top 25, and MITRE ATT&CK into the security review prompts.
+- Added language-specific and ecosystem security checks to all prompt scopes.
+- Updated the output structure and YAML frontmatter to support ASVS requirement mapping and MITRE technique mapping.
+
 ## v1.5.3
 
 - Bumped the extension version to `1.5.3`.

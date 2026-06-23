@@ -23,7 +23,7 @@ Use this command when you want to:
 
 If the user provides a review report or finding list in `$ARGUMENTS`, treat it as the source of truth for the follow-up plan. If no findings are provided, look for a pasted report, a named report file, or the current backlog context. If none is available, ask the user for the report or findings before proceeding.
 
-When project memory exists, use it as design context. Compare the follow-up choices against the project memory hub, architecture decisions, and any repository-native memory artifacts the team uses to preserve intent.
+When project memory exists, use it as design context. Compare the follow-up choices against the project flash-mem, architecture decisions, and any repository-native memory artifacts the team uses to preserve intent.
 
 ## Flash-Mem Security Context Retrieval
 
@@ -82,7 +82,7 @@ Avoid retrieving redundant memories.
 
 ## Scope
 
-Before planning follow-ups, check the Spec-Kit memory hub context.
+Before planning follow-ups, check the Spec-Kit Flash-Mem context.
 
 ### Optimizer-Aware Flow
 
@@ -119,7 +119,7 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 - New tasks are sequenced so secure foundations come first
 - Follow-up work remains testable and reviewable
 - Security tasks can reference incomplete findings or partially resolved work without losing context
-- The follow-up plan preserves the intent of the memory hub context and the current implementation
+- The follow-up plan preserves the intent of the Flash-Mem context and the current implementation
 
 ## Resolution Choices
 
@@ -140,7 +140,7 @@ When you choose `Track as technical debt`, include:
 
 1. Read the latest security review findings or the finding list provided in `$ARGUMENTS`.
 2. Read `tasks.md` and any related planning artifacts to identify unfinished security work.
-3. Compare the findings against the current task backlog and memory hub context.
+3. Compare the findings against the current task backlog and Flash-Mem context.
 4. Group the findings into immediate remediation, technical debt, and already-covered items.
 5. Generate Spec-Kit-ready follow-up tasks for the items that should be implemented now.
 6. Capture any deferred findings as technical-debt entries with a revisit trigger.
@@ -230,7 +230,7 @@ Each new task should stay compatible with the Spec-Kit task style used by the re
 
 ---
 
-## Memory Hub INDEX.md Row
+## flash-mem INDEX.md Row
 
 After the follow-up plan, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
 

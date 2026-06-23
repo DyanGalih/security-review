@@ -82,7 +82,7 @@ Avoid retrieving redundant memories.
 3. **Analyze Diff**: Analyze only the staged diff for security issues across these domains (focusing on requested aspects):
    - Injection vulnerabilities (SQL, NoSQL, command, template)
    - Hardcoded secrets or credentials
-   - Compliance with the Spec-Kit memory hub context.
+   - Compliance with the Spec-Kit Flash-Mem context.
    - If Flash-Mem shows a candidate issue was previously accepted, mitigated, or classified as a false positive, do not emit a duplicate finding; classify it as already covered instead.
 
       #### Optimizer-Aware Flow
@@ -111,6 +111,10 @@ Avoid retrieving redundant memories.
    - Insecure data handling
    - Vulnerable or newly added dependencies
    - Supply chain risks in newly added packages
+   - ASVS v4.0.3 requirements mapping for rigorous verification
+   - CWE Top 25 most dangerous software flaws
+   - Language-specific and ecosystem rules (e.g. CERT C/C++, Rust safe abstractions)
+   - MITRE ATT&CK techniques mapping
 4. **Report Findings**: For each finding, report severity, location, OWASP category, description, remediation, and Spec-Kit task.
 5. **Action Plan**: Provide a prioritized action plan for fixing findings.
 6. **Proactive Durable Memory Preservation**: If systemic vulnerabilities or reusable security patterns were identified, you **MUST** proactively use `flash-mem capture_artifact_memory` after providing the report. If `flash-mem` is unavailable, fall back to the corresponding `spec-kit-memory-hub` capture flow. Do not ask; trigger the command immediately if lessons exist.
@@ -135,6 +139,8 @@ low_count: <integer>
 informational_count: <integer>
 owasp_categories: [<A01>, <A05>, ...]
 cwe_ids: [<CWE-89>, ...]
+asvs_requirements: [<V2.1.1>, ...]
+mitre_techniques: [<T1190>, ...]
 field_summaries:
   document_type: "Always 'security-review'. Allows indexers to skip non-review documents."
   review_type: "Which command generated this document: audit, branch, staged, plan, tasks, or followup."
@@ -147,6 +153,8 @@ field_summaries:
   informational_count: "Number of Informational findings."
   owasp_categories: "OWASP Top 10 2025 categories (A01-A10) that have at least one finding."
   cwe_ids: "CWE identifiers referenced in this document."
+  asvs_requirements: "ASVS v4.0 requirements mapped to findings."
+  mitre_techniques: "MITRE ATT&CK techniques applicable to findings."
   finding_id: "Unique finding identifier (SEC-NNN) for cross-referencing and task linkage."
   location: "File path and line number of the vulnerable code (path/to/file.ext:line)."
   owasp_category: "OWASP Top 10 2025 category for this finding (AXX:2025-Name)."
@@ -175,6 +183,9 @@ Use the same report structure as the full audit command:
 ### [SEVERITY] Title
 **Location:** file:line
 **OWASP Category:** AXX:2025-...
+**ASVS Requirement:** V2.1.1 (if applicable)
+**MITRE Technique:** T1190 (if applicable)
+**Reference Link:** https://... (direct link to OWASP, CWE, or ASVS item)
 **Description:** ...
 **Remediation:** ...
 **Spec-Kit Task:** TASK-SEC-NNN
@@ -186,7 +197,7 @@ Use the same report structure as the full audit command:
 
 ---
 
-## Memory Hub INDEX.md Row
+## flash-mem INDEX.md Row
 
 After the report, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
 

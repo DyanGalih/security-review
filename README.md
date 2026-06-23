@@ -2,7 +2,7 @@
 
 > Continuous security governance and OWASP auditing for AI-assisted development.
 
-[![Version](https://img.shields.io/badge/version-1.5.3-22c55e)](extension.yml)
+[![Version](https://img.shields.io/badge/version-1.6.0-22c55e)](extension.yml)
 [![Spec Kit](https://img.shields.io/badge/Spec%20Kit-compatible-2563eb)](https://spec-kit.dev)
 [![OWASP](https://img.shields.io/badge/OWASP-2025-ef4444)](https://owasp.org/Top10/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-f59e0b)](LICENSE)
@@ -26,7 +26,7 @@ AI generates code that works, but it doesn't think about security:
 
 You discover these issues in code review — or worse, in production. By then, fixing them is expensive and disruptive.
 
-**Security Review catches these issues early** by reviewing your specs, plans, task lists, staged changes, branch diffs, and full codebase against OWASP 2025, secure coding practices, and your project's own security context.
+**Security Review catches these issues early** by reviewing your specs, plans, task lists, staged changes, branch diffs, and full codebase against **OWASP Top 10 (2025)**, **OWASP ASVS v4.0.3**, **SANS/CWE Top 25**, **MITRE ATT&CK**, language-specific secure coding practices, and your project's own security context.
 
 ## What It Actually Does
 
@@ -56,7 +56,7 @@ specify extension add security-review
 
 ```text
 specify extension add security-review --from \
-   https://github.com/DyanGalih/spec-kit-security-review/archive/refs/tags/v1.5.3.zip
+   https://github.com/DyanGalih/spec-kit-security-review/archive/refs/tags/v1.6.0.zip
 ```
 
 ### Local Development
@@ -581,6 +581,9 @@ See [docs/field-registry.md](docs/field-registry.md) for the full field schema a
 
 **Location:** src/auth/login.js:45
 **OWASP Category:** A05:2025-Injection
+**ASVS Requirement:** V2.1.1
+**MITRE Technique:** T1190
+**Reference Link:** https://owasp.org/Top10/A03_2021-Injection/
 **Description:** User input is concatenated directly into SQL query...
 **Exploit Scenario:** Attacker could bypass authentication by...
 **Remediation:** Use parameterized queries or ORM...

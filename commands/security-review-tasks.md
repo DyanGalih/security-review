@@ -13,7 +13,7 @@ $ARGUMENTS
 Review the current Spec-Kit task list before implementation begins. Focus on task sequencing, security coverage, dependency ordering, and whether the plan has been converted into secure, testable, and reviewable work items.
 If `flash-mem` is available, use `flash-mem prepare-context` and the canonical memory tools (`get_project_summary`, `search_memory`, `get_relevant_context`). If `flash-mem` is not installed, fall back to the MCP tools exposed by `spec-kit-memory-hub`; do not shell out to `npx memory-hub` directly.
 
-When project memory exists, use it as design context. Compare the task list against the project memory hub, architecture decisions, and any repository-native memory artifacts the team uses to preserve intent.
+When project memory exists, use it as design context. Compare the task list against the project flash-mem, architecture decisions, and any repository-native memory artifacts the team uses to preserve intent.
 
 ## Flash-Mem Security Context Retrieval
 
@@ -72,7 +72,7 @@ Avoid retrieving redundant memories.
 
 ## Scope
 
-Before reviewing the tasks, check the Spec-Kit memory hub context.
+Before reviewing the tasks, check the Spec-Kit Flash-Mem context.
 
 ### Optimizer-Aware Flow
 
@@ -110,7 +110,7 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 - Parallel tasks do not bypass security prerequisites
 - Negative tests, abuse cases, and hardening checks are included where needed
 - Sensitive features have explicit security checkpoints
-- The task list preserves the intent of the memory hub context and plan
+- The task list preserves the intent of the Flash-Mem context and plan
 - Historical security context is respected, and issues already accepted, mitigated, or marked as false positives are treated as already covered rather than new gaps
 
 ## Steps
@@ -118,7 +118,7 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 1. Locate the active Spec-Kit feature directory for the current work.
 2. If more than one candidate task artifact exists, ask the user which one to review before proceeding.
 3. Read `tasks.md` and the related planning artifacts.
-4. Compare the tasks against the plan and memory hub context.
+4. Compare the tasks against the plan and Flash-Mem context.
 5. Report sequencing issues, missing security tasks, or any task ordering changes needed before implementation.
 
 ## Document Header
@@ -182,7 +182,7 @@ After providing the report, finalize with:
 
 ---
 
-## Memory Hub INDEX.md Row
+## flash-mem INDEX.md Row
 
 After the report, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
 

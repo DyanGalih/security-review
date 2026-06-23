@@ -94,7 +94,7 @@ Produce a structured Markdown report with the following mandatory sections. Use 
 ## 1. EXECUTIVE SUMMARY
 
 ### 1.1 Assessment Overview
-[1 paragraph summary of what was tested, when, and by whom (AI Security Auditor). Explicitly mention this was a Whitebox assessment with full source and memory hub access.]
+[1 paragraph summary of what was tested, when, and by whom (AI Security Auditor). Explicitly mention this was a Whitebox assessment with full source and flash-mem access.]
 
 ### 1.2 Risk Posture
 **Overall Risk Rating: [CRITICAL|HIGH|MODERATE|LOW]**
@@ -119,15 +119,15 @@ Produce a structured Markdown report with the following mandatory sections. Use 
 ### 2.1 Scope of Work
 - **Codebase**: [e.g. src/api, src/auth]
 - **Documentation**: Spec-Kit Feature Specs, Implementation Plans, Security Constitution.
-- **Historical Memory**: Durable repository memory (Memory Hub).
+- **Historical Memory**: Durable repository memory (flash-mem).
 
 ### 2.2 Testing Approach
 This was a **Whitebox Security Assessment**. Unlike a blackbox pentest, the auditor had full access to:
 - Source code logic and internal data flows.
 - Architectural decision records (ADRs) and design intent.
-- Historical bug patterns and security constraints preserved in the memory hub.
+- Historical bug patterns and security constraints preserved in the flash-mem.
 
-The assessment evaluated the codebase against **OWASP Top 10 (2025)**, **CWE/SANS Top 25**, and project-specific security standards.
+The assessment evaluated the codebase against **OWASP Top 10 (2025)**, **OWASP ASVS v4.0**, **CWE/SANS Top 25**, **MITRE ATT&CK**, and project-specific security standards.
 
 ---
 
@@ -139,6 +139,9 @@ The assessment evaluated the codebase against **OWASP Top 10 (2025)**, **CWE/SAN
 **Severity**: [CRITICAL|HIGH|MODERATE|LOW]
 **OWASP Category**: AXX:2025-Category
 **CWE**: CWE-XXX
+**ASVS Requirement**: V2.1.1 (if applicable)
+**MITRE Technique**: T1190 (if applicable)
+**Reference Link**: https://... (direct link to OWASP, CWE, or ASVS item)
 **CVSS v3.1**: X.X
 
 #### 3.X.1 Description
@@ -169,7 +172,7 @@ The assessment evaluated the codebase against **OWASP Top 10 (2025)**, **CWE/SAN
 
 ## 4. ARCHITECTURAL DRIFT & SYSTEMIC RISKS
 
-[Identify risks that aren't single-line bugs but rather systemic failures or deviations from the Security Constitution / Memory Hub intent.]
+[Identify risks that aren't single-line bugs but rather systemic failures or deviations from the Security Constitution / flash-mem intent.]
 
 - **Pattern A**: [e.g. Inconsistent use of authorization middleware]
 - **Pattern B**: [e.g. Implicit trust of internal microservice communication]

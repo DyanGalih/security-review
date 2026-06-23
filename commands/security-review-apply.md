@@ -22,7 +22,7 @@ Use this command when you want to:
 
 Treat the latest security review findings or the follow-up plan as the source of truth. If the user does not provide one, look for a recent security review report, a follow-up plan, or the current backlog context.
 
-When project memory exists, use it as design context. Compare the requested updates against the project memory hub, architecture decisions, and any repository-native memory artifacts the team uses to preserve intent.
+When project memory exists, use it as design context. Compare the requested updates against the project flash-mem, architecture decisions, and any repository-native memory artifacts the team uses to preserve intent.
 
 ## Flash-Mem Security Context Retrieval
 
@@ -81,7 +81,7 @@ Avoid retrieving redundant memories.
 
 ## Scope
 
-Before applying updates, check the Spec-Kit memory hub context.
+Before applying updates, check the Spec-Kit Flash-Mem context.
 
 ### Optimizer-Aware Flow
 
@@ -117,7 +117,7 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 - Deferred items stay clearly marked as technical debt when appropriate
 - `plan.md` only changes when the security design or sequencing needs to change
 - The resulting artifacts remain testable and reviewable
-- The update preserves the intent of the memory hub context and the current implementation
+- The update preserves the intent of the Flash-Mem context and the current implementation
 
 ## Apply Rules
 
@@ -132,7 +132,7 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 
 1. Read the latest security review findings or follow-up plan provided in `$ARGUMENTS`.
 2. Read `tasks.md`, `plan.md`, and related planning artifacts to understand the current backlog.
-3. Compare the findings against the current task backlog and memory hub context.
+3. Compare the findings against the current task backlog and Flash-Mem context.
 4. Identify which items should become new tasks, which belong in technical debt, and which are already covered.
 5. Update `tasks.md` with any approved security tasks.
 6. Update `plan.md` only if the security design or sequencing needs to change.
