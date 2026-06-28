@@ -42,7 +42,7 @@ Use this when you want a pinned version from a tagged release.
 cd /path/to/spec-kit-project
 
 specify extension add security-review --from \
-  https://github.com/DyanGalih/spec-kit-security-review/archive/refs/tags/v1.6.0.zip
+  https://github.com/DyanGalih/spec-kit-security-review/archive/refs/tags/v1.6.1.zip
 ```
 
 ## Install a Local Checkout for Development

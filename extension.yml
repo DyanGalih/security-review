@@ -2,7 +2,7 @@ schema_version: "1.0"
 extension:
   id: "security-review"
   name: "Security Review"
-  version: "1.6.0"
+  version: "1.6.1"
   description: "Full-project secure-by-design security audits plus staged, branch/PR, plan, task, follow-up, and apply reviews"
   author: "Spec-Kit Security Team"
   repository: "https://github.com/DyanGalih/spec-kit-security-review"

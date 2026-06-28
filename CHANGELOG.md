@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.6.1
+
+- Bumped the extension version to `1.6.1`.
+
 ## v1.6.0
 
 - Bumped the extension version to `1.6.0`.

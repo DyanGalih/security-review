@@ -203,7 +203,7 @@ Base:   <base>
 
 ## flash-mem INDEX.md Row
 
-After the report, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
+If you successfully captured the report using `flash-mem capture_artifact_memory` or `spec-kit-memory-hub` tools, you **MUST SKIP** printing this routing row to save output tokens (the data is already stored in the cache). Otherwise, after the report, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
 
 ```text
 | <relative path where this doc is saved> | branch | <assessment_date> | <overall_risk> | C:<critical_count> H:<high_count> M:<medium_count> L:<low_count> | <owasp_categories comma-separated> |
