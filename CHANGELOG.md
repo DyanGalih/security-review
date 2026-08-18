@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.7.0
+
+- Upgraded repository into an installable Node.js / TypeScript CLI & Agent Toolkit (`@speckit/security-review`) alongside the Spec-Kit extension.
+- Added executable binary entrypoints `security-review`, `sec-review`, and `sr`.
+- Added core subcommands:
+  - `diff`: Fast, parameterized git staged & branch diff extraction with security sensitivity classification and token-budgeted agent formatting.
+  - `scan`: Discovery of security-relevant entrypoints, trust boundaries, and configuration files.
+  - `validate`: Strict YAML frontmatter verification against `src/docs/field-registry.md`.
+  - `sync-headers`: Indexing frontmatter metadata into memory tables.
+- Implemented strict TypeScript (NodeNext / ESM) modules under `src/core/` and `src/cli/`.
+- Added automated unit and integration test suite with Vitest.
+- Maintained 100% backward compatibility with existing Spec-Kit extension manifests and commands.
+
 ## v1.6.1
 
 - Bumped the extension version to `1.6.1`.

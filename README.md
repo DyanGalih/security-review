@@ -1,62 +1,36 @@
 # 🔒 Security Review
 
-> Continuous security governance and OWASP auditing for AI-assisted development.
+> Continuous security governance, whitebox OWASP auditing, and developer CLI toolkit for AI-assisted development.
 
-[![Version](https://img.shields.io/badge/version-1.6.1-22c55e)](extension.yml)
+[![Version](https://img.shields.io/badge/version-1.7.0-22c55e)](extension.yml)
 [![Spec Kit](https://img.shields.io/badge/Spec%20Kit-compatible-2563eb)](https://spec-kit.dev)
 [![OWASP](https://img.shields.io/badge/OWASP-2025-ef4444)](https://owasp.org/Top10/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-f59e0b)](LICENSE)
 
 ## What Is This?
 
-A Spec Kit extension that performs **security reviews at every stage of delivery** — from plan to implementation — and turns findings into structured, trackable remediation tasks.
-
-It answers one question:
-
-> Is this work secure, and if not, what exactly needs to be fixed?
-
-## The Problem It Solves
-
-AI generates code that works, but it doesn't think about security:
-
-- It concatenates user input into SQL queries because that's the fastest path
-- It skips authorization checks on admin endpoints because "it's internal"
-- It hardcodes API keys in config files because the test passes
-- It adds dependencies without checking for known CVEs
-
-You discover these issues in code review — or worse, in production. By then, fixing them is expensive and disruptive.
-
-**Security Review catches these issues early** by reviewing your specs, plans, task lists, staged changes, branch diffs, and full codebase against **OWASP Top 10 (2025)**, **OWASP ASVS v4.0.3**, **SANS/CWE Top 25**, **MITRE ATT&CK**, language-specific secure coding practices, and your project's own security context.
-
-## What It Actually Does
-
-## Extension Interoperability
-
-This extension acts as a cooperative citizen in the Spec Kit ecosystem by sharing context through explicit handoff artifacts in the `specs/<feature>/` directory.
-
-**The Governed Delivery Lifecycle:**
-1. **`/specify`** -> Write initial feature spec.
-2. **`/speckit.architecture-guard.governed-plan`** -> Orchestrates memory synthesis, technical planning, and security/architecture validation.
-3. **`/speckit.architecture-guard.governed-tasks`** -> Orchestrates task generation with memory, security, and architecture refactor awareness.
-4. **`/speckit.architecture-guard.governed-implement`** -> Orchestrates implementation with memory context and post-implementation governance review.
-
-By using explicit markdown files, extensions remain decoupled, and all constraints and decisions are fully reviewable in Git.
+An installable **Node.js/TypeScript CLI & Agent Toolkit** plus **Spec Kit extension** that performs **security reviews at every stage of delivery** — from plan to implementation — and turns findings into structured, trackable remediation tasks.
 
 ---
 
 # Installation
 
-### From Registry
+### 1. As Developer CLI (npm / npx)
 
-```text
-specify extension add security-review
+```bash
+# Global install
+npm install -g @speckit/security-review
+
+# Or run instantly with npx
+npx @speckit/security-review diff --staged
+npx @speckit/security-review scan
+npx @speckit/security-review validate path/to/report.md
 ```
 
-### From GitHub
+### 2. As Spec-Kit Extension
 
-```text
-specify extension add security-review --from \
-   https://github.com/DyanGalih/spec-kit-security-review/archive/refs/tags/v1.6.1.zip
+```bash
+specify extension add security-review
 ```
 
 ### Local Development
