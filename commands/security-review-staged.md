@@ -15,7 +15,7 @@ description: "Security review of staged changes only (git diff --cached)"
 ## Objective
 
 Review **only the diff currently staged for commit**. You may read unchanged callers, configuration, and tests as context, but findings must describe risk introduced or exposed by the staged diff. Do not include unstaged changes.
-If `flash-mem` is available, use `flash-mem prepare-context` and the canonical memory tools (`get_project_summary`, `search_memory`, `get_relevant_context`). If `flash-mem` is not installed, fall back to the MCP tools exposed by `spec-kit-memory-hub`; do not shell out to `npx memory-hub` directly.
+If `flash-mem` is available, use `flash-mem prepare-context` and the canonical memory tools (`get_project_summary`, `search_memory`, `get_relevant_context`). If `flash-mem` is not installed, fall back to available memory MCP tools; do not shell out to `npx memory-hub` directly.
 
 ## Flash-Mem Security Context Retrieval
 
@@ -83,12 +83,12 @@ Avoid retrieving redundant memories.
 3. **Analyze Diff**: Analyze only the staged diff for security issues across these domains (focusing on requested aspects):
    - Injection vulnerabilities (SQL, NoSQL, command, template)
    - Hardcoded secrets or credentials
-   - Compliance with the Spec-Kit Flash-Mem context.
+   - Compliance with the Flash-Mem context.
    - Revalidate historical status and annotate it; do not suppress an active staged issue solely because memory mentions it.
 
       #### Optimizer-Aware Flow
 
-      When `.specify/extensions/memory-md/config.yml` has `optimizer.enabled: true` and the CLI is available:
+      When memory configuration has `optimizer.enabled: true` and the CLI is available:
 
       1. **Prepare Context**: Execute `flash-mem prepare-context --feature specs/<feature> --query "security constraints vulnerabilities authentication authorization data-leakage"`.
       2. **Read Synthesis**: Read `specs/<feature>/memory-synthesis.md` (or the search results) first.
@@ -99,11 +99,11 @@ Avoid retrieving redundant memories.
 
       - `docs/memory/INDEX.md`
       - `docs/memory/`
-      - `.specify/memory/security_constitution.md`
+      - `constitution.md` or `security_constitution.md`
       - `specs/<feature>/memory.md`
       - `specs/<feature>/memory-synthesis.md`
       - `specs/<feature>/security-constraints.md`
-      - `.github/copilot-instructions.md`
+      - `.github/copilot-instructions.md` or `AGENTS.md`
    - Broken access control or missing authorization checks
    - Cryptographic failures (weak algorithms, hardcoded keys)
    - Security misconfiguration
@@ -116,7 +116,7 @@ Avoid retrieving redundant memories.
    - CWE Top 25 most dangerous software flaws
    - Language-specific and ecosystem rules (e.g. CERT C/C++, Rust safe abstractions)
    - MITRE ATT&CK techniques mapping
-4. **Report Findings**: For each finding, report severity, location, OWASP category, description, remediation, and Spec-Kit task.
+4. **Report Findings**: For each finding, report severity, location, OWASP category, description, remediation, and Security Task.
 5. **Action Plan**: Provide a prioritized action plan for fixing findings.
 6. **Durable Memory Preservation**: If durable lessons exist, ask for authorization before capturing them with any backend.
 
@@ -161,7 +161,7 @@ field_summaries:
   owasp_category: "OWASP Top 10 2025 category for this finding (AXX:2025-Name)."
   cwe: "Common Weakness Enumeration identifier with short name (CWE-NNN: Name)."
   cvss_score: "CVSS v3.1 base score (0.0-10.0). 9.0+=Critical, 7.0-8.9=High, 4.0-6.9=Medium, 0.1-3.9=Low."
-  spec_kit_task: "Spec-Kit task ID for backlog tracking and remediation follow-up (TASK-SEC-NNN)."
+  security_task: "Security task ID for backlog tracking and remediation follow-up (TASK-SEC-NNN). Supports legacy spec_kit_task as alias."
 ---
 ````
 
@@ -189,7 +189,7 @@ Use the same report structure as the full audit command:
 **Reference Link:** https://... (direct link to OWASP, CWE, or ASVS item)
 **Description:** ...
 **Remediation:** ...
-**Spec-Kit Task:** TASK-SEC-NNN
+**Security Task:** TASK-SEC-NNN
 ...
 
 ## Confirmed Secure Patterns
@@ -200,7 +200,7 @@ Use the same report structure as the full audit command:
 
 ## flash-mem INDEX.md Row
 
-If you successfully captured the report using `flash-mem capture_artifact_memory` or `spec-kit-memory-hub` tools, you **MUST SKIP** printing this routing row to save output tokens (the data is already stored in the cache). Otherwise, after the report, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
+If you successfully captured the report using `flash-mem capture_artifact_memory` or repository memory tools, you **MUST SKIP** printing this routing row to save output tokens (the data is already stored in the cache). Otherwise, after the report, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
 
 ```text
 | <relative path where this doc is saved> | staged | <assessment_date> | <overall_risk> | C:<critical_count> H:<high_count> M:<medium_count> L:<low_count> | <owasp_categories comma-separated> |
@@ -212,4 +212,4 @@ Example:
 | docs/security-reviews/2026-05-07-staged.md | staged | 2026-05-07 | MEDIUM | C:0 H:1 M:2 L:1 | A02,A09 |
 ```
 
-See `docs/field-registry.md` in the security-review-extension for the full INDEX.md table format and SQLite Phase 1 column mapping.
+See `docs/field-registry.md` in the security-review toolkit for the full INDEX.md table format and SQLite Phase 1 column mapping.

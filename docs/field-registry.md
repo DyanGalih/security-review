@@ -63,13 +63,13 @@ These fields appear in each individual finding block (not in frontmatter). Their
 
 | Field | Type | Values / Range | Description |
 |---|---|---|---|
-| `Finding ID` | string | `SEC-NNN` (sequential) | Unique identifier for cross-referencing, task tracking, and Spec-Kit task linkage. |
+| `Finding ID` | string | `SEC-NNN` (sequential) | Unique identifier for cross-referencing and task tracking. |
 | `Location` | string | `path/to/artifact:line` | Artifact or code path and line number supporting the finding. |
 | `Evidence Provenance` | string (enum) | `tested`, `statically-reviewed`, `source-reported`, `unverified`, `not-assessed` | States how the evidence was obtained and prevents synthesized reports from implying direct source review. |
 | `OWASP Category` | string | `AXX:2025-Name` | OWASP Top 10 2025 category this finding belongs to. |
 | `CWE` | string | `CWE-NNN: Name` | Common Weakness Enumeration identifier with short name. |
 | `CVSS Score` | string | `0.0–10.0 (Severity)` | CVSS v3.1 base score. 9.0–10.0 = Critical, 7.0–8.9 = High, 4.0–6.9 = Medium, 0.1–3.9 = Low. |
-| `Spec-Kit Task` | string | `TASK-SEC-NNN` | Corresponding Spec-Kit task ID for backlog tracking and remediation follow-up. |
+| `Security Task` | string | `TASK-SEC-NNN` | Corresponding task ID for backlog tracking and remediation follow-up (supports legacy `Spec-Kit Task` as alias). |
 
 ---
 

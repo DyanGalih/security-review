@@ -16,17 +16,17 @@ Security Review provides **token-optimized developer acceleration** for AI agent
 
 When working with an AI coding assistant, use the canonical standalone slash commands:
 
-| Slash Command | Purpose | When to Use |
-|---|---|---|
-| `/security-review` | Full-repository security audit | Milestone reviews, release audits, brownfield onboarding. |
-| `/security-review.staged` | Staged changes review | Pre-commit check (`git add`). |
-| `/security-review.branch` | Branch / PR diff review | Feature branch development vs. base (`main`). |
-| `/security-review.plan` | Technical plan review | Architecture design phase before tasks are generated. |
-| `/security-review.tasks` | Implementation tasks review | Task breakdown phase before coding. |
-| `/security-review.followup` | Findings to tasks conversion | Converting security findings into structured tasks. |
-| `/security-review.apply` | Apply approved refactors | Updating `tasks.md` and `plan.md` automatically. |
-| `/security-review.export` | Formal pentest report | Executive & Technical synthesis export. |
-| `/security-review.init` | Security constitution init | Establishing security rules during project onboarding. |
+| Slash Command | Skill ID | Purpose | When to Use |
+|---|---|---|---|
+| `/sr-audit` | `sr-audit` | Full-repository security audit | Milestone reviews, release audits, major architecture validation. |
+| `/sr-staged` | `sr-staged` | Staged changes review | Pre-commit check (`git add`). |
+| `/sr-branch` | `sr-branch` | Branch / PR diff review | Feature branch development vs. base (`main`). |
+| `/sr-plan` | `sr-plan` | Technical plan review | Architecture design phase before tasks are generated. |
+| `/sr-tasks` | `sr-tasks` | Implementation tasks review | Task breakdown phase before coding. |
+| `/sr-followup` | `sr-followup` | Findings to tasks conversion | Converting security findings into structured tasks. |
+| `/sr-apply` | `sr-apply` | Apply approved refactors | Updating `tasks.md` and `plan.md` automatically. |
+| `/sr-export` | `sr-export` | Formal pentest report | Executive & Technical synthesis export. |
+| `/sr-init` | `sr-init` | Security constitution init | Establishing security rules during project onboarding. |
 
 ---
 

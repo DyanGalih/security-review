@@ -1,5 +1,5 @@
 ---
-description: 'Apply approved security follow-up items into Spec-Kit planning artifacts'
+description: 'Apply approved security follow-up items into planning and task artifacts'
 ---
 
 # Security Review - Apply Follow-Ups
@@ -10,15 +10,15 @@ $ARGUMENTS
 
 ## Objective
 
-Apply approved security follow-up items into the local Spec-Kit planning artifacts without changing the broader project implementation.
-If `flash-mem` is available, use `flash-mem prepare-context` and the canonical memory tools (`get_project_summary`, `search_memory`, `get_relevant_context`). If `flash-mem` is not installed, fall back to the MCP tools exposed by `spec-kit-memory-hub`; do not shell out to `npx memory-hub` directly.
+Apply approved security follow-up items into the project planning and task artifacts without changing the broader project implementation.
+If `flash-mem` is available, use `flash-mem prepare-context` and the canonical memory tools (`get_project_summary`, `search_memory`, `get_relevant_context`). If `flash-mem` is not installed, fall back to available memory MCP tools; do not shell out to `npx memory-hub` directly.
 
 Use this command when you want to:
 
 - turn security findings into concrete backlog updates
 - add new security tasks to `tasks.md`
-- update `plan.md` only when a security decision, acceptance criterion, or sequencing rule must change
-- preserve the existing Spec-Kit flow instead of replacing it
+- update `plan.md` (or `design.md`) only when a security decision, acceptance criterion, or sequencing rule must change
+- preserve the existing project workflow instead of replacing it
 
 Treat only user-approved follow-up items as authorized mutations. If the user does not provide or identify an approved finding set or follow-up plan, locate candidates but present them for approval before editing.
 
@@ -85,11 +85,11 @@ Avoid retrieving redundant memories.
 
 ## Scope
 
-Before applying updates, check the Spec-Kit Flash-Mem context.
+Before applying updates, check the Flash-Mem context.
 
 ### Optimizer-Aware Flow
 
-When `.specify/extensions/memory-md/config.yml` has `optimizer.enabled: true` and the CLI is available:
+When memory configuration has `optimizer.enabled: true` and the CLI is available:
 
 1. **Prepare Context**: Execute `flash-mem prepare-context --feature specs/<feature> --query "security constraints vulnerabilities authentication authorization data-leakage"`.
 2. **Read Synthesis**: Read `specs/<feature>/memory-synthesis.md` (or the search results) first.
@@ -100,17 +100,18 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 
 - latest security review findings or follow-up plan
 - `tasks.md`
-- `plan.md`
-- `spec.md`
+- `plan.md` or `design.md`
+- `spec.md` or `proposal.md`
 - `research.md`
 - `data-model.md`
 - `contracts/`
 - `quickstart.md`
 - `docs/memory/INDEX.md`
 - `docs/memory/`
+- `constitution.md` or `security_constitution.md`
 - `specs/<feature>/memory.md`
 - `specs/<feature>/memory-synthesis.md`
-- `.github/copilot-instructions.md`
+- `.github/copilot-instructions.md` or `AGENTS.md`
 - Other project memory or architecture notes
 
 ## What to Check
@@ -119,13 +120,13 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 - Security tasks are added in a way that preserves existing task sequencing
 - High-severity issues remain prioritized for immediate remediation
 - Deferred items stay clearly marked as technical debt when appropriate
-- `plan.md` only changes when the security design or sequencing needs to change
+- `plan.md` (or `design.md`) only changes when the security design or sequencing needs to change
 - The resulting artifacts remain testable and reviewable
 - The update preserves the intent of the Flash-Mem context and the current implementation
 
 ## Apply Rules
 
-1. Prefer updating `tasks.md` over `plan.md` unless the plan itself needs a security correction.
+1. Prefer updating `tasks.md` over `plan.md` (or `design.md`) unless the plan itself needs a security correction.
 2. Keep changes minimal and scoped to the security follow-up items.
 3. Preserve existing formatting, headings, and task numbering style.
 4. Add only the backlog entries that are necessary for the approved security items.
@@ -135,11 +136,11 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 ## Steps
 
 1. Read the latest security review findings or follow-up plan provided in `$ARGUMENTS`.
-2. Read `tasks.md`, `plan.md`, and related planning artifacts to understand the current backlog.
+2. Read `tasks.md`, `plan.md` (or `design.md`), and related planning artifacts to understand the current backlog.
 3. Compare the findings against the current task backlog and Flash-Mem context.
 4. Identify which items should become new tasks, which belong in technical debt, and which are already covered.
 5. Update `tasks.md` with any approved security tasks.
-6. Update `plan.md` only if the security design or sequencing needs to change.
+6. Update `plan.md` (or `design.md`) only if the security design or sequencing needs to change.
 7. Summarize the files changed and the rationale for each change.
 8. If Architecture Guard is available, resolve its selected adapter, apply Ponytail, and run the post-change architecture review for boundary drift, DRY violations, and repository hygiene. Report the result; if unavailable, report the skipped integration.
 9. **Durable Memory Preservation**: If durable lessons exist, ask for authorization before capturing them with any backend.
@@ -157,7 +158,7 @@ Produce a structured Markdown update summary with:
 
 ## Task Format
 
-When adding security tasks, keep them compatible with the existing Spec-Kit security task style:
+When adding security tasks, keep them compatible with standard security task conventions:
 
 - `TASK-SEC-[NNN]`
 - severity

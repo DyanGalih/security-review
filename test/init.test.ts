@@ -21,10 +21,10 @@ describe('Security Review init command', () => {
     expect(result.success).toBe(true);
 
     // Verify Antigravity skills
-    const antigravitySkill = path.join(tmpDir, '.agent/skills/sr-review/SKILL.md');
+    const antigravitySkill = path.join(tmpDir, '.agent/skills/sr-audit/SKILL.md');
     expect(fs.existsSync(antigravitySkill)).toBe(true);
     const agContent = fs.readFileSync(antigravitySkill, 'utf8');
-    expect(agContent).toContain('name: sr-review');
+    expect(agContent).toContain('name: sr-audit');
     expect(agContent).toContain('author: DyanGalih');
 
     // Verify Claude skills
@@ -32,7 +32,7 @@ describe('Security Review init command', () => {
     expect(fs.existsSync(claudeSkill)).toBe(true);
 
     // Verify OpenCode markdown command
-    const opencodeCmd = path.join(tmpDir, '.opencode/commands/sr-review.md');
+    const opencodeCmd = path.join(tmpDir, '.opencode/commands/sr-audit.md');
     expect(fs.existsSync(opencodeCmd)).toBe(true);
 
     // Verify configuration template
@@ -50,31 +50,31 @@ describe('Security Review init command', () => {
     const result = await runInitCommand(tmpDir, {
       yes: true,
       agent: 'gemini,goose',
-      commands: 'security-review,init',
+      commands: 'security-audit,init',
     });
     expect(result.success).toBe(true);
 
-    const geminiCmd = path.join(tmpDir, '.gemini/commands/sr-review.toml');
+    const geminiCmd = path.join(tmpDir, '.gemini/commands/sr-audit.toml');
     expect(fs.existsSync(geminiCmd)).toBe(true);
     const geminiContent = fs.readFileSync(geminiCmd, 'utf8');
-    expect(geminiContent).toContain('description = "Security Review: sr-review"');
+    expect(geminiContent).toContain('description = "Security Review: sr-audit"');
     expect(geminiContent).toContain('prompt = """');
 
-    const gooseCmd = path.join(tmpDir, '.goose/recipes/sr-review.yaml');
+    const gooseCmd = path.join(tmpDir, '.goose/recipes/sr-audit.yaml');
     expect(fs.existsSync(gooseCmd)).toBe(true);
     const gooseContent = fs.readFileSync(gooseCmd, 'utf8');
-    expect(gooseContent).toContain('title: "sr-review"');
+    expect(gooseContent).toContain('title: "sr-audit"');
   });
 
   it('should respect overwrite=skip mode', async () => {
-    const skillPath = path.join(tmpDir, '.agent/skills/sr-review/SKILL.md');
+    const skillPath = path.join(tmpDir, '.agent/skills/sr-audit/SKILL.md');
     fs.mkdirSync(path.dirname(skillPath), { recursive: true });
     fs.writeFileSync(skillPath, 'CUSTOM_CONTENT', 'utf8');
 
     await runInitCommand(tmpDir, {
       yes: true,
       agent: 'antigravity',
-      commands: 'security-review',
+      commands: 'security-audit',
       overwrite: 'skip',
     });
 
@@ -82,19 +82,19 @@ describe('Security Review init command', () => {
   });
 
   it('should respect overwrite=keep-both mode', async () => {
-    const skillPath = path.join(tmpDir, '.agent/skills/sr-review/SKILL.md');
+    const skillPath = path.join(tmpDir, '.agent/skills/sr-audit/SKILL.md');
     fs.mkdirSync(path.dirname(skillPath), { recursive: true });
     fs.writeFileSync(skillPath, 'CUSTOM_CONTENT', 'utf8');
 
     await runInitCommand(tmpDir, {
       yes: true,
       agent: 'antigravity',
-      commands: 'security-review',
+      commands: 'security-audit',
       overwrite: 'keep-both',
     });
 
     expect(fs.readFileSync(skillPath, 'utf8')).toBe('CUSTOM_CONTENT');
-    const duplicatePath = path.join(tmpDir, '.agent/skills/sr-review-2/SKILL.md');
+    const duplicatePath = path.join(tmpDir, '.agent/skills/sr-audit-2/SKILL.md');
     expect(fs.existsSync(duplicatePath)).toBe(true);
   });
 

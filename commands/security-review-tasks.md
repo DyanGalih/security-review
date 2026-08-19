@@ -1,5 +1,5 @@
 ---
-description: 'Security review of Spec-Kit task artifacts and implementation sequencing'
+description: 'Security review of task artifacts and implementation sequencing'
 ---
 
 # Security Review — Task Review
@@ -10,8 +10,8 @@ $ARGUMENTS
 
 ## Objective
 
-Review the current Spec-Kit task list before implementation begins. Focus on task sequencing, security coverage, dependency ordering, and whether the plan has been converted into secure, testable, and reviewable work items.
-If `flash-mem` is available, use `flash-mem prepare-context` and the canonical memory tools (`get_project_summary`, `search_memory`, `get_relevant_context`). If `flash-mem` is not installed, fall back to the MCP tools exposed by `spec-kit-memory-hub`; do not shell out to `npx memory-hub` directly.
+Review the current implementation task list before implementation begins. Focus on task sequencing, security coverage, dependency ordering, and whether the plan has been converted into secure, testable, and reviewable work items.
+If `flash-mem` is available, use `flash-mem prepare-context` and the canonical memory tools (`get_project_summary`, `search_memory`, `get_relevant_context`). If `flash-mem` is not installed, fall back to available memory MCP tools; do not shell out to `npx memory-hub` directly.
 
 When project memory exists, use it as design context. Compare the task list against the project flash-mem, architecture decisions, and any repository-native memory artifacts the team uses to preserve intent.
 
@@ -76,11 +76,11 @@ Avoid retrieving redundant memories.
 
 ## Scope
 
-Before reviewing the tasks, check the Spec-Kit Flash-Mem context.
+Before reviewing the tasks, check the Flash-Mem context.
 
 ### Optimizer-Aware Flow
 
-When `.specify/extensions/memory-md/config.yml` has `optimizer.enabled: true` and the CLI is available:
+When memory configuration has `optimizer.enabled: true` and the CLI is available:
 
 1. **Prepare Context**: Execute `flash-mem prepare-context --feature specs/<feature> --query "security constraints vulnerabilities authentication authorization data-leakage"`.
 2. **Read Synthesis**: Read `specs/<feature>/memory-synthesis.md` (or the search results) first.
@@ -90,19 +90,19 @@ When `.specify/extensions/memory-md/config.yml` has `optimizer.enabled: true` an
 When the optimizer is disabled or unavailable, you **MUST** read these files explicitly using your file-reading tools (absolute or relative paths). Do not rely solely on workspace search or semantic indexers, as these files are often in `.gitignore`:
 
 - `tasks.md`
-- `plan.md`
-- `spec.md`
+- `plan.md` or `design.md`
+- `spec.md` or `proposal.md`
 - `research.md`
 - `data-model.md`
 - `docs/memory/INDEX.md`
 - `docs/memory/`
-- `.specify/memory/security_constitution.md`
+- `constitution.md` or `security_constitution.md`
 - `contracts/`
 - `quickstart.md`
 - `specs/<feature>/memory.md`
 - `specs/<feature>/memory-synthesis.md`
 - `specs/<feature>/security-constraints.md`
-- `.github/copilot-instructions.md`
+- `.github/copilot-instructions.md` or `AGENTS.md`
 - Other project memory or architecture notes
 
 ## What to Check
@@ -119,7 +119,7 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 
 ## Steps
 
-1. Locate the active Spec-Kit feature directory for the current work.
+1. Locate the active feature directory or planning documents for the current work.
 2. If more than one candidate task artifact exists, ask the user which one to review before proceeding.
 3. Read `tasks.md` and the related planning artifacts.
 4. Compare the tasks against the plan and Flash-Mem context.
@@ -168,7 +168,7 @@ field_summaries:
   owasp_category: "OWASP Top 10 2025 category for this finding (AXX:2025-Name)."
   cwe: "Common Weakness Enumeration identifier with short name (CWE-NNN: Name)."
   cvss_score: "CVSS v3.1 base score (0.0-10.0). 9.0+=Critical, 7.0-8.9=High, 4.0-6.9=Medium, 0.1-3.9=Low."
-  spec_kit_task: "Spec-Kit task ID for backlog tracking and remediation follow-up (TASK-SEC-NNN)."
+  security_task: "Security task ID for backlog tracking and remediation follow-up (TASK-SEC-NNN). Supports legacy spec_kit_task as alias."
 ---
 ````
 
@@ -189,13 +189,13 @@ Produce a structured Markdown security review report with:
 After providing the report, finalize with:
 
 1. **Durable Memory Preservation**: If durable lessons exist, ask for authorization before capturing them with any backend.
-2.  **Remediation Planning**: If critical or high findings were found, recommend executing `/security-review.followup` (or `/speckit.security-review.followup`) to create remediation tasks.
+2.  **Remediation Planning**: If critical or high findings were found, recommend executing `/sr-followup` (or `/security-review-followup`) to create remediation tasks.
 
 ---
 
 ## flash-mem INDEX.md Row
 
-If you successfully captured the report using `flash-mem capture_artifact_memory` or `spec-kit-memory-hub` tools, you **MUST SKIP** printing this routing row to save output tokens (the data is already stored in the cache). Otherwise, after the report, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
+If you successfully captured the report using `flash-mem capture_artifact_memory` or repository memory tools, you **MUST SKIP** printing this routing row to save output tokens (the data is already stored in the cache). Otherwise, after the report, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
 
 ```text
 | <relative path where this doc is saved> | tasks | <assessment_date> | <overall_risk> | C:<critical_count> H:<high_count> M:<medium_count> L:<low_count> | <owasp_categories comma-separated> |
@@ -207,4 +207,4 @@ Example:
 | docs/security-reviews/2026-05-07-auth-tasks.md | tasks | 2026-05-07 | MEDIUM | C:0 H:1 M:2 L:1 | A01,A07 |
 ```
 
-See `docs/field-registry.md` in the security-review-extension for the full INDEX.md table format and SQLite Phase 1 column mapping.
+See `docs/field-registry.md` in the security-review toolkit for the full INDEX.md table format and SQLite Phase 1 column mapping.

@@ -19,8 +19,8 @@ You are a **Senior Application Security Engineer**, **Red Team Auditor**, and **
 
 ## Objective
 
-Perform a comprehensive security audit of the resolved scope. Read surrounding callers, trust-boundary configuration, and tests when required for correctness, while keeping findings attributable to the resolved scope. Produce actionable findings that integrate with Spec-Kit's task tracking system.
-If `flash-mem` is available, use `flash-mem prepare-context` and the canonical memory tools (`get_project_summary`, `search_memory`, `get_relevant_context`). If `flash-mem` is not installed, fall back to the MCP tools exposed by `spec-kit-memory-hub`; do not shell out to `npx memory-hub` directly.
+Perform a comprehensive security audit of the resolved scope. Read surrounding callers, trust-boundary configuration, and tests when required for correctness, while keeping findings attributable to the resolved scope. Produce actionable findings that integrate with the project's task tracking and issue backlog.
+If `flash-mem` is available, use `flash-mem prepare-context` and the canonical memory tools (`get_project_summary`, `search_memory`, `get_relevant_context`). If `flash-mem` is not installed, fall back to available memory MCP tools; do not shell out to `npx memory-hub` directly.
 
 ## Flash-Mem Security Context Retrieval
 
@@ -83,11 +83,11 @@ Avoid retrieving redundant memories.
 
 ## Memory and Design Context
 
-Before reviewing the code, check the Spec-Kit Flash-Mem context.
+Before reviewing the code, check the Flash-Mem context.
 
 ### Optimizer-Aware Flow
 
-When `.specify/extensions/memory-md/config.yml` has `optimizer.enabled: true` and the CLI is available:
+When memory configuration has `optimizer.enabled: true` and the CLI is available:
 
 1. **Prepare Context**: Execute `flash-mem prepare-context --feature specs/<feature> --query "security constraints vulnerabilities authentication authorization data-leakage"`.
 2. **Read Synthesis**: Read `specs/<feature>/memory-synthesis.md` (or the search results) first to understand active security constraints and historical lessons.
@@ -98,11 +98,11 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 
 - `docs/memory/INDEX.md` (Read this first to identify relevant source sections)
 - `docs/memory/` for durable repository memory (Read only the sections identified in the index)
-- `.specify/memory/security_constitution.md` for project-wide security rules and standards
+- `constitution.md` or `security_constitution.md` for project-wide security rules and standards
 - `specs/<feature>/memory.md` for active feature memory
 - `specs/<feature>/memory-synthesis.md` for the concise working summary
 - `specs/<feature>/security-constraints.md` for feature-specific security rules
-- `.github/copilot-instructions.md` for repo-scoped Copilot guidance
+- `.github/copilot-instructions.md` or `AGENTS.md` for repo-scoped agent guidance
 - Other memory or architecture notes the project uses to preserve decisions
 
 Use that context to look for design drift, missing security controls, and places where the implementation no longer matches the intended security posture.
@@ -479,7 +479,7 @@ field_summaries:
   owasp_category: "OWASP Top 10 2025 category for this finding (AXX:2025-Name)."
   cwe: "Common Weakness Enumeration identifier with short name (CWE-NNN: Name)."
   cvss_score: "CVSS v3.1 base score (0.0-10.0). 9.0+=Critical, 7.0-8.9=High, 4.0-6.9=Medium, 0.1-3.9=Low."
-  spec_kit_task: "Spec-Kit task ID for backlog tracking and remediation follow-up (TASK-SEC-NNN)."
+  security_task: "Security task ID for backlog tracking and remediation follow-up (TASK-SEC-NNN). Supports legacy spec_kit_task as alias."
 ---
 ````
 
@@ -520,51 +520,41 @@ Produce a comprehensive **SECURITY REVIEW REPORT** with the following structure:
 
 ## Vulnerability Findings
 
-### [SEVERITY] Finding Title
+### [Finding Title]
 
 **Finding ID:** SEC-001
-**Location:** `path/to/file.ext:line_number`
-**OWASP Category:** AXX:2025-Category Name
-**CWE:** CWE-XXX
-**ASVS Requirement:** V2.1.1 (if applicable)
-**MITRE Technique:** T1190 (if applicable)
-**Reference Link:** https://... (direct link to OWASP, CWE, or ASVS item)
-**CVSS Score:** X.X (if applicable)
+**Severity:** [Critical/High/Medium/Low/Informational]
+**CVSS Score:** [Score, e.g., 9.8 (Critical)]
+**Location:** `path/to/file:line`
+**Evidence Provenance:** tested | statically-reviewed | source-reported | unverified | not-assessed
+**OWASP Category:** [A01:2025-Broken Access Control, etc.]
+**CWE:** [CWE-89: SQL Injection, etc.]
+**ASVS Requirement:** [e.g., V2.1.1]
+**MITRE ATT&CK:** [e.g., T1190]
 
 #### Description
 
-[Clear description of the vulnerability]
-
-#### Affected Code
-
-```language
-[code snippet showing the vulnerability]
-```
-#### Exploit Scenario
-
-[Step-by-step scenario showing how an attacker could exploit this vulnerability]
+[Detailed description of the vulnerability]
 
 #### Impact
 
-[Business and technical impact if exploited]
+[What could happen if exploited, including exploit scenario]
+
+#### Evidence
+
+```language
+[code snippet showing the vulnerable code]
+```
 
 #### Remediation
 
 [Specific steps to fix the vulnerability]
 
-#### Fixed Code Example
-
-```language
-[code snippet showing the secure implementation]
-```
-
-#### References
-
 - [Relevant security documentation links]
 - [CVE references if applicable]
 - [OWASP references]
 
-**Spec-Kit Task:** TASK-SEC-001
+**Security Task:** TASK-SEC-001
 
 ---
 
@@ -595,7 +585,7 @@ Produce a comprehensive **SECURITY REVIEW REPORT** with the following structure:
 
 [Specific architectural changes recommended]
 
-**Spec-Kit Task:** TASK-SEC-XXX
+**Security Task:** TASK-SEC-XXX
 
 ---
 
@@ -606,6 +596,24 @@ Produce a comprehensive **SECURITY REVIEW REPORT** with the following structure:
 | Content Security Policy | ❌ Missing | High     | Implement CSP header with strict directives |
 | Rate Limiting           | ⚠️ Partial | High     | Add rate limiting to auth endpoints         |
 | Security Logging        | ❌ Missing | Medium   | Implement structured security logging       |
+
+---
+
+## Remediation & Planning Updates
+
+### Generated Remediation Tasks
+
+| Task ID      | Severity | Category       | Description                    | Recommended Phase |
+| ------------ | -------- | -------------- | ------------------------------ | ----------------- |
+| TASK-SEC-001 | Critical | Injection      | Fix SQL injection in login     | Implement         |
+| TASK-SEC-002 | High     | Access Control | Add authorization to admin API | Implement         |
+| TASK-SEC-003 | Medium   | Dependencies   | Update vulnerable lodash       | Maintain          |
+
+### Suggested Implementation Phases
+
+1. **Immediate (Critical/High):** Address in current sprint / feature branch
+2. **Short-term (Medium):** Address within 2 sprints
+3. **Long-term (Low/Info):** Address in security hardening sprint
 
 ---
 
@@ -695,7 +703,7 @@ Produce a comprehensive **SECURITY REVIEW REPORT** with the following structure:
 ### D. Action Plan
 1. **Critical Remediation**: Fix all Critical/High vulnerabilities before merge.
 2. **Architecture Hardening**: Resolve trust boundary and data flow risks.
-3. **Report Findings**: For each finding, report severity, location, OWASP category, description, remediation, and Spec-Kit task.
+3. **Report Findings**: For each finding, report severity, location, OWASP category, description, remediation, and Security Task.
 4. **Action Plan**: Provide a prioritized action plan for fixing findings.
 5. **Durable Memory Preservation**: If systemic vulnerabilities or reusable security patterns were identified, propose a concise capture and perform it only after explicit user authorization, regardless of backend.
 
@@ -764,7 +772,7 @@ Use the following severity classification:
 
 ## Security Constraint Generation
 
-During specification or planning review, include proposed actionable security constraints in the report. Write them to `specs/<feature>/security-constraints.md` only when the user explicitly requested that mutation.
+During specification or planning review, include proposed actionable security constraints in the report. Write them to `specs/<feature>/security-constraints.md` or feature planning files only when the user explicitly requested that mutation.
 These constraints inform Architecture Guard. Focus on:
 - Trust boundaries and isolation rules.
 - Data flow restrictions (e.g., "Pricing decisions must not trust client-provided values").
@@ -772,9 +780,9 @@ These constraints inform Architecture Guard. Focus on:
 
 ---
 
-## Spec-Kit Integration
+## Task & Backlog Integration
 
-For each finding that requires code changes, generate a Spec-Kit compatible task:
+For each finding that requires code changes, generate a structured remediation task:
 
 ```
 
@@ -789,14 +797,14 @@ TASK-SEC-[NNN]: [Actionable Title]
 
 ```
 
-These tasks should be ready to import into Spec-Kit's task tracking system.
+These tasks should be ready to import into the project's task tracking system or issue backlog.
 
 ## Final Instructions
 
 1. Analyze the resolved scope thoroughly and describe exclusions and limitations
 2. Categorize findings by severity
 3. Provide exploit scenarios for Critical and High findings
-4. Generate Spec-Kit tasks for all actionable items
+4. Generate security tasks for all actionable items
 5. Include STRIDE analysis for key components
 6. Prioritize findings by risk and exploitability
 7. Be constructive—focus on remediation, not just problems
@@ -806,7 +814,7 @@ These tasks should be ready to import into Spec-Kit's task tracking system.
 
 ## flash-mem INDEX.md Row
 
-If you successfully captured the report using `flash-mem capture_artifact_memory` or `spec-kit-memory-hub` tools, you **MUST SKIP** printing this routing row to save output tokens (the data is already stored in the cache). Otherwise, after the report, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
+If you successfully captured the report using `flash-mem capture_artifact_memory` or repository memory tools, you **MUST SKIP** printing this routing row to save output tokens (the data is already stored in the cache). Otherwise, after the report, output the following proposed routing row for the user to paste into their `docs/memory/INDEX.md`. This enables LLM-based filtering without loading the full document.
 
 ```text
 | <relative path where this doc is saved> | audit | <assessment_date> | <overall_risk> | C:<critical_count> H:<high_count> M:<medium_count> L:<low_count> | <owasp_categories comma-separated> |
@@ -818,7 +826,7 @@ Example:
 | docs/security-reviews/2026-05-07-api.md | audit | 2026-05-07 | HIGH | C:2 H:4 M:6 L:4 | A01,A05,A07 |
 ```
 
-See `docs/field-registry.md` in the security-review-extension for the full INDEX.md table format and SQLite Phase 1 column mapping.
+See `docs/field-registry.md` in the security-review toolkit for the full INDEX.md table format and SQLite Phase 1 column mapping.
 
 ---
 

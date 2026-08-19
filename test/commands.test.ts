@@ -15,7 +15,7 @@ const __dirname = dirname(__filename);
 const execFileAsync = promisify(execFile);
 
 const commandNames = [
-  'security-review.md',
+  'security-audit.md',
   'security-review-staged.md',
   'security-review-branch.md',
   'security-review-plan.md',
@@ -86,7 +86,7 @@ describe('security review command contracts', () => {
   });
 
   it('keeps full, staged, and branch scope semantics distinct', async () => {
-    const full = await readCommand('security-review.md');
+    const full = await readCommand('security-audit.md');
     const staged = await readCommand('security-review-staged.md');
     const branch = await readCommand('security-review-branch.md');
 

@@ -26,7 +26,7 @@ hooks:
 provides:
   commands:
     - name: "speckit.security-review.audit"
-      file: "commands/security-review.md"
+      file: "commands/security-audit.md"
       description: "Performs broader or full-system security review across the codebase. Recommended for milestone reviews, release reviews, or major architecture validation."
     - name: "speckit.security-review.staged"
       file: "commands/security-review-staged.md"

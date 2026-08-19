@@ -63,7 +63,7 @@ export const AGENT_CONFIGS: Record<string, AgentConfig> = {
 };
 
 export const COMMAND_CATALOG: Record<string, string> = {
-  'security-review':        'security-review.md',
+  'security-audit':         'security-audit.md',
   'security-review-staged': 'security-review-staged.md',
   'security-review-branch': 'security-review-branch.md',
   'security-review-plan':   'security-review-plan.md',
@@ -120,11 +120,14 @@ async function ask(promptText: string, choices?: any[], multi = false): Promise<
 
 function getCommandPrefix(cmdKey: string): string {
   if (cmdKey === 'init') return 'sr-init';
+  if (cmdKey === 'security-audit' || cmdKey === 'security-review' || cmdKey === 'audit' || cmdKey === 'review') {
+    return 'sr-audit';
+  }
   if (cmdKey.startsWith('security-review-')) {
     return `sr-${cmdKey.replace('security-review-', '')}`;
   }
-  if (cmdKey === 'security-review') {
-    return 'sr-review';
+  if (cmdKey.startsWith('security-audit-')) {
+    return `sr-${cmdKey.replace('security-audit-', '')}`;
   }
   return `sr-${cmdKey}`;
 }

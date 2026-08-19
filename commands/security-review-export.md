@@ -17,18 +17,18 @@ Synthesize one or more security review reports, follow-up plans, or finding list
 Read and analyze the following artifacts when present:
 
 - **Source Findings**: The latest security review report(s) or findings provided in `$ARGUMENTS`.
-- **Durable Context**: `.specify/memory/security_constitution.md` and `docs/memory/`.
-- **Implementation Context**: `plan.md`, `tasks.md`, and relevant `spec.md` files.
+- **Durable Context**: `constitution.md`, `security_constitution.md`, and `docs/memory/`.
+- **Implementation Context**: `plan.md` (or `design.md`), `tasks.md`, and relevant specification files.
 
 Record exactly which source reports, repository paths, commit or branch, tools, and dates were used. Distinguish `tested`, `statically reviewed`, `reported by source`, and `not assessed`. Never infer full-source access from the presence of a prior report.
 
 ### Optimizer-Aware Flow
 
-When `.specify/extensions/memory-md/config.yml` has `optimizer.enabled: true` and the CLI is available:
+When memory configuration has `optimizer.enabled: true` and the CLI is available:
 
 1. **Prepare Context**: Execute `flash-mem prepare-context --feature specs/<feature> --query "security decisions architecture constraints remediation"`.
 2. **Review Findings**: Ensure the export includes historical security context surfaced by the optimizer.
-3. If `flash-mem` is available, use its canonical memory tools and `prepare-context` flow. If it is not installed, use the MCP tools exposed by `spec-kit-memory-hub`; do not call `npx memory-hub` directly.
+3. If `flash-mem` is available, use its canonical memory tools and `prepare-context` flow. If it is not installed, use available memory MCP tools; do not call `npx memory-hub` directly.
 
 ## Flash-Mem Security Context Retrieval
 
@@ -151,7 +151,7 @@ Produce a structured Markdown report with the following mandatory sections. Use 
 
 ### 2.1 Scope of Work
 - **Codebase**: [e.g. src/api, src/auth]
-- **Documentation**: Spec-Kit Feature Specs, Implementation Plans, Security Constitution.
+- **Documentation**: Feature Specs, Technical Plans, Security Constitution.
 - **Historical Memory**: Durable repository memory (flash-mem).
 
 ### 2.2 Testing Approach
@@ -219,7 +219,7 @@ Redact secrets and sensitive records. Include only the minimum code required to 
 - **0.1 - 3.9**: Low
 
 ### 5.2 Tooling Context
-- **Orchestrator**: Spec-Kit Security Review Extension
+- **Orchestrator**: Security Review CLI & Agent Toolkit
 - **Memory Optimization**: [SQLite-enabled / Markdown-only]
 - **Date of Generation**: [YYYY-MM-DD]
 
@@ -230,6 +230,6 @@ Redact secrets and sensitive records. Include only the minimum code required to 
 1. **Consolidate**: Combine findings from all provided reports. Avoid duplicate entries.
 2. **Categorize**: Group findings by OWASP category in the technical section.
 3. **Professionalism**: Use formal language (e.g., "The assessment identified..." instead of "I found...").
-4. **Actionable**: Ensure every remediation step is compatible with the Spec-Kit `plan.md` style.
+4. **Actionable**: Ensure every remediation step is actionable and structured for technical plans.
 5. **Durable Memory**: If durable lessons exist, ask for authorization before capturing them with any backend.
 6. **Evidence Integrity**: Do not invent testing activity, code access, CVSS vectors, standard mappings, CVEs, reference links, or remediation verification. Mark unsupported fields as `unverified` or `not assessed`.
