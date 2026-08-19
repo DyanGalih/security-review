@@ -99,3 +99,65 @@ export function resolveActiveTasksFile(workspaceDir: string): string {
   }
   return path.join(env.workspaceDir, 'tasks.md');
 }
+
+export function resolveLatestSecurityReport(workspaceDir: string = process.cwd()): string | undefined {
+  const absDir = path.resolve(workspaceDir);
+  const searchDirs = [
+    path.join(absDir, 'docs', 'security-reviews'),
+    path.join(absDir, 'docs', 'security'),
+    path.join(absDir, '.specify'),
+  ];
+
+  const candidateFiles: { filePath: string; mtime: number; datePrefix?: string }[] = [];
+
+  for (const dir of searchDirs) {
+    if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
+      const files = fs.readdirSync(dir);
+      for (const file of files) {
+        if (!file.endsWith('.md')) continue;
+        const filePath = path.join(dir, file);
+        try {
+          const stat = fs.statSync(filePath);
+          if (stat.isFile()) {
+            const match = file.match(/^(\d{4}-\d{2}-\d{2})/);
+            candidateFiles.push({
+              filePath,
+              mtime: stat.mtimeMs,
+              datePrefix: match ? match[1] : undefined,
+            });
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+  }
+
+  if (candidateFiles.length === 0) return undefined;
+
+  candidateFiles.sort((a, b) => {
+    if (a.datePrefix && b.datePrefix && a.datePrefix !== b.datePrefix) {
+      return b.datePrefix.localeCompare(a.datePrefix);
+    }
+    return b.mtime - a.mtime;
+  });
+
+  return candidateFiles[0].filePath;
+}
+
+export function resolveLatestFindingsJson(workspaceDir: string = process.cwd()): string | undefined {
+  const absDir = path.resolve(workspaceDir);
+  const candidates = [
+    path.join(absDir, 'findings.json'),
+    path.join(absDir, '.security-review', 'findings.json'),
+    path.join(absDir, 'docs', 'security-reviews', 'findings.json'),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+      return candidate;
+    }
+  }
+
+  return undefined;
+}

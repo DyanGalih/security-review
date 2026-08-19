@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { detectSDDEnvironment, resolveActiveTasksFile } from '../core/detector.js';
+import { detectSDDEnvironment, resolveActiveTasksFile, resolveLatestSecurityReport, resolveLatestFindingsJson } from '../core/detector.js';
 
 describe('SDD Environment Detector', () => {
   let tmpDir: string;
@@ -65,5 +65,28 @@ describe('SDD Environment Detector', () => {
     expect(env.designPath).toBe(path.join(specifyDir, 'plan.md'));
     expect(env.specPath).toBe(path.join(specifyDir, 'spec.md'));
     expect(resolveActiveTasksFile(tmpDir)).toBe(path.join(specifyDir, 'tasks.md'));
+  });
+
+  it('should resolve latest security report based on date prefix and mtime', () => {
+    const reportDir = path.join(tmpDir, 'docs/security-reviews');
+    fs.mkdirSync(reportDir, { recursive: true });
+
+    const olderReport = path.join(reportDir, '2026-08-10-old-report.md');
+    const newerReport = path.join(reportDir, '2026-08-19-latest-report.md');
+
+    fs.writeFileSync(olderReport, '# Old Report', 'utf8');
+    fs.writeFileSync(newerReport, '# Latest Report', 'utf8');
+
+    const resolved = resolveLatestSecurityReport(tmpDir);
+    expect(resolved).toBe(newerReport);
+  });
+
+  it('should resolve latest findings.json if present', () => {
+    expect(resolveLatestFindingsJson(tmpDir)).toBeUndefined();
+
+    const findingsFile = path.join(tmpDir, 'findings.json');
+    fs.writeFileSync(findingsFile, '[]', 'utf8');
+
+    expect(resolveLatestFindingsJson(tmpDir)).toBe(findingsFile);
   });
 });

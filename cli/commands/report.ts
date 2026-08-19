@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { generateMarkdownReport } from '../../core/generator.js';
+import { resolveLatestFindingsJson } from '../../core/detector.js';
 import { FindingsReport } from '../../core/types.js';
 
 export interface ReportCommandOptions {
@@ -10,10 +11,13 @@ export interface ReportCommandOptions {
 }
 
 export async function executeReportCommand(options: ReportCommandOptions): Promise<void> {
-  const inputPath = options.input;
+  let inputPath = options.input;
   if (!inputPath) {
-    console.error('[report error]: Missing required --input argument (path to findings JSON file)');
-    process.exit(1);
+    inputPath = resolveLatestFindingsJson(process.cwd());
+    if (!inputPath) {
+      console.error('[report error]: Missing required --input argument and no findings.json was found in workspace.');
+      process.exit(1);
+    }
   }
 
   let rawJson: string;

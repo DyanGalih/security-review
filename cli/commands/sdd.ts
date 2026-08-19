@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { detectSDDEnvironment, resolveActiveTasksFile, SDDFramework } from '../../core/detector.js';
+import { detectSDDEnvironment, resolveActiveTasksFile, resolveLatestFindingsJson, SDDFramework } from '../../core/detector.js';
 import { provisionSddChange } from '../../core/sdd-bridge.js';
 import { FindingItem, FindingsReport } from '../../core/types.js';
 
@@ -46,10 +46,13 @@ export async function executeSddStatusCommand(options: SddStatusOptions): Promis
 }
 
 export async function executeSddProposeCommand(options: SddProposeCliOptions): Promise<void> {
-  const inputPath = options.input;
+  let inputPath = options.input;
   if (!inputPath) {
-    console.error('[sdd propose error]: Missing required --input argument (path to findings JSON file)');
-    process.exit(1);
+    inputPath = resolveLatestFindingsJson(process.cwd());
+    if (!inputPath) {
+      console.error('[sdd propose error]: Missing required --input argument and no findings.json was found in workspace.');
+      process.exit(1);
+    }
   }
 
   let rawJson: string;

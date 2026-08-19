@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { generateTasksMarkdown, appendTasksToFile } from '../../core/generator.js';
-import { resolveActiveTasksFile } from '../../core/detector.js';
+import { resolveActiveTasksFile, resolveLatestFindingsJson } from '../../core/detector.js';
 import { FindingItem } from '../../core/types.js';
 
 export interface TasksCommandOptions {
@@ -11,10 +11,13 @@ export interface TasksCommandOptions {
 }
 
 export async function executeTasksCommand(options: TasksCommandOptions): Promise<void> {
-  const inputPath = options.input;
+  let inputPath = options.input;
   if (!inputPath) {
-    console.error('[tasks error]: Missing required --input argument (path to findings JSON file)');
-    process.exit(1);
+    inputPath = resolveLatestFindingsJson(process.cwd());
+    if (!inputPath) {
+      console.error('[tasks error]: Missing required --input argument and no findings.json was found in workspace.');
+      process.exit(1);
+    }
   }
 
   let rawJson: string;

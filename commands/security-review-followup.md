@@ -20,7 +20,7 @@ Use this command when you want to:
 - carry unresolved findings forward into the next implementation cycle
 - prepare items that can later be written into `tasks.md` or `plan.md` with `/sr-apply` (or `/security-review-apply`)
 
-If the user provides a review report or finding list in `$ARGUMENTS`, treat it as the source of truth for the follow-up plan. If no findings are provided, look for a pasted report, a named report file, or the current backlog context. If none is available, ask the user for the report or findings before proceeding.
+If the user provides a review report or finding list in `$ARGUMENTS`, treat it as the source of truth for the follow-up plan. If no findings or arguments are provided, **automatically discover and load the most recent security report** by scanning `docs/security-reviews/` (sorting by date prefix and modification time). If none is available, check `docs/memory/INDEX.md` or ask the user before proceeding.
 
 When project memory exists, use it as design context. Compare the follow-up choices against the project flash-mem, architecture decisions, and any repository-native memory artifacts the team uses to preserve intent.
 

@@ -14,9 +14,9 @@ Synthesize one or more security review reports, follow-up plans, or finding list
 
 ## Scope
 
-Read and analyze the following artifacts when present:
+Read and analyze the following artifacts:
 
-- **Source Findings**: The latest security review report(s) or findings provided in `$ARGUMENTS`.
+- **Source Findings**: If a specific report file or findings list is provided in `$ARGUMENTS`, treat it as the authoritative source. Otherwise, **automatically discover and load the most recent security report** by scanning `docs/security-reviews/` (sorting by date prefix and modification time). If no reports exist in `docs/security-reviews/`, check `docs/memory/INDEX.md` or inform the user and suggest running `/sr-audit` first.
 - **Durable Context**: `constitution.md`, `security_constitution.md`, and `docs/memory/`.
 - **Implementation Context**: `plan.md` (or `design.md`), `tasks.md`, and relevant specification files.
 

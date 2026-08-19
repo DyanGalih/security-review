@@ -26,9 +26,10 @@ Use this command when you want to:
 
 Resolve the target finding(s) from `$ARGUMENTS`:
 
-1. **Specific Report File**: If a path to a security report or markdown file is provided (e.g. `docs/security-report.md`), load and verify each finding in that report.
+1. **Specific Report File**: If a path to a security report or markdown file is provided (e.g. `docs/security-reviews/2026-08-19-audit.md`), load and verify each finding in that report.
 2. **Specific Finding ID / Name**: If a finding ID (e.g. `TASK-SEC-001`) or vulnerability name is provided, locate its definition in recent review reports or search the codebase for the reported pattern.
 3. **Natural Language Scope**: If inline vulnerability descriptions are given (e.g. `"verify SQL injection in user search endpoint"`), identify the affected source files directly.
+4. **Default Auto-Resolution**: If `$ARGUMENTS` is empty or unspecified, **automatically discover and load the most recent security report** in `docs/security-reviews/` (sorted by date prefix and modification time). If none exists, notify the user and offer to run `/sr-audit`.
 
 ## Flash-Mem Security Context Retrieval
 
