@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/new_logo.png" alt="Security Review logo" width="360">
+  <img src="landing/new_logo.png" alt="Security Review logo" width="360">
 </p>
 
 # 🔒 Security Review

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Review — Continuous Whitebox Security & AI Agent Acceleration</title>
+  <meta name="description" content="Whitebox security review, OWASP 2025 auditing, and token-optimized developer CLI & AI Agent toolkit.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" type="image/png" href="new_logo.png">
+</head>
+<body>
+
+  <div class="glow-orb glow-1"></div>
+  <div class="glow-orb glow-2"></div>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-container">
+      <a href="#" class="nav-brand">
+        <img src="new_logo.png" alt="Security Review Logo">
+        <span>Security Review</span>
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#terminal">CLI Demo</a>
+        <a href="#commands">Agent Skills</a>
+        <a href="#quickstart">Quickstart</a>
+        <a href="../docs/speckit-extension.md">Spec-Kit Docs</a>
+        <a href="https://github.com/DyanGalih/spec-kit-security-review" class="nav-btn" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <!-- Hero Section -->
+    <header class="hero">
+      <div class="hero-badge">
+        <span>🛡️ OWASP 2025 Standard</span>
+        <span>•</span>
+        <span>⚡ Token-Optimized CLI</span>
+      </div>
+
+      <img src="new_logo.png" alt="Security Review Logo" class="hero-logo">
+
+      <h1>
+        Continuous Whitebox Security <br>
+        <span class="gradient">& AI Agent Acceleration</span>
+      </h1>
+
+      <p>
+        The developer toolkit that combines sub-second local Git sensitivity diffs with high-reasoning AI Agent skills. Catch vulnerabilities early across every milestone of software delivery.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#quickstart" class="btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          Get Started (npx)
+        </a>
+        <a href="../docs/agent-skills.md" class="btn-secondary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.5h-2v-2h2zm0-4h-2V7h2z"></path></svg>
+          Explore Agent Skills
+        </a>
+      </div>
+
+      <!-- Terminal Mockup -->
+      <div id="terminal" class="terminal-window">
+        <div class="terminal-header">
+          <div class="terminal-dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+          <span class="terminal-title">bash — security-review diff --staged</span>
+        </div>
+        <div class="terminal-body">
+          <div class="cmd-line"><span class="prompt">$ </span>npx security-review diff --staged</div>
+          <div class="output-header">### 🔒 Changed Files Security Classification</div>
+          <div>- <strong>Mode</strong>: Staged Changes (<code>git add</code>)</div>
+          <div>- <strong>Total Files</strong>: 4 | 🔴 Critical: 1 | 🟠 High: 1 | 🟡 Medium: 1 | 🟢 Low: 1</div>
+          <br>
+          <div>| Severity | File Path | Focus Area |</div>
+          <div>|---|---|---|</div>
+          <div>| <span class="badge-crit">🔴 CRITICAL</span> | <code>.env.production</code> | secret-or-payment |</div>
+          <div>| <span class="badge-high">🟠 HIGH</span> | <code>src/auth/jwt.strategy.ts</code> | auth-or-persistence |</div>
+          <div>| <span class="badge-med">🟡 MEDIUM</span> | <code>src/api/checkout.controller.ts</code> | api-or-business-logic |</div>
+          <div>| <span class="badge-low">🟢 LOW</span> | <code>README.md</code> | documentation |</div>
+          <br>
+          <div style="color: #64748b;">✨ Context formatted with 8,000 token budget for AI Agent reasoning.</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Core Features Grid -->
+    <section id="features" class="section">
+      <div class="section-title">
+        <h2>Engineered for High-Velocity Teams</h2>
+        <p>A dual-engine architecture designed for developers, security engineers, and AI agents.</p>
+      </div>
+
+      <div class="grid-cards">
+        <div class="card">
+          <div class="card-icon">⚡</div>
+          <h3>Local CLI Accelerator</h3>
+          <p>Instantly extracts staged and branch diffs, categorizing files into sensitivity tiers without wasting LLM tokens on irrelevant changes.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🤖</div>
+          <h3>AI Agent Reasoning Brain</h3>
+          <p>Pre-engineered prompt contracts for Antigravity, Claude Code, Cursor, and OpenCode that perform threat modeling and code auditing.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🛡️</div>
+          <h3>OWASP 2025 Standard</h3>
+          <p>Automatically flags vulnerabilities against OWASP Top 10 categories, assigning standard CWE identifiers and actionable remediation.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🔌</div>
+          <h3>Spec-Kit Compatible</h3>
+          <p>100% backward compatible with Spec-Kit workflows. Seamlessly hooks into <code>after_plan</code>, <code>after_tasks</code>, and <code>after_implement</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Slash Commands Table -->
+    <section id="commands" class="section">
+      <div class="section-title">
+        <h2>AI Agent Slash Commands</h2>
+        <p>Execute structured security reviews at each phase of your development cycle.</p>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>Phase</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>/security-review</code></td>
+              <td>Milestone / Release</td>
+              <td>Full-system whitebox security review and OWASP assessment.</td>
+            </tr>
+            <tr>
+              <td><code>/security-review.staged</code></td>
+              <td>Pre-commit</td>
+              <td>Focused review of changes currently staged in Git (<code>git diff --cached</code>).</td>
+            </tr>
+            <tr>
+              <td><code>/security-review.branch</code></td>
+              <td>Feature / PR</td>
+              <td>Reviews security risks introduced by feature branch diffs against base.</td>
+            </tr>
+            <tr>
+              <td><code>/security-review.plan</code></td>
+              <td>Design Phase</td>
+              <td>Audits implementation plans for missing trust boundaries and attack vectors.</td>
+            </tr>
+            <tr>
+              <td><code>/security-review.tasks</code></td>
+              <td>Strategy Phase</td>
+              <td>Ensures security requirements are sequenced properly in implementation tasks.</td>
+            </tr>
+            <tr>
+              <td><code>/security-review.followup</code></td>
+              <td>Triage</td>
+              <td>Transforms security findings into structured remediation tasks.</td>
+            </tr>
+            <tr>
+              <td><code>/security-review.apply</code></td>
+              <td>Remediation</td>
+              <td>Applies approved security refactors directly to <code>tasks.md</code> and <code>plan.md</code>.</td>
+            </tr>
+            <tr>
+              <td><code>/security-review.export</code></td>
+              <td>Compliance</td>
+              <td>Generates formal Executive and Technical Pentest Reports.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Quickstart Section -->
+    <section id="quickstart" class="section">
+      <div class="quickstart-box">
+        <h2>Ready to Secure Your Codebase?</h2>
+        <p>Run instantly with zero installation or add as a global developer CLI.</p>
+        <div class="code-snippet">
+          <span>npx security-review diff --staged</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>MIT License © Spec-Kit Security Team</p>
+      <div style="margin-top: 0.75rem;">
+        <a href="../README.md">README</a>
+        <a href="../docs/installation.md">Installation</a>
+        <a href="../docs/cli-reference.md">CLI Reference</a>
+        <a href="../docs/agent-skills.md">Agent Skills</a>
+        <a href="../docs/speckit-extension.md">Spec-Kit Extension</a>
+        <a href="https://github.com/DyanGalih/spec-kit-security-review" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
