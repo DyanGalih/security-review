@@ -69,7 +69,7 @@ export async function runGitCommand(args: string[], cwd: string = process.cwd())
     return stdout;
   } catch (err: unknown) {
     const error = err as { message?: string; stderr?: string };
-    throw new Error(`Git execution failed (git ${args.join(' ')}): ${error.stderr || error.message || String(err)}`);
+    throw new Error(`Git execution failed (git ${args.join(' ')}): ${error.stderr?.trim() || error.message || String(err)}`);
   }
 }
 
@@ -86,13 +86,41 @@ export async function getCurrentBranch(cwd: string = process.cwd()): Promise<str
 }
 
 /**
+ * Resolves repository default branch (e.g. main, master, or remote default).
+ */
+export async function resolveDefaultBaseBranch(cwd: string = process.cwd()): Promise<string> {
+  try {
+    const ref = await runGitCommand(['symbolic-ref', 'refs/remotes/origin/HEAD'], cwd);
+    const parts = ref.trim().split('/');
+    if (parts.length > 0 && parts[parts.length - 1]) {
+      return parts[parts.length - 1];
+    }
+  } catch {
+    // Fall back to probing main or master
+  }
+
+  for (const candidate of ['main', 'master']) {
+    try {
+      await runGitCommand(['rev-parse', '--verify', candidate], cwd);
+      return candidate;
+    } catch {
+      // continue
+    }
+  }
+
+  return 'main';
+}
+
+/**
  * Extracts staged changes or branch diffs and classifies them.
  */
 export async function getGitDiffSummary(
-  options: { staged?: boolean; baseBranch?: string; cwd?: string } = {}
+  options: { staged?: boolean; targetBranch?: string; baseBranch?: string; cwd?: string } = {}
 ): Promise<DiffSummary> {
   const cwd = options.cwd || process.cwd();
   const isStaged = !!options.staged;
+  const targetBranch = options.targetBranch;
+  let baseBranch = options.baseBranch;
 
   let nameStatusArgs: string[];
   let numstatArgs: string[];
@@ -100,32 +128,47 @@ export async function getGitDiffSummary(
   if (isStaged) {
     nameStatusArgs = ['diff', '--cached', '--name-status'];
     numstatArgs = ['diff', '--cached', '--numstat'];
-  } else {
-    const targetBase = options.baseBranch || 'main';
-    nameStatusArgs = ['diff', `${targetBase}...HEAD`, '--name-status'];
-    numstatArgs = ['diff', `${targetBase}...HEAD`, '--numstat'];
-  }
-
-  let nameStatusOutput = '';
-  try {
-    nameStatusOutput = await runGitCommand(nameStatusArgs, cwd);
-  } catch {
-    // If targetBase...HEAD fails (e.g. repo has no remote or master instead of main), try HEAD~1
-    if (!isStaged && !options.baseBranch) {
-      try {
-        nameStatusOutput = await runGitCommand(['diff', 'HEAD~1', '--name-status'], cwd);
-      } catch {
-        nameStatusOutput = '';
-      }
+  } else if (targetBranch) {
+    // Validate target branch exists
+    try {
+      await runGitCommand(['rev-parse', '--verify', targetBranch], cwd);
+    } catch {
+      throw new Error(`Target branch or ref "${targetBranch}" could not be resolved in repository.`);
     }
+
+    if (!baseBranch) {
+      baseBranch = await resolveDefaultBaseBranch(cwd);
+    }
+
+    // Validate base branch exists
+    try {
+      await runGitCommand(['rev-parse', '--verify', baseBranch], cwd);
+    } catch {
+      throw new Error(`Base branch or ref "${baseBranch}" could not be resolved in repository.`);
+    }
+
+    // Validate merge-base between base and target
+    try {
+      const mb = await runGitCommand(['merge-base', baseBranch, targetBranch], cwd);
+      if (!mb.trim()) {
+        throw new Error(`No common merge-base found between "${baseBranch}" and "${targetBranch}".`);
+      }
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      throw new Error(`Failed to find merge-base between "${baseBranch}" and "${targetBranch}": ${error.message || String(err)}`);
+    }
+
+    const diffRef = `${baseBranch}...${targetBranch}`;
+    nameStatusArgs = ['diff', diffRef, '--name-status'];
+    numstatArgs = ['diff', diffRef, '--numstat'];
+  } else {
+    // If neither staged nor branch target specified, default to staged
+    nameStatusArgs = ['diff', '--cached', '--name-status'];
+    numstatArgs = ['diff', '--cached', '--numstat'];
   }
 
-  let numstatOutput = '';
-  try {
-    numstatOutput = await runGitCommand(numstatArgs, cwd);
-  } catch {
-    numstatOutput = '';
-  }
+  const nameStatusOutput = await runGitCommand(nameStatusArgs, cwd);
+  const numstatOutput = await runGitCommand(numstatArgs, cwd).catch(() => '');
 
   const numstatMap = new Map<string, { added: number; deleted: number }>();
   for (const line of numstatOutput.split('\n')) {
@@ -181,7 +224,8 @@ export async function getGitDiffSummary(
   const estimatedTokens = files.reduce((acc, f) => acc + (f.linesAdded + f.linesDeleted) * 4, 0);
 
   return {
-    baseBranch: options.baseBranch,
+    baseBranch,
+    targetBranch,
     isStaged,
     totalFiles: files.length,
     criticalCount,

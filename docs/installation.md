@@ -2,9 +2,14 @@
 
 `security-review` is distributed as both an **installable developer CLI & agent toolkit** and a **Spec-Kit extension**.
 
+## 1. Prerequisites
+
+- **Node.js**: `>= 22.0.0`
+- **Git**: Installed and available in `$PATH`
+
 ---
 
-## 1. Developer CLI & Agent Toolkit (Standalone)
+## 2. Developer CLI & Agent Toolkit (Standalone)
 
 ### Global Installation
 

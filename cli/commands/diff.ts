@@ -3,7 +3,8 @@ import { formatDiffForAgent } from '../../core/formatter.js';
 
 export interface DiffCliOptions {
   staged?: boolean;
-  branch?: string;
+  targetBranch?: string;
+  baseBranch?: string;
   json?: boolean;
   budget?: number;
 }
@@ -12,7 +13,8 @@ export async function executeDiffCommand(options: DiffCliOptions = {}): Promise<
   try {
     const diff = await getGitDiffSummary({
       staged: options.staged,
-      baseBranch: options.branch,
+      targetBranch: options.targetBranch,
+      baseBranch: options.baseBranch,
     });
 
     const payload = formatDiffForAgent(diff, {

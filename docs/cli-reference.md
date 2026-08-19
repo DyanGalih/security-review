@@ -6,7 +6,7 @@
 
 ## 1. Overview
 
-The `security-review` CLI (aliases: `sec-review`, `sr`) provides high-speed, local operations to support whitebox security reviews and AI agent workflows.
+The `security-review` CLI (aliases: `sec-review`, `sr`) provides fast, local git diff extraction, security entrypoint discovery, frontmatter schema validation, and memory index synchronization.
 
 ```bash
 security-review <command> [options]
@@ -14,29 +14,44 @@ security-review <command> [options]
 
 ---
 
-## 2. Commands
+## 2. Prerequisites
+- **Node.js**: `>= 22.0.0`
+- **Git**: Installed and available on `$PATH`
+
+---
+
+## 3. Commands
 
 ### `diff`
-Extracts git changes, categorizes security sensitivity (CRITICAL, HIGH, MEDIUM, LOW), and formats context messages for AI agents.
+Extracts git changes, categorizes security sensitivity (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`), and formats context payloads for AI agents.
 
 ```bash
-# Staged changes only
+# Staged changes only (default)
 security-review diff --staged
 
-# Branch diff vs base
+# Branch diff: compare target branch against default repository base (main)
 security-review diff --branch feature/auth
 
-# Custom base branch and token budget
-security-review diff --branch feature/auth main --budget 5000
+# Branch diff: compare target branch against explicit base branch
+security-review diff --branch feature/auth develop
 
-# JSON output
-security-review diff --staged --json
+# Structured token budget: bounds output to 4,000 tokens, prioritizing Critical/High files
+security-review diff --staged --budget 4000
+
+# JSON output payload for programmatic agent integration
+security-review diff --branch feature/auth --json
 ```
+
+**Options:**
+- `--staged`: Analyzes currently staged changes (`git diff --cached`).
+- `--branch <target> [base]`: Compares `<target>` against `[base]` (or default base branch). Exits with an error if ref or merge-base resolution fails.
+- `--budget <tokens>`: Positive integer bounding the output size by omitting lowest-priority files first.
+- `--json`: Formats output as structured JSON.
 
 ---
 
 ### `scan`
-Scans the project directory for security-sensitive entrypoints (authentication, persistence, payments, configurations).
+Discovers candidate security-sensitive entrypoints (authentication handlers, persistence migrations, payment routes, and configurations) based on path-name heuristics.
 
 ```bash
 # Scan current working directory
@@ -49,10 +64,12 @@ security-review scan --path ./src/api
 security-review scan --json
 ```
 
+> ℹ️ **Path-name Heuristic**: `scan` identifies candidate surfaces using file naming patterns. It is not a static analysis (SAST) or vulnerability scanner; findings require agent or human review.
+
 ---
 
 ### `validate`
-Validates report YAML frontmatter headers against the schema dictionary.
+Validates report YAML frontmatter headers against the schema dictionary in `field-registry.md`.
 
 ```bash
 # Validate a single report
@@ -62,19 +79,41 @@ security-review validate docs/security-reviews/2026-08-19-auth.md
 security-review validate report.md --json
 ```
 
+Enforces:
+- `document_type: security-review`
+- Canonical risk levels (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFORMATIONAL`, `NONE`)
+- Non-negative integer count totals
+- ISO date formats (`YYYY-MM-DD`)
+- Standard identifier patterns (OWASP `A01-A10`, CWE `CWE-\d+`, ASVS `V\d+`, MITRE `T\d+`)
+- Export provenance fields for `review_type: export` (`assessment_kind`, `source_artifacts`, `commit_or_branch`)
+
 ---
 
 ### `sync-headers`
-Scans and indexes report frontmatters for token-efficient memory retrieval tables.
+Scans valid security report frontmatters and synchronizes a managed table in `docs/memory/INDEX.md`.
 
 ```bash
-# Scan docs directory
-security-review sync-headers --docs docs/security-reviews/
+# Preview table rows without modifying files
+security-review sync-headers --docs docs/security-reviews/ --dry-run
+
+# Update managed INDEX section (preserves unrelated content)
+security-review sync-headers --docs docs/security-reviews/ --index docs/memory/INDEX.md
+```
+
+Managed Section Format in `INDEX.md`:
+```markdown
+<!-- MANAGED: SECURITY_REVIEWS -->
+| Date | Scope | Risk | Findings | File |
+|---|---|---|---|---|
+| 2026-08-19 | branch | **HIGH** | 4 | [2026-08-19-auth.md](2026-08-19-auth.md) |
+<!-- /MANAGED: SECURITY_REVIEWS -->
 ```
 
 ---
 
 ## Related Documentation
 - [Main README](../README.md)
+- [Installation Guide](installation.md)
 - [Agent Skills](agent-skills.md)
+- [Spec-Kit Extension Guide](speckit-extension.md)
 - [Field Registry](field-registry.md)

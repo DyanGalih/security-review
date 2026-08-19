@@ -10,12 +10,18 @@
     "sec-review": "./bin/security-review.js",
     "sr": "./bin/security-review.js"
   },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "files": [
     "bin",
     "dist",
     "commands",
     "extension.yml",
-    "docs"
+    "config-template.yml",
+    "examples",
+    "docs",
+    "landing"
   ],
   "scripts": {
     "build": "tsc",
