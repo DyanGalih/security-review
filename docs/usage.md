@@ -134,3 +134,21 @@ security-review report --input findings.json --output docs/security-report.md
 security-review tasks --input findings.json --target tasks.md --append
 ```
 
+---
+
+## 8. SDD Bridge (OpenSpec & Spec-Kit Integration)
+
+Turn findings directly into SDD change proposals or inject tasks into active changes:
+
+```bash
+# Check detected SDD framework and active changes
+security-review sdd status
+
+# Generate full OpenSpec / Spec-Kit proposal from findings.json
+security-review sdd propose --input findings.json --name fix-auth-vulnerabilities
+
+# Append findings directly to active OpenSpec/Spec-Kit tasks.md (auto-detected target)
+security-review tasks --input findings.json --append
+```
+
+

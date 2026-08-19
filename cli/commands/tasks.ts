@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { generateTasksMarkdown, appendTasksToFile } from '../../core/generator.js';
+import { resolveActiveTasksFile } from '../../core/detector.js';
 import { FindingItem } from '../../core/types.js';
 
 export interface TasksCommandOptions {
@@ -44,19 +45,19 @@ export async function executeTasksCommand(options: TasksCommandOptions): Promise
 
   const tasksMarkdown = generateTasksMarkdown(findings);
 
-  if (options.target) {
-    const targetFile = options.target;
+  if (options.target || options.append) {
+    const targetFile = options.target ? path.resolve(options.target) : resolveActiveTasksFile(process.cwd());
     if (options.append) {
       const res = appendTasksToFile(targetFile, tasksMarkdown);
       if (res.created) {
-        console.log(`✓ Created ${targetFile} with ${findings.length} security tasks`);
+        console.log(`✓ Created ${path.relative(process.cwd(), targetFile)} with ${findings.length} security tasks`);
       } else {
-        console.log(`✓ Appended ${findings.length} security tasks to ${targetFile}`);
+        console.log(`✓ Appended ${findings.length} security tasks to ${path.relative(process.cwd(), targetFile)}`);
       }
     } else {
       fs.mkdirSync(path.dirname(targetFile), { recursive: true });
       fs.writeFileSync(targetFile, tasksMarkdown, 'utf8');
-      console.log(`✓ Generated ${findings.length} security tasks in ${targetFile}`);
+      console.log(`✓ Generated ${findings.length} security tasks in ${path.relative(process.cwd(), targetFile)}`);
     }
   } else {
     console.log(tasksMarkdown);

@@ -37,8 +37,11 @@ npx security-review scan
 # Compile JSON findings into full Markdown security report
 npx security-review report --input findings.json --output report.md
 
-# Generate or append remediation tasks to tasks.md
-npx security-review tasks --input findings.json --target tasks.md --append
+# Generate or append remediation tasks to tasks.md (auto-detects SDD framework)
+npx security-review tasks --input findings.json --append
+
+# Propose a complete SDD change (OpenSpec / Spec-Kit) from findings
+npx security-review sdd propose --input findings.json --name fix-auth-sqli
 
 # Validate security report YAML frontmatter
 npx security-review validate docs/security-reviews/report.md

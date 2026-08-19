@@ -257,3 +257,17 @@ Example:
 ```
 
 See `docs/field-registry.md` in the security-review toolkit for the full INDEX.md table format and SQLite Phase 1 column mapping.
+
+## SDD Handoff & CLI Automation
+
+To turn these follow-up findings into a dedicated SDD change or auto-inject them into active tasks:
+
+1. **New OpenSpec / Spec-Kit Change**:
+   ```bash
+   security-review sdd propose --input findings.json --name fix-remediation-items
+   ```
+2. **Direct Task Injection into Active Tasks File**:
+   ```bash
+   security-review tasks --input findings.json --append
+   ```
+

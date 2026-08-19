@@ -131,8 +131,35 @@ security-review tasks --input findings.json --target tasks.md --append
 
 **Options:**
 - `--input <file>`: Path to the JSON findings file (required).
-- `--target <file>`: Path to `tasks.md` file.
+- `--target <file>`: Path to `tasks.md` file (if omitted, auto-detects active OpenSpec or Spec-Kit tasks target).
 - `--append`: Appends tasks to existing file without overwriting.
+
+---
+
+### `sdd`
+Provides SDD framework auto-detection and automated change proposal generation from security findings.
+
+#### `sdd status`
+Inspects workspace and identifies active SDD framework (`OpenSpec`, `Spec-Kit`, or `Generic`) along with resolved active change paths.
+
+```bash
+# Display framework status
+security-review sdd status
+
+# Output as JSON
+security-review sdd status --json
+```
+
+#### `sdd propose`
+Generates a complete SDD change directory (`proposal.md`, `spec.md`, `design.md`, `tasks.md`) directly from a findings JSON file.
+
+```bash
+# Auto-detect framework and generate remediation change package
+security-review sdd propose --input findings.json
+
+# Explicitly create OpenSpec change with custom name
+security-review sdd propose --input findings.json --framework openspec --name fix-auth-sqli
+```
 
 ---
 

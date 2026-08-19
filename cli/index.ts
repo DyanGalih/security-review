@@ -4,6 +4,7 @@ import { executeValidateCommand } from './commands/validate.js';
 import { executeSyncHeadersCommand } from './commands/sync-headers.js';
 import { executeReportCommand } from './commands/report.js';
 import { executeTasksCommand } from './commands/tasks.js';
+import { executeSddStatusCommand, executeSddProposeCommand } from './commands/sdd.js';
 import { runInitCommand } from './commands/init.js';
 
 export function printHelp(): void {
@@ -30,6 +31,12 @@ Commands:
 
   tasks --input <file> [--target <tasks.md>] [--append]
     Generates TASK-SEC-NNN remediation checklist items or appends them directly to tasks.md.
+
+  sdd status [--path <dir>] [--json]
+    Inspects and displays active SDD framework (OpenSpec, Spec-Kit, Generic) and resolved paths.
+
+  sdd propose --input <file> [--framework <openspec|speckit|auto>] [--name <change-name>] [--target <dir>]
+    Generates a complete SDD change proposal (proposal.md, spec.md, design.md, tasks.md) from findings.
 
   validate <file> [--json]
     Validates report YAML frontmatter against field-registry specifications.
@@ -131,6 +138,31 @@ export async function runCli(args: string[]): Promise<void> {
       const target = targetIdx !== -1 ? rest[targetIdx + 1] : undefined;
       const append = rest.includes('--append');
       await executeTasksCommand({ input, target, append });
+      break;
+    }
+
+    case 'sdd': {
+      const subAction = rest[0];
+      const subRest = rest.slice(1);
+      if (subAction === 'status') {
+        const pathIdx = subRest.indexOf('--path');
+        const path = pathIdx !== -1 ? subRest[pathIdx + 1] : undefined;
+        const json = subRest.includes('--json');
+        await executeSddStatusCommand({ path, json });
+      } else if (subAction === 'propose') {
+        const inputIdx = subRest.indexOf('--input');
+        const input = inputIdx !== -1 ? subRest[inputIdx + 1] : undefined;
+        const frameworkIdx = subRest.indexOf('--framework');
+        const framework = frameworkIdx !== -1 ? subRest[frameworkIdx + 1] : undefined;
+        const nameIdx = subRest.indexOf('--name');
+        const name = nameIdx !== -1 ? subRest[nameIdx + 1] : undefined;
+        const targetIdx = subRest.indexOf('--target');
+        const target = targetIdx !== -1 ? subRest[targetIdx + 1] : undefined;
+        await executeSddProposeCommand({ input, framework, name, target });
+      } else {
+        console.error('Unknown sdd action. Available actions: "status", "propose". Run "security-review --help" for details.');
+        process.exit(1);
+      }
       break;
     }
 

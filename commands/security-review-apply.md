@@ -170,4 +170,12 @@ When adding security tasks, keep them compatible with standard security task con
 
 If a finding is deferred instead of applied, record it as technical debt in the follow-up output but do not silently discard it.
 
+## CLI Auto-Apply Automation
+
+You can also apply structured findings directly to active SDD tasks via CLI:
+```bash
+# Auto-detects active OpenSpec or Spec-Kit tasks.md and appends tasks safely:
+security-review tasks --input findings.json --append
+```
+
 Begin by reviewing the current backlog and the approved security follow-up items.
