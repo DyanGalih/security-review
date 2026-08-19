@@ -13,6 +13,7 @@
   - Added Finding Re-Verification & Safe Proof-of-Concept (PoC) generation skill (`/sr-verify` / `commands/security-verify.md`), classifying findings (`CONFIRMED`, `FALSE_POSITIVE`, `MITIGATED`, `ACCEPTED_RISK`) and generating non-destructive unit test PoCs and curl reproductions.
   - Added modern promotional landing page under `src/landing/` (`index.html`, `styles.css`, `new_logo.png`).
 - **CLI & Runtime Enhancements**:
+  - **SDD Bridge & Framework Auto-Detection**: Added automatic workspace detection for OpenSpec, Spec-Kit, and Generic environments, `security-review sdd status` inspection, and `security-review sdd propose --input findings.json` to generate complete change packages (`proposal.md`, `spec.md`, `design.md`, `tasks.md`) directly from security review findings.
   - **Hybrid Findings Mode & Deterministic Generators**: Added `FindingItem` / `FindingsReport` JSON schema, plus `security-review report --input findings.json` (deterministic Markdown pentest report compiler) and `security-review tasks --input findings.json` (direct `TASK-SEC-NNN` creation/append into `tasks.md`).
   - `diff --branch <target> [base]`: Deterministic target/base syntax with strict merge-base validation.
   - Token-budgeted payloads with sensitivity prioritization (`CRITICAL` -> `HIGH` -> `MEDIUM` -> `LOW`).
