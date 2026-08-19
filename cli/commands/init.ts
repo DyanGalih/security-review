@@ -81,8 +81,41 @@ export interface InitOptions {
   overwrite?: 'replace' | 'skip' | 'keep-both';
 }
 
-function slug(name: string): string {
-  return name.replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+async function ask(promptText: string, choices?: any[], multi = false): Promise<any> {
+  // If non-interactive environment (redirected/piped or tests without TTY)
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    if (multi) {
+      return choices ? choices.filter(c => c.checked).map(c => typeof c === 'string' ? c : c.value) : [];
+    }
+    return choices && choices.length > 0 ? (typeof choices[0] === 'string' ? choices[0] : choices[0].value) : '';
+  }
+
+  const { select, checkbox, input } = await import('@inquirer/prompts');
+  const message = promptText.trim().replace(/:$/, '');
+
+  try {
+    if (choices) {
+      const formattedChoices = choices.map((c) => (typeof c === 'string' ? { name: c, value: c } : c));
+      if (multi) {
+        return await checkbox({
+          message,
+          choices: formattedChoices,
+        });
+      } else {
+        return await select({
+          message,
+          choices: formattedChoices,
+        });
+      }
+    }
+    return await input({ message });
+  } catch (error: any) {
+    if (error?.name === 'ExitPromptError' || error?.message?.includes('User force closed the prompt')) {
+      console.log('\nInitialization aborted.');
+      process.exit(0);
+    }
+    throw error;
+  }
 }
 
 function getCommandPrefix(cmdKey: string): string {
@@ -246,6 +279,19 @@ export async function runInitCommand(
 
   console.log(`\n🛡️  Initializing Security Review in ${targetDir}\n`);
 
+  // Detect which agents already exist in the target directory
+  const allAgentNames = Object.keys(AGENT_CONFIGS).sort();
+  const detectedAgents: string[] = [];
+  const undetectedAgents: string[] = [];
+
+  for (const name of allAgentNames) {
+    if (fs.existsSync(path.join(targetDir, AGENT_CONFIGS[name].dir))) {
+      detectedAgents.push(name);
+    } else {
+      undetectedAgents.push(name);
+    }
+  }
+
   // Resolve selected agents
   let selectedAgents: string[] = [];
   if (options.agent) {
@@ -258,9 +304,23 @@ export async function runInitCommand(
         .filter((k) => !!AGENT_CONFIGS[k]);
     }
   } else if (options.yes) {
-    selectedAgents = ['antigravity', 'claude', 'opencode'];
+    selectedAgents = detectedAgents.length > 0 ? detectedAgents : ['antigravity', 'claude', 'opencode'];
   } else {
-    selectedAgents = ['antigravity', 'claude'];
+    // Interactive prompt with detected agents auto-checked
+    const agentChoices = [
+      ...detectedAgents.map((a) => ({ name: `${a} (detected in workspace)`, value: a, checked: true })),
+      ...undetectedAgents.map((a) => ({
+        name: a,
+        value: a,
+        checked: detectedAgents.length === 0 && (a === 'antigravity' || a === 'claude'),
+      })),
+    ];
+
+    selectedAgents = await ask('Select AI agent(s) to install commands for:', agentChoices, true);
+    if (!selectedAgents || selectedAgents.length === 0) {
+      console.log('No agents selected. Exiting.');
+      return { success: false, installedFiles: [] };
+    }
   }
 
   if (selectedAgents.length === 0) {
@@ -268,25 +328,37 @@ export async function runInitCommand(
   }
 
   // Resolve selected commands
+  const allCmdKeys = Object.keys(COMMAND_CATALOG);
   let selectedCommands: string[] = [];
   if (options.commands) {
     if (options.commands.toLowerCase() === 'all') {
-      selectedCommands = Object.keys(COMMAND_CATALOG);
+      selectedCommands = allCmdKeys;
     } else {
       const requested = options.commands.split(',').map((s) => s.trim());
-      selectedCommands = Object.keys(COMMAND_CATALOG).filter((k) =>
+      selectedCommands = allCmdKeys.filter((k) =>
         requested.some((r) => r === k || r === k.replace('security-review-', '') || r === k.replace('security-review', 'review'))
       );
     }
+  } else if (options.yes) {
+    selectedCommands = allCmdKeys;
   } else {
-    selectedCommands = Object.keys(COMMAND_CATALOG);
+    const commandChoices = [
+      { name: 'All Commands (Full Audit, Staged, Branch, Plan, Tasks, Apply, Followup, Export, Init)', value: 'all', checked: true },
+      ...allCmdKeys.map((c) => ({ name: `${c} (/${getCommandPrefix(c)})`, value: c, checked: false })),
+    ];
+    const picked: string[] = await ask('Select Security Review commands to install:', commandChoices, true);
+    if (!picked || picked.length === 0 || picked.includes('all')) {
+      selectedCommands = allCmdKeys;
+    } else {
+      selectedCommands = picked;
+    }
   }
 
   if (selectedCommands.length === 0) {
-    selectedCommands = Object.keys(COMMAND_CATALOG);
+    selectedCommands = allCmdKeys;
   }
 
-  const overwriteMode = options.overwrite || (options.yes ? 'replace' : 'replace');
+  const overwriteMode = options.overwrite || 'replace';
   const installedFiles: string[] = [];
 
   for (const agentKey of selectedAgents) {
@@ -294,7 +366,7 @@ export async function runInitCommand(
     if (!agentCfg) continue;
 
     const baseAgentDir = path.join(targetDir, agentCfg.dir);
-    console.log(`📦 Installing for agent [${agentKey}] → ${agentCfg.dir}`);
+    console.log(`\n📦 Installing for agent [${agentKey}] → ${agentCfg.dir}`);
 
     for (const cmdKey of selectedCommands) {
       const promptFile = COMMAND_CATALOG[cmdKey];

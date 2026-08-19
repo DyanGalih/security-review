@@ -51,6 +51,7 @@
     "url": "https://github.com/DyanGalih/security-review/issues"
   },
   "dependencies": {
+    "@inquirer/prompts": "^8.5.2",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
