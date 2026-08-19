@@ -139,10 +139,10 @@ For each evaluated finding:
 
 ## 3. False Positive Suppression Config (If applicable)
 
-If any findings were classified as `FALSE_POSITIVE`, emit the configuration snippet to add to `security-review.yml`:
+If any findings were classified as `FALSE_POSITIVE`, emit the configuration snippet to add to `.security-review/security-review.yml`:
 
 ```yaml
-# Add to security-review.yml under false-positives:
+# Add to .security-review/security-review.yml under false-positives:
 false-positives:
   - rule: "<rule-or-cwe-id>"
     file: "path/to/file.ts"

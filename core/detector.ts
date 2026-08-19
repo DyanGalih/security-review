@@ -148,9 +148,31 @@ export function resolveLatestSecurityReport(workspaceDir: string = process.cwd()
 export function resolveLatestFindingsJson(workspaceDir: string = process.cwd()): string | undefined {
   const absDir = path.resolve(workspaceDir);
   const candidates = [
-    path.join(absDir, 'findings.json'),
     path.join(absDir, '.security-review', 'findings.json'),
+    path.join(absDir, 'findings.json'),
     path.join(absDir, 'docs', 'security-reviews', 'findings.json'),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+      return candidate;
+    }
+  }
+
+  return undefined;
+}
+
+export function resolveSecurityReviewConfig(workspaceDir: string = process.cwd()): string | undefined {
+  const absDir = path.resolve(workspaceDir);
+  const candidates = [
+    path.join(absDir, '.security-review', 'security-review.yml'),
+    path.join(absDir, '.security-review', 'security-review.yaml'),
+    path.join(absDir, '.security-review', 'config.yml'),
+    path.join(absDir, '.security-review', 'config.yaml'),
+    path.join(absDir, 'security-review.yml'),
+    path.join(absDir, 'security-review.yaml'),
+    path.join(absDir, '.security-review.yml'),
+    path.join(absDir, '.security-review.yaml'),
   ];
 
   for (const candidate of candidates) {

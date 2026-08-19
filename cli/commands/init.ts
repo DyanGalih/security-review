@@ -254,17 +254,24 @@ ${agentList}
 
 export function provisionConfigTemplate(pkgRoot: string, targetDir: string): void {
   const configSource = path.join(pkgRoot, 'config-template.yml');
-  const configDest = path.join(targetDir, 'security-review.yml');
+  const secReviewDir = path.join(targetDir, '.security-review');
+  const configDest = path.join(secReviewDir, 'security-review.yml');
+  const legacyDest = path.join(targetDir, 'security-review.yml');
 
   if (!fs.existsSync(configSource)) {
     return;
   }
 
-  if (!fs.existsSync(configDest)) {
-    fs.copyFileSync(configSource, configDest);
-    console.log(`  ✓ Created default config at security-review.yml`);
+  fs.mkdirSync(secReviewDir, { recursive: true });
+
+  if (fs.existsSync(configDest)) {
+    console.log(`  → .security-review/security-review.yml already exists, skipped`);
+  } else if (fs.existsSync(legacyDest)) {
+    fs.copyFileSync(legacyDest, configDest);
+    console.log(`  ✓ Migrated config from security-review.yml to .security-review/security-review.yml`);
   } else {
-    console.log(`  → security-review.yml already exists, skipped`);
+    fs.copyFileSync(configSource, configDest);
+    console.log(`  ✓ Created default config at .security-review/security-review.yml`);
   }
 }
 

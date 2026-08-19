@@ -36,7 +36,7 @@ describe('Security Review init command', () => {
     expect(fs.existsSync(opencodeCmd)).toBe(true);
 
     // Verify configuration template
-    const configDest = path.join(tmpDir, 'security-review.yml');
+    const configDest = path.join(tmpDir, '.security-review', 'security-review.yml');
     expect(fs.existsSync(configDest)).toBe(true);
 
     // Verify AGENTS.md
@@ -111,5 +111,15 @@ describe('Security Review init command', () => {
     const content = fs.readFileSync(verifySkill, 'utf8');
     expect(content).toContain('name: sr-verify');
     expect(content).toContain('Proof of Concept');
+  });
+
+  it('should migrate legacy root security-review.yml to .security-review/security-review.yml', async () => {
+    const legacyConfig = path.join(tmpDir, 'security-review.yml');
+    fs.writeFileSync(legacyConfig, 'custom_rule: true\n', 'utf8');
+
+    await runInitCommand(tmpDir, { yes: true });
+    const newConfig = path.join(tmpDir, '.security-review', 'security-review.yml');
+    expect(fs.existsSync(newConfig)).toBe(true);
+    expect(fs.readFileSync(newConfig, 'utf8')).toContain('custom_rule: true');
   });
 });
