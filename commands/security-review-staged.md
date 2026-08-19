@@ -8,9 +8,9 @@ description: "Security review of staged changes only (git diff --cached)"
 
 1. **Identify Aspects**: Parse "$ARGUMENTS" to identify specific security `aspects` (e.g., `auth`, `injection`, `secrets`) or `all`.
 2. **Identify Changed Files**:
-   - You **MUST** execute the `{SCRIPT}` with `--json` to detect changed files in the working directory (`Mode B`).
-   - Use only the returned `staged_files` list. Never substitute `changed_files`, `unstaged_files`, or the full working-directory set.
-   - If `staged_files` is empty, stop with "No staged changes detected. Nothing to review." Do not fall back to unstaged files.
+   - Execute `security-review diff --staged --json` (or an installed alias) and require `isStaged: true`.
+   - Use only the paths in the returned `files` array. Never substitute an unstaged or full working-directory set.
+   - If `totalFiles` is zero, stop with "No staged changes detected. Nothing to review." Do not fall back to unstaged files.
 
 ## Objective
 
@@ -78,7 +78,7 @@ Avoid retrieving redundant memories.
 
 ## Steps
 
-1. **Identify Scope**: Run `{SCRIPT}` and use only `staged_files`. Stop when the list is empty.
+1. **Identify Scope**: Run `security-review diff --staged --json`, require `isStaged: true`, and use only `files[].path`. Stop when `totalFiles` is zero.
 2. **Retrieve Diff**: Run `git diff --cached -- <staged files>` to retrieve the actual staged changes, including deletions. Never use plain `git diff`.
 3. **Analyze Diff**: Analyze only the staged diff for security issues across these domains (focusing on requested aspects):
    - Injection vulnerabilities (SQL, NoSQL, command, template)

@@ -148,9 +148,11 @@ export async function getGitDiffSummary(
     const trimmed = line.trim();
     if (!trimmed) continue;
 
-    const parts = trimmed.split(/\s+/);
+    const parts = trimmed.split('\t');
     const statusCode = parts[0];
-    const filePath = parts.slice(1).join(' ');
+    const filePath = (statusCode.startsWith('R') || statusCode.startsWith('C'))
+      ? (parts[2] || parts[1] || '')
+      : (parts[1] || '');
 
     let status: ChangedFile['status'] = 'modified';
     if (statusCode.startsWith('A')) status = 'added';

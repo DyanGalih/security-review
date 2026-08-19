@@ -9,7 +9,7 @@ description: "Reviews security risks introduced by the current branch or impleme
 1. **Identify Aspects**: Parse "$ARGUMENTS" to identify specific security `aspects` (e.g., `auth`, `injection`, `data-leakage`, `supply-chain`) or `all`.
 2. **Identify Target & Base**:
    - Separate recognized aspect/focus text from branch arguments before resolving refs.
-   - Zero branch arguments: target the current `HEAD`; run `{SCRIPT}` with `--json` to resolve the default base.
+   - Zero branch arguments: target the current `HEAD`; resolve the default base from `refs/remotes/origin/HEAD`, then fall back to an existing `origin/main`, `main`, `origin/master`, or `master` ref in that order.
    - One branch argument: treat it as `<target>` and resolve the default base.
    - Two branch arguments: treat them as `<target> <base>`, matching the documented examples.
    - Validate both refs. Compute their merge base and use three-dot PR semantics. Stop if a ref or merge base cannot be resolved.
