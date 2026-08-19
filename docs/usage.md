@@ -285,7 +285,7 @@ Every generated report starts with a YAML frontmatter block before the `# SECURI
 | Field | Purpose |
 |---|---|
 | `document_type` | Always `security-review`. Lets indexers skip non-review files. |
-| `review_type` | Which command produced this doc (`audit`, `branch`, `staged`, `plan`, `tasks`, `followup`). |
+| `review_type` | Which command produced this doc (`audit`, `branch`, `staged`, `plan`, `tasks`, `followup`, `export`). |
 | `assessment_date` | ISO 8601 date. Supports time-based filtering. |
 | `overall_risk` | Highest active severity tier. Primary routing signal. |
 | `critical_count` … `low_count` | Per-severity finding counts. Enables precise SQL queries. |
@@ -305,17 +305,15 @@ After generating a report, each prompt also outputs a proposed **INDEX.md routin
 | Document | Type | Date | Risk | Findings | OWASP |
 |---|---|---|---|---|---|
 | docs/security-reviews/2026-05-07-auth.md | audit | 2026-05-07 | HIGH | C:2 H:4 M:6 L:4 | A01,A05,A07 |
-| docs/security-reviews/2026-04-15-api.md | branch | 2026-04-15 | MODERATE | C:0 H:1 M:3 L:2 | A02,A09 |
+| docs/security-reviews/2026-04-15-api.md | branch | 2026-04-15 | MEDIUM | C:0 H:1 M:3 L:2 | A02,A09 |
 ```
 
 With this table in place, the LLM reads only `INDEX.md` during planning and loads only the documents whose risk/type/category matches the current task. This is the primary token reduction mechanism — no SQLite required.
 
 ### Batch-updating existing documents
 
-To add frontmatter to older review documents that predate this change:
+To scan and index existing review document frontmatters into memory tables:
 
 ```bash
-./scripts/update-document-headers.sh docs/security-reviews/*.md
-# Use --force to overwrite existing frontmatter
-./scripts/update-document-headers.sh --force docs/security-reviews/old-report.md
+npx @speckit/security-review sync-headers --docs docs/security-reviews/
 ```

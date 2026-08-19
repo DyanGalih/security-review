@@ -14,7 +14,7 @@ document_fields:
 
   review_type:
     type: string
-    enum: [audit, branch, staged, plan, tasks, followup]
+    enum: [audit, branch, staged, plan, tasks, followup, export]
     description: "Which command generated this document. Determines expected sections and scope."
     index: true
 
@@ -41,11 +41,29 @@ document_fields:
     description: "Total count of all findings across all severities."
     index: false
 
+  assessment_kind:
+    type: string
+    enum: [whitebox-review, report-synthesis]
+    description: "Export-only provenance: whether the report directly reviewed source or synthesized prior reports."
+    index: false
+
+  source_artifacts:
+    type: array
+    items:
+      type: string
+    description: "Export-only list of source reports or artifact identifiers used for synthesis."
+    index: false
+
+  commit_or_branch:
+    type: string
+    description: "Export-only commit or branch reviewed, or 'unknown' when source was not directly accessed."
+    index: false
+
 risk_fields:
   overall_risk:
     type: string
-    enum: [CRITICAL, HIGH, MODERATE, LOW, INFORMATIONAL]
-    description: "Highest severity tier with active findings. Primary routing signal for INDEX.md filtering."
+    enum: [CRITICAL, HIGH, MEDIUM, LOW, INFORMATIONAL, NONE]
+    description: "Highest severity tier with active findings, or NONE when no active findings exist. Primary routing signal for INDEX.md filtering."
     index: true
 
   critical_count:
@@ -87,7 +105,7 @@ classification_fields:
     type: array
     items:
       type: string
-      pattern: "^A(0[1-9]|10):2025"
+      pattern: "^A(0[1-9]|10)$"
     description: "OWASP Top 10 2025 categories (A01-A10) with at least one finding. Enables topic-based filtering."
     index: true
     index_format: "comma-separated codes only, e.g. A01,A05,A07"
@@ -100,6 +118,20 @@ classification_fields:
     description: "CWE identifiers referenced in the document."
     index: false
 
+  asvs_requirements:
+    type: array
+    items:
+      type: string
+    description: "Verified OWASP ASVS requirements referenced by findings."
+    index: false
+
+  mitre_techniques:
+    type: array
+    items:
+      type: string
+    description: "Verified MITRE ATT&CK techniques applicable to findings."
+    index: false
+
 finding_level_fields:
   finding_id:
     type: string
@@ -108,8 +140,13 @@ finding_level_fields:
 
   location:
     type: string
-    format: "path/to/file.ext:line"
-    description: "File path and line number of the vulnerable code."
+    format: "path/to/artifact:line"
+    description: "Artifact or code path and line number supporting the finding."
+
+  evidence_provenance:
+    type: string
+    enum: [tested, statically-reviewed, source-reported, unverified, not-assessed]
+    description: "How the evidence for this finding was obtained; export reports must not imply direct source review for source-reported evidence."
 
   owasp_category:
     type: string

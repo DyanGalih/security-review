@@ -541,7 +541,7 @@ See [docs/field-registry.md](docs/field-registry.md) for the full field schema a
 
 ## Executive Summary
 
-**Overall Security Posture:** MODERATE RISK
+**Overall Security Posture:** MEDIUM RISK
 **Total Findings:** 23
 - Critical: 2
 - High: 5

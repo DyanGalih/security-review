@@ -18,11 +18,14 @@ These fields describe the review document itself and appear at the top of every 
 | Field | Type | Values / Range | Description | INDEX.md column? |
 |---|---|---|---|---|
 | `document_type` | string (enum) | `security-review` | Always `security-review`. Allows indexers to filter out non-review documents without reading content. | No (constant) |
-| `review_type` | string (enum) | `audit`, `branch`, `staged`, `plan`, `tasks`, `followup` | Which command generated this document. Determines expected sections and scope. | Yes |
+| `review_type` | string (enum) | `audit`, `branch`, `staged`, `plan`, `tasks`, `followup`, `export` | Which command generated this document. Determines expected sections and scope. | Yes |
 | `assessment_date` | string (ISO 8601) | `YYYY-MM-DD` | Date the review was performed. Supports time-based filtering (e.g., "reviews from last 30 days"). | Yes |
 | `codebase_analyzed` | string | Free text | Name or path of the repository or component reviewed. | No |
 | `total_files_analyzed` | integer | ≥ 0 | Number of files the agent analyzed. Provides signal on review depth. | No |
 | `total_findings` | integer | ≥ 0 | Total count of all findings across all severities. | No |
+| `assessment_kind` | string (enum) | `whitebox-review`, `report-synthesis` | Export-only provenance distinguishing direct source review from synthesis. | No |
+| `source_artifacts` | string[] | Paths or identifiers | Export-only source reports or artifacts used for synthesis. | No |
+| `commit_or_branch` | string | Commit, branch, or `unknown` | Export-only source revision provenance. | No |
 
 ---
 
@@ -32,7 +35,7 @@ These fields encode the overall risk posture and per-severity finding counts. Th
 
 | Field | Type | Values / Range | Description | INDEX.md column? |
 |---|---|---|---|---|
-| `overall_risk` | string (enum) | `CRITICAL`, `HIGH`, `MODERATE`, `LOW`, `INFORMATIONAL` | Highest severity tier with active findings, or overall posture rating. Primary routing signal — an LLM or query can skip LOW/INFORMATIONAL documents when investigating a critical incident. | Yes |
+| `overall_risk` | string (enum) | `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFORMATIONAL`, `NONE` | Highest severity tier with active findings; use `NONE` when no active findings exist. Primary routing signal — an LLM or query can skip LOW/INFORMATIONAL/NONE documents when investigating a critical incident. | Yes |
 | `critical_count` | integer | ≥ 0 | Number of Critical findings. SQL: `WHERE critical_count > 0` finds all docs with critical issues. | Yes (compact: `C:N`) |
 | `high_count` | integer | ≥ 0 | Number of High findings. | Yes (compact: `H:N`) |
 | `medium_count` | integer | ≥ 0 | Number of Medium findings. | Yes (compact: `M:N`) |
@@ -49,6 +52,8 @@ These fields describe the security categories present in the document. They enab
 |---|---|---|---|---|
 | `owasp_categories` | string[] | `A01`–`A10` (OWASP Top 10 2025 codes) | List of OWASP categories with at least one finding. Enables queries like "all documents touching injection (A05) or access control (A01)". | Yes (comma-separated) |
 | `cwe_ids` | string[] | CWE identifiers, e.g. `CWE-89` | List of CWE IDs referenced in the document. For precise technical filtering in audit workflows. | No |
+| `asvs_requirements` | string[] | Verified ASVS identifiers, e.g. `V2.1.1` | ASVS requirements mapped to findings. | No |
+| `mitre_techniques` | string[] | Verified ATT&CK identifiers, e.g. `T1190` | MITRE ATT&CK techniques mapped to findings. | No |
 
 ---
 
@@ -59,7 +64,8 @@ These fields appear in each individual finding block (not in frontmatter). Their
 | Field | Type | Values / Range | Description |
 |---|---|---|---|
 | `Finding ID` | string | `SEC-NNN` (sequential) | Unique identifier for cross-referencing, task tracking, and Spec-Kit task linkage. |
-| `Location` | string | `path/to/file.ext:line` | File path and line number of the vulnerable code. |
+| `Location` | string | `path/to/artifact:line` | Artifact or code path and line number supporting the finding. |
+| `Evidence Provenance` | string (enum) | `tested`, `statically-reviewed`, `source-reported`, `unverified`, `not-assessed` | States how the evidence was obtained and prevents synthesized reports from implying direct source review. |
 | `OWASP Category` | string | `AXX:2025-Name` | OWASP Top 10 2025 category this finding belongs to. |
 | `CWE` | string | `CWE-NNN: Name` | Common Weakness Enumeration identifier with short name. |
 | `CVSS Score` | string | `0.0–10.0 (Severity)` | CVSS v3.1 base score. 9.0–10.0 = Critical, 7.0–8.9 = High, 4.0–6.9 = Medium, 0.1–3.9 = Low. |
@@ -82,7 +88,7 @@ Each generated security review document should have a corresponding routing row 
 | Column | Example | Description |
 |---|---|---|
 | `doc_path` | `docs/security-reviews/2026-05-07-auth.md` | Relative path to the review document |
-| `review_type` | `audit` | One of: `audit`, `branch`, `staged`, `plan`, `tasks`, `followup` |
+| `review_type` | `audit` | One of: `audit`, `branch`, `staged`, `plan`, `tasks`, `followup`, `export` |
 | `assessment_date` | `2026-05-07` | ISO 8601 date |
 | `overall_risk` | `HIGH` | Highest active severity tier |
 | `finding_counts` | `C:2 H:4 M:6 L:4` | Compact per-severity counts |
@@ -96,7 +102,7 @@ Each generated security review document should have a corresponding routing row 
 | Document | Type | Date | Risk | Findings | OWASP |
 |---|---|---|---|---|---|
 | docs/security-reviews/2026-05-07-auth.md | audit | 2026-05-07 | HIGH | C:2 H:4 M:6 L:4 | A01,A05,A07 |
-| docs/security-reviews/2026-04-15-api.md | branch | 2026-04-15 | MODERATE | C:0 H:1 M:3 L:2 | A02,A09 |
+| docs/security-reviews/2026-04-15-api.md | branch | 2026-04-15 | MEDIUM | C:0 H:1 M:3 L:2 | A02,A09 |
 ```
 
 ### SQLite Phase 1 mapping
