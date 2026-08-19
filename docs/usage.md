@@ -315,5 +315,5 @@ With this table in place, the LLM reads only `INDEX.md` during planning and load
 To scan and index existing review document frontmatters into memory tables:
 
 ```bash
-npx @speckit/security-review sync-headers --docs docs/security-reviews/
+npx security-review sync-headers --docs docs/security-reviews/
 ```

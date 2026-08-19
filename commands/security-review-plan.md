@@ -190,7 +190,7 @@ Produce a structured Markdown security review report with:
 After providing the report, finalize with:
 
 1. **Durable Memory Preservation**: If durable lessons exist, ask for authorization before capturing them with any backend.
-2.  **Remediation Planning**: If critical or high findings were found, recommend executing `/speckit.security-review.followup` to create remediation tasks.
+2.  **Remediation Planning**: If critical or high findings were found, recommend executing `/security-review.followup` (or `/speckit.security-review.followup`) to create remediation tasks.
 
 ---
 

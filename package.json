@@ -1,5 +1,5 @@
 {
-  "name": "@speckit/security-review",
+  "name": "security-review",
   "version": "1.7.0",
   "description": "Whitebox security review, OWASP auditing, and developer-accelerated agent toolkit for Spec-Kit and AI workflows",
   "type": "module",

@@ -1,30 +1,32 @@
 # Installation Guide
 
-`@speckit/security-review` is distributed as both an **installable developer CLI & agent toolkit** and a **Spec-Kit extension**.
+`security-review` is distributed as both an **installable developer CLI & agent toolkit** and a **Spec-Kit extension**.
 
 ---
 
-## 1. Install as Developer CLI (npm / npx)
-
-The CLI tool acts as a local accelerator for security reviews, providing fast git diff extraction, security entrypoint discovery, YAML frontmatter validation, and token-optimized context formatting for AI agents.
+## 1. Developer CLI & Agent Toolkit (Standalone)
 
 ### Global Installation
+
 ```bash
-npm install -g @speckit/security-review
-# or
-pnpm add -g @speckit/security-review
+# Using npm
+npm install -g security-review
+
+# Using pnpm
+pnpm add -g security-review
 ```
 
-### Run via npx (Zero Install)
+### Instant Execution with npx
+
 ```bash
-# Analyze staged git changes
-npx @speckit/security-review diff --staged
+# Staged changes review for current commit
+npx security-review diff --staged
 
-# Scan project for security entrypoints
-npx @speckit/security-review scan
+# Discover security entrypoints
+npx security-review scan
 
-# Validate report frontmatter
-npx @speckit/security-review validate path/to/report.md
+# Validate report metadata against schema
+npx security-review validate path/to/report.md
 ```
 
 ---

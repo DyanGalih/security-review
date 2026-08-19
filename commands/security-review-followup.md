@@ -19,7 +19,7 @@ Use this command when you want to:
 - defer a finding as technical debt with a clear rationale
 - avoid duplicating work that is already tracked in unfinished tasks
 - carry unresolved findings forward into the next implementation cycle
-- prepare items that can later be written into `tasks.md` or `plan.md` with `/speckit.security-review.apply`
+- prepare items that can later be written into `tasks.md` or `plan.md` with `/security-review.apply` (or `/speckit.security-review.apply`)
 
 If the user provides a review report or finding list in `$ARGUMENTS`, treat it as the source of truth for the follow-up plan. If no findings are provided, look for a pasted report, a named report file, or the current backlog context. If none is available, ask the user for the report or findings before proceeding.
 

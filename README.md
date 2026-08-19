@@ -19,12 +19,12 @@ An installable **Node.js/TypeScript CLI & Agent Toolkit** plus **Spec Kit extens
 
 ```bash
 # Global install
-npm install -g @speckit/security-review
+npm install -g security-review
 
 # Or run instantly with npx
-npx @speckit/security-review diff --staged
-npx @speckit/security-review scan
-npx @speckit/security-review validate path/to/report.md
+npx security-review diff --staged
+npx security-review scan
+npx security-review validate path/to/report.md
 ```
 
 ### 2. As Spec-Kit Extension

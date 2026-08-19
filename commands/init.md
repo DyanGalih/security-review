@@ -114,4 +114,4 @@ Once enough context is gathered, generate a proposed document. Clearly separate 
 ## Final Instruction
 
 After generating the file, remind the user:
-"The Security Constitution is now live. You can now run `/speckit.security-review.audit` to verify your implementation against these rules."
+"The Security Constitution is now live. You can now run `/security-review` (or `/speckit.security-review.audit` in Spec-Kit) to verify your implementation against these rules."

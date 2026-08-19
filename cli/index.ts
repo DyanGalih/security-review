@@ -5,7 +5,7 @@ import { executeSyncHeadersCommand } from './commands/sync-headers.js';
 
 export function printHelp(): void {
   console.log(`
-🔒 Security Review CLI & Agent Toolkit (@speckit/security-review)
+🔒 Security Review CLI & Agent Toolkit (security-review)
 
 Usage:
   security-review <command> [options]
