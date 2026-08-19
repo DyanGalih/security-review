@@ -271,10 +271,12 @@ Point the command at the relevant area explicitly.
 
 ## Related Docs
 
-- [installation.md](installation.md)
-- [design.md](design.md)
-- [field-registry.md](field-registry.md)
-- [../README.md](../README.md)
+- [Main README](../README.md)
+- [Installation Guide](installation.md)
+- [CLI Reference](cli-reference.md)
+- [Agent Skills](agent-skills.md)
+- [Spec-Kit Extension Guide](speckit-extension.md)
+- [Field Registry](field-registry.md)
 
 ## Understanding Security Review Documents
 

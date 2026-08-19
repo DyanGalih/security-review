@@ -71,3 +71,11 @@ Check Spec-Kit extension registration:
 ```bash
 specify extension list
 ```
+
+---
+
+## Related Documentation
+- [Main README](../README.md)
+- [CLI Reference](cli-reference.md)
+- [Agent Skills](agent-skills.md)
+- [Spec-Kit Extension Guide](speckit-extension.md)
