@@ -4,7 +4,7 @@ extension:
   name: "Security Review"
   version: "1.7.0"
   description: "Full-project secure-by-design security audits plus staged, branch/PR, plan, task, follow-up, and apply reviews"
-  author: "Security Review Team"
+  author: "DyanGalih"
   repository: "https://github.com/DyanGalih/security-review"
   license: "MIT"
   homepage: "https://github.com/DyanGalih/security-review"

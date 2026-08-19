@@ -98,4 +98,4 @@ All commands are available as `/speckit.security-review.*` and automatically hoo
 ## License & Repository
 
 - **Repository**: [https://github.com/DyanGalih/security-review](https://github.com/DyanGalih/security-review)
-- **License**: MIT © Security Review Team
+- **License**: MIT © DyanGalih
