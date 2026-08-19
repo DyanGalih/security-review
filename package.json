@@ -1,0 +1,49 @@
+{
+  "name": "@speckit/security-review",
+  "version": "1.7.0",
+  "description": "Whitebox security review, OWASP auditing, and developer-accelerated agent toolkit for Spec-Kit and AI workflows",
+  "type": "module",
+  "main": "dist/core/index.js",
+  "types": "dist/core/index.d.ts",
+  "bin": {
+    "security-review": "./bin/security-review.js",
+    "sec-review": "./bin/security-review.js",
+    "sr": "./bin/security-review.js"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "commands",
+    "extension.yml",
+    "docs"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit",
+    "cli": "tsx cli/index.ts"
+  },
+  "keywords": [
+    "security",
+    "owasp",
+    "audit",
+    "devsecops",
+    "spec-kit",
+    "ai-agent",
+    "code-review"
+  ],
+  "author": "Spec-Kit Security Team",
+  "license": "MIT",
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}
