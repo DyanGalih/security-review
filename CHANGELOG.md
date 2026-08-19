@@ -10,6 +10,7 @@
   - Renamed core audit command template from `security-review.md` to `security-audit.md` (while keeping `speckit.security-review.audit` in `extension.yml`).
   - Generalized all 9 command prompts to remove framework-specific coupling while supporting generic planning documents (`plan.md`, `design.md`, `tasks.md`).
   - Added `security_task` as primary report frontmatter field with seamless fallback support for `spec_kit_task`.
+  - Added Finding Re-Verification & Safe Proof-of-Concept (PoC) generation skill (`/sr-verify` / `commands/security-verify.md`), classifying findings (`CONFIRMED`, `FALSE_POSITIVE`, `MITIGATED`, `ACCEPTED_RISK`) and generating non-destructive unit test PoCs and curl reproductions.
   - Added modern promotional landing page under `src/landing/` (`index.html`, `styles.css`, `new_logo.png`).
 - **CLI & Runtime Enhancements**:
   - `diff --branch <target> [base]`: Deterministic target/base syntax with strict merge-base validation.
