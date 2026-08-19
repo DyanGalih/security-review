@@ -1,5 +1,20 @@
 # Changelog
 
+## v2.0.0
+
+- **Major Rebrand & Standalone Decoupling**:
+  - Rebranded package and binaries to standalone `security-review` (`https://github.com/DyanGalih/security-review`).
+  - Decoupled standalone CLI & Agent skills (`/security-review.*`) from Spec-Kit while preserving complete backward compatibility for Spec-Kit extensions (`speckit.security-review.*`).
+  - Added modern promotional landing page under `src/landing/` (`index.html`, `styles.css`, `new_logo.png`).
+- **CLI & Runtime Enhancements**:
+  - `diff --branch <target> [base]`: Deterministic target/base syntax with strict merge-base validation.
+  - Token-budgeted payloads with sensitivity prioritization (`CRITICAL` -> `HIGH` -> `MEDIUM` -> `LOW`).
+  - `sync-headers --dry-run` and bounded `INDEX.md` section management.
+  - Strict frontmatter schema validation (types, regex patterns, counts, export provenance).
+  - Node.js engine requirement updated to `>= 22.0.0`.
+- **Documentation Restructure**:
+  - Modularized documentation inside `src/` with dedicated `agent-skills.md`, `cli-reference.md`, `speckit-extension.md`, and `installation.md`.
+
 ## v1.7.0
 
 - Upgraded repository into an installable Node.js / TypeScript CLI & Agent Toolkit (`@speckit/security-review`) alongside the Spec-Kit extension.

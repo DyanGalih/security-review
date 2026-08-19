@@ -2,7 +2,7 @@ schema_version: "1.0"
 extension:
   id: "security-review"
   name: "Security Review"
-  version: "1.7.0"
+  version: "2.0.0"
   description: "Full-project secure-by-design security audits plus staged, branch/PR, plan, task, follow-up, and apply reviews"
   author: "DyanGalih"
   repository: "https://github.com/DyanGalih/security-review"
