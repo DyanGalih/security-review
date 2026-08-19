@@ -2,6 +2,8 @@ import { executeDiffCommand } from './commands/diff.js';
 import { executeScanCommand } from './commands/scan.js';
 import { executeValidateCommand } from './commands/validate.js';
 import { executeSyncHeadersCommand } from './commands/sync-headers.js';
+import { executeReportCommand } from './commands/report.js';
+import { executeTasksCommand } from './commands/tasks.js';
 import { runInitCommand } from './commands/init.js';
 
 export function printHelp(): void {
@@ -22,6 +24,12 @@ Commands:
 
   scan [--path <dir>] [--json]
     Scans project directory for candidate security-sensitive entrypoints (path-name heuristic).
+
+  report --input <file> [--output <file>] [--format <markdown|json>]
+    Compiles raw structured findings JSON into an executive & technical security report.
+
+  tasks --input <file> [--target <tasks.md>] [--append]
+    Generates TASK-SEC-NNN remediation checklist items or appends them directly to tasks.md.
 
   validate <file> [--json]
     Validates report YAML frontmatter against field-registry specifications.
@@ -102,6 +110,27 @@ export async function runCli(args: string[]): Promise<void> {
       const pathIdx = rest.indexOf('--path');
       const path = pathIdx !== -1 && rest[pathIdx + 1] ? rest[pathIdx + 1] : undefined;
       await executeScanCommand({ path, json });
+      break;
+    }
+
+    case 'report': {
+      const inputIdx = rest.indexOf('--input');
+      const input = inputIdx !== -1 ? rest[inputIdx + 1] : undefined;
+      const outputIdx = rest.indexOf('--output');
+      const output = outputIdx !== -1 ? rest[outputIdx + 1] : undefined;
+      const formatIdx = rest.indexOf('--format');
+      const format = (formatIdx !== -1 ? rest[formatIdx + 1] : 'markdown') as 'markdown' | 'json';
+      await executeReportCommand({ input, output, format });
+      break;
+    }
+
+    case 'tasks': {
+      const inputIdx = rest.indexOf('--input');
+      const input = inputIdx !== -1 ? rest[inputIdx + 1] : undefined;
+      const targetIdx = rest.indexOf('--target');
+      const target = targetIdx !== -1 ? rest[targetIdx + 1] : undefined;
+      const append = rest.includes('--append');
+      await executeTasksCommand({ input, target, append });
       break;
     }
 

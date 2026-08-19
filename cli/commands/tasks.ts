@@ -1,0 +1,64 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { generateTasksMarkdown, appendTasksToFile } from '../../core/generator.js';
+import { FindingItem } from '../../core/types.js';
+
+export interface TasksCommandOptions {
+  input?: string;
+  target?: string;
+  append?: boolean;
+}
+
+export async function executeTasksCommand(options: TasksCommandOptions): Promise<void> {
+  const inputPath = options.input;
+  if (!inputPath) {
+    console.error('[tasks error]: Missing required --input argument (path to findings JSON file)');
+    process.exit(1);
+  }
+
+  let rawJson: string;
+  if (inputPath === '-') {
+    rawJson = fs.readFileSync(0, 'utf8');
+  } else {
+    if (!fs.existsSync(inputPath)) {
+      console.error(`[tasks error]: Input file not found: ${inputPath}`);
+      process.exit(1);
+    }
+    rawJson = fs.readFileSync(inputPath, 'utf8');
+  }
+
+  let findings: FindingItem[];
+  try {
+    const parsed = JSON.parse(rawJson);
+    if (Array.isArray(parsed)) {
+      findings = parsed;
+    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.findings)) {
+      findings = parsed.findings;
+    } else {
+      throw new Error('Invalid JSON structure. Expected array or object with findings array.');
+    }
+  } catch (err: any) {
+    console.error(`[tasks error]: Failed to parse findings JSON: ${err.message}`);
+    process.exit(1);
+  }
+
+  const tasksMarkdown = generateTasksMarkdown(findings);
+
+  if (options.target) {
+    const targetFile = options.target;
+    if (options.append) {
+      const res = appendTasksToFile(targetFile, tasksMarkdown);
+      if (res.created) {
+        console.log(`✓ Created ${targetFile} with ${findings.length} security tasks`);
+      } else {
+        console.log(`✓ Appended ${findings.length} security tasks to ${targetFile}`);
+      }
+    } else {
+      fs.mkdirSync(path.dirname(targetFile), { recursive: true });
+      fs.writeFileSync(targetFile, tasksMarkdown, 'utf8');
+      console.log(`✓ Generated ${findings.length} security tasks in ${targetFile}`);
+    }
+  } else {
+    console.log(tasksMarkdown);
+  }
+}

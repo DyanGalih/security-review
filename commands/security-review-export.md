@@ -225,11 +225,7 @@ Redact secrets and sensitive records. Include only the minimum code required to 
 
 ---
 
-## Final Instructions
+## Hybrid Mode (JSON Report & CLI Generator)
 
-1. **Consolidate**: Combine findings from all provided reports. Avoid duplicate entries.
-2. **Categorize**: Group findings by OWASP category in the technical section.
-3. **Professionalism**: Use formal language (e.g., "The assessment identified..." instead of "I found...").
-4. **Actionable**: Ensure every remediation step is actionable and structured for technical plans.
-5. **Durable Memory**: If durable lessons exist, ask for authorization before capturing them with any backend.
-6. **Evidence Integrity**: Do not invent testing activity, code access, CVSS vectors, standard mappings, CVEs, reference links, or remediation verification. Mark unsupported fields as `unverified` or `not assessed`.
+If `--json` is supplied or machine-readable export is required, output the synthesized findings as a `FindingsReport` JSON structure. The report can then be generated deterministically via:
+`security-review report --input findings.json --output docs/security-assessment-report.md`

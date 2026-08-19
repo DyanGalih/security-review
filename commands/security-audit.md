@@ -828,6 +828,36 @@ Example:
 
 See `docs/field-registry.md` in the security-review toolkit for the full INDEX.md table format and SQLite Phase 1 column mapping.
 
+## Hybrid Mode (JSON Output for CLI Generation)
+
+If the user requested JSON findings output or token-optimized hybrid mode (e.g., `--json`), output the findings as a structured JSON object conforming to the `FindingsReport` schema instead of full Markdown text. The downstream CLI command `security-review report --input findings.json` and `security-review tasks --input findings.json` can then compile the report and backlog tasks deterministically without wasting agent context tokens.
+
+```json
+{
+  "document_type": "security-review",
+  "review_type": "audit",
+  "assessment_date": "<YYYY-MM-DD>",
+  "codebase_analyzed": "<target>",
+  "overall_risk": "<CRITICAL|HIGH|MEDIUM|LOW|NONE>",
+  "findings": [
+    {
+      "id": "TASK-SEC-001",
+      "title": "<Finding Title>",
+      "severity": "<CRITICAL|HIGH|MEDIUM|LOW|INFORMATIONAL>",
+      "category": "<OWASP Category>",
+      "cwe": "<CWE-ID>",
+      "file": "<path/to/file>",
+      "lineRange": "<start-end>",
+      "description": "<Technical Description>",
+      "exploitScenario": "<Exploit Scenario>",
+      "impact": "<Impact>",
+      "remediation": "<Remediation Steps>",
+      "proposedFix": "<Code fix snippet>"
+    }
+  ]
+}
+```
+
 ---
 
 Begin the security review now.

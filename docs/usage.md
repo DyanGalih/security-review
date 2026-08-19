@@ -118,3 +118,19 @@ security-review diff --branch feature/payment --json --budget 4000
 # Discover security entrypoints
 security-review scan
 ```
+
+---
+
+## 7. Hybrid Mode (Agent Reasoning + CLI Generation)
+
+Save tokens by having the agent output machine-readable JSON findings and using the CLI to generate reports and tasks:
+
+```bash
+# 1. Agent emits findings to findings.json
+# 2. Compile full Markdown report deterministically:
+security-review report --input findings.json --output docs/security-report.md
+
+# 3. Create or append TASK-SEC-NNN items to tasks.md:
+security-review tasks --input findings.json --target tasks.md --append
+```
+

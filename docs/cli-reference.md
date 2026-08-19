@@ -94,6 +94,48 @@ security-review scan --json
 
 ---
 
+### `report`
+Compiles raw JSON findings emitted by AI agents or scanners into a formal Markdown security report with risk summaries, executive metrics, and technical breakdowns.
+
+```bash
+# Generate report from findings.json to stdout
+security-review report --input findings.json
+
+# Save report to markdown file
+security-review report --input findings.json --output docs/security-report.md
+
+# Output formatted JSON report
+security-review report --input findings.json --format json
+```
+
+**Options:**
+- `--input <file>`: Path to the JSON findings file (required).
+- `--output <file>`: Target output file path.
+- `--format <fmt>`: `markdown` (default) or `json`.
+
+---
+
+### `tasks`
+Converts raw JSON findings into `TASK-SEC-NNN` remediation checklist items and optionally appends them directly to `tasks.md`.
+
+```bash
+# Output tasks to stdout
+security-review tasks --input findings.json
+
+# Generate new tasks file
+security-review tasks --input findings.json --target tasks.md
+
+# Append findings to existing tasks.md
+security-review tasks --input findings.json --target tasks.md --append
+```
+
+**Options:**
+- `--input <file>`: Path to the JSON findings file (required).
+- `--target <file>`: Path to `tasks.md` file.
+- `--append`: Appends tasks to existing file without overwriting.
+
+---
+
 ### `validate`
 Validates report YAML frontmatter headers against the schema dictionary in `field-registry.md`.
 
