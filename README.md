@@ -95,6 +95,7 @@ All commands are available as `/speckit.security-review.*` and automatically hoo
 
 ---
 
-## License
+## License & Repository
 
-MIT © Spec-Kit Security Team
+- **Repository**: [https://github.com/DyanGalih/security-review](https://github.com/DyanGalih/security-review)
+- **License**: MIT © Security Review Team

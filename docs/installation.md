@@ -49,14 +49,14 @@ specify extension add security-review
 ### From GitHub Release
 ```bash
 specify extension add security-review --from \
-  https://github.com/DyanGalih/spec-kit-security-review/archive/refs/tags/v1.7.0.zip
+  https://github.com/DyanGalih/security-review/archive/refs/tags/v1.7.0.zip
 ```
 
 ### Local Development Link
 ```bash
-git clone https://github.com/DyanGalih/spec-kit-security-review.git ~/src/spec-kit-security-review
+git clone https://github.com/DyanGalih/security-review.git ~/src/security-review
 cd /path/to/spec-kit-project
-specify extension add --dev ~/src/spec-kit-security-review
+specify extension add --dev ~/src/security-review/src
 ```
 
 ---

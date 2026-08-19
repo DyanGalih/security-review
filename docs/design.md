@@ -176,7 +176,7 @@ specify extension add security-review --from <release-zip>
 
 ```bash
 cd /path/to/spec-kit-project
-specify extension add --dev /path/to/spec-kit-security-review
+specify extension add --dev /path/to/security-review/src
 ```
 
 ### Registration checks

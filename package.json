@@ -40,8 +40,16 @@
     "ai-agent",
     "code-review"
   ],
-  "author": "Spec-Kit Security Team",
+  "author": "Security Review Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DyanGalih/security-review.git"
+  },
+  "homepage": "https://github.com/DyanGalih/security-review#readme",
+  "bugs": {
+    "url": "https://github.com/DyanGalih/security-review/issues"
+  },
   "dependencies": {
     "js-yaml": "^4.1.0"
   },

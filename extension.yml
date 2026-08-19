@@ -4,10 +4,10 @@ extension:
   name: "Security Review"
   version: "1.7.0"
   description: "Full-project secure-by-design security audits plus staged, branch/PR, plan, task, follow-up, and apply reviews"
-  author: "Spec-Kit Security Team"
-  repository: "https://github.com/DyanGalih/spec-kit-security-review"
+  author: "Security Review Team"
+  repository: "https://github.com/DyanGalih/security-review"
   license: "MIT"
-  homepage: "https://github.com/DyanGalih/spec-kit-security-review"
+  homepage: "https://github.com/DyanGalih/security-review"
 requires:
   speckit_version: ">=0.1.0"
 hooks:
