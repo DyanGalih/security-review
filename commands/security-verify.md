@@ -149,8 +149,15 @@ false-positives:
     date: "<YYYY-MM-DD>"
 ```
 
+## 4. Automatic File Persistence
+
+When completing the finding verification, you MUST write the full Markdown verification report directly to disk:
+1. **Target File Path**: `docs/security-reviews/<YYYY-MM-DD>-verify.md` (or `docs/security-reviews/<YYYY-MM-DD>-<scope>-verify.md` if specific scope is provided).
+2. **Directory Creation**: Automatically create the `docs/security-reviews/` directory if it does not already exist.
+3. **Response Output**: In your conversational response to the user, render the executive verification summary table and include a clickable markdown file link to the saved report (e.g. `[Verification Report](file:///absolute/path/to/docs/security-reviews/YYYY-MM-DD-verify.md)`).
+
 ---
 
-## 4. Durable Memory Preservation
+## 5. Durable Memory Preservation
 
 If durable lessons or validated false-positive patterns exist, ask for authorization before persisting them to project memory.

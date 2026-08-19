@@ -225,6 +225,13 @@ Redact secrets and sensitive records. Include only the minimum code required to 
 
 ---
 
+## Automatic File Persistence
+
+When completing the formal export synthesis, you MUST write the full Markdown report directly to disk:
+1. **Target File Path**: `docs/security-reviews/<YYYY-MM-DD>-assessment-report.md` (or `docs/security-reviews/<YYYY-MM-DD>-<scope>-report.md` if a specific scope is given).
+2. **Directory Creation**: Automatically create the `docs/security-reviews/` directory if it does not already exist.
+3. **Response Output**: In your conversational response to the user, render an executive summary of the risk posture and top findings, and include a clickable markdown file link to the saved report (e.g. `[Assessment Report](file:///absolute/path/to/docs/security-reviews/YYYY-MM-DD-assessment-report.md)`).
+
 ## Hybrid Mode (JSON Report & CLI Generator)
 
 If `--json` is supplied or machine-readable export is required, output the synthesized findings as a `FindingsReport` JSON structure. The report can then be generated deterministically via:

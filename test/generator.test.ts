@@ -130,4 +130,24 @@ describe('Core Findings Generator & CLI commands', () => {
     expect(content).toContain('TASK-SEC-001: SQL Injection in User Search');
     expect(content).toContain('TASK-SEC-002: Missing Authorization Header Check');
   });
+
+  it('should automatically save report to docs/security-reviews/ when --output is omitted', async () => {
+    const jsonPath = path.join(tmpDir, 'findings.json');
+    fs.writeFileSync(jsonPath, JSON.stringify({
+      assessment_date: '2026-08-19',
+      findings: mockFindings,
+    }), 'utf8');
+
+    const cwdSpy = process.cwd;
+    process.cwd = () => tmpDir;
+    try {
+      await runCli(['report', '--input', jsonPath]);
+      const defaultReportPath = path.join(tmpDir, 'docs/security-reviews/2026-08-19-security-report.md');
+      expect(fs.existsSync(defaultReportPath)).toBe(true);
+      const content = fs.readFileSync(defaultReportPath, 'utf8');
+      expect(content).toContain('document_type: security-review');
+    } finally {
+      process.cwd = cwdSpy;
+    }
+  });
 });

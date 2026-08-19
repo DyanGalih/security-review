@@ -98,19 +98,22 @@ security-review scan --json
 Compiles raw JSON findings emitted by AI agents or scanners into a formal Markdown security report with risk summaries, executive metrics, and technical breakdowns.
 
 ```bash
-# Generate report from findings.json to stdout
+# Generate report from findings.json and save to docs/security-reviews/ automatically
 security-review report --input findings.json
 
-# Save report to markdown file
-security-review report --input findings.json --output docs/security-report.md
+# Save report to specific custom path
+security-review report --input findings.json --output docs/custom-report.md
 
 # Output formatted JSON report
 security-review report --input findings.json --format json
+
+# Print report to stdout
+security-review report --input findings.json --output -
 ```
 
 **Options:**
 - `--input <file>`: Path to the JSON findings file (required).
-- `--output <file>`: Target output file path.
+- `--output <file>`: Target output file path (default: `docs/security-reviews/<YYYY-MM-DD>-security-report.md`, or `-` for stdout).
 - `--format <fmt>`: `markdown` (default) or `json`.
 
 ---

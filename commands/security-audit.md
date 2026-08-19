@@ -858,6 +858,13 @@ If the user requested JSON findings output or token-optimized hybrid mode (e.g.,
 }
 ```
 
+## Automatic File Persistence
+
+When completing the security audit, you MUST write the full Markdown report directly to disk:
+1. **Target File Path**: `docs/security-reviews/<YYYY-MM-DD>-audit.md` (or `docs/security-reviews/<YYYY-MM-DD>-<scope>-audit.md` if a specific scope is requested in `$ARGUMENTS`).
+2. **Directory Creation**: Automatically create the `docs/security-reviews/` directory if it does not already exist.
+3. **Response Output**: In your conversational response to the user, render an executive summary of the risk posture and top findings, and include a clickable markdown file link to the saved report (e.g. `[Audit Report](file:///absolute/path/to/docs/security-reviews/YYYY-MM-DD-audit.md)`).
+
 ---
 
 Begin the security review now.

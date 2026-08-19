@@ -60,11 +60,15 @@ export async function executeReportCommand(options: ReportCommandOptions): Promi
     outputContent = generateMarkdownReport(reportData);
   }
 
-  if (options.output) {
-    fs.mkdirSync(path.dirname(options.output), { recursive: true });
-    fs.writeFileSync(options.output, outputContent, 'utf8');
-    console.log(`✓ Report generated at ${options.output} (${reportData.findings.length} findings)`);
-  } else {
+  if (options.output === '-') {
     console.log(outputContent);
+    return;
   }
+
+  const dateStr = reportData.assessment_date || new Date().toISOString().split('T')[0];
+  const targetPath = options.output ? path.resolve(options.output) : path.resolve('docs', 'security-reviews', `${dateStr}-security-report.md`);
+
+  fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+  fs.writeFileSync(targetPath, outputContent, 'utf8');
+  console.log(`✓ Report generated at ${path.relative(process.cwd(), targetPath)} (${reportData.findings.length} findings)`);
 }
