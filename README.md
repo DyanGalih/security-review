@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/new_logo.png" alt="Security Review logo" width="360">
+</p>
+
 # 🔒 Security Review
 
 > Continuous whitebox security auditing, OWASP governance, and token-optimized developer CLI & AI Agent toolkit.
