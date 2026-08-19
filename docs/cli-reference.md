@@ -22,6 +22,32 @@ security-review <command> [options]
 
 ## 3. Commands
 
+### `init`
+Installs Security Review prompt templates and skills into the target workspace for selected AI coding agents, provisions `security-review.yml`, and configures `AGENTS.md`.
+
+```bash
+# Interactive setup in current directory
+security-review init
+
+# Non-interactive installation for Antigravity and Claude Code
+security-review init . --yes --agent antigravity,claude
+
+# Install for all supported agents
+security-review init /path/to/project --yes --agent all
+
+# Specify individual commands and overwrite behavior
+security-review init . --yes --agent cursor-agent,opencode --commands security-review,security-review-staged --overwrite replace
+```
+
+**Options:**
+- `target`: Target workspace directory path (default: `.`).
+- `-y, --yes`: Non-interactive mode (uses defaults or supplied flags without prompting).
+- `--agent <names>`: Comma-separated list of agent keys (`antigravity`, `claude`, `cursor-agent`, `opencode`, `codex`, `copilot`, `gemini`, `windsurf`, `cline`, etc., or `all`).
+- `--commands <list>`: Comma-separated list of command keys (`security-review`, `security-review-staged`, `security-review-branch`, `security-review-plan`, `security-review-tasks`, `security-review-followup`, `security-review-apply`, `security-review-export`, `init`, or `all`).
+- `--overwrite <mode>`: Overwrite strategy when target files exist (`replace` | `skip` | `keep-both`). Default in `--yes` mode is `replace`.
+
+---
+
 ### `diff`
 Extracts git changes, categorizes security sensitivity (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`), and formats context payloads for AI agents.
 

@@ -2,6 +2,7 @@ import { executeDiffCommand } from './commands/diff.js';
 import { executeScanCommand } from './commands/scan.js';
 import { executeValidateCommand } from './commands/validate.js';
 import { executeSyncHeadersCommand } from './commands/sync-headers.js';
+import { runInitCommand } from './commands/init.js';
 
 export function printHelp(): void {
   console.log(`
@@ -13,6 +14,9 @@ Usage:
   sr <command> [options]
 
 Commands:
+  init [target] [-y|--yes] [--agent <names>] [--commands <list>] [--overwrite <mode>]
+    Installs Security Review commands & skills for AI agents and provisions governance configs.
+
   diff [--staged] [--branch <target> [base]] [--json] [--budget <tokens>]
     Extracts git changes, categorizes security sensitivity, and formats agent payload.
 
@@ -48,6 +52,20 @@ export async function runCli(args: string[]): Promise<void> {
   const rest = args.slice(1);
 
   switch (command) {
+    case 'init': {
+      const target = rest.find((a) => !a.startsWith('-')) || '.';
+      const yes = rest.includes('-y') || rest.includes('--yes');
+      const agentIdx = rest.indexOf('--agent');
+      const agent = agentIdx !== -1 ? rest[agentIdx + 1] : undefined;
+      const commandsIdx = rest.indexOf('--commands');
+      const commands = commandsIdx !== -1 ? rest[commandsIdx + 1] : undefined;
+      const overwriteIdx = rest.indexOf('--overwrite');
+      const overwrite = (overwriteIdx !== -1 ? rest[overwriteIdx + 1] : undefined) as 'replace' | 'skip' | 'keep-both' | undefined;
+
+      await runInitCommand(target, { yes, agent, commands, overwrite });
+      break;
+    }
+
     case 'diff': {
       const staged = rest.includes('--staged');
       const json = rest.includes('--json');
