@@ -13,6 +13,7 @@
   - Added Finding Re-Verification & Safe Proof-of-Concept (PoC) generation skill (`/sr-verify` / `commands/security-verify.md`), classifying findings (`CONFIRMED`, `FALSE_POSITIVE`, `MITIGATED`, `ACCEPTED_RISK`) and generating non-destructive unit test PoCs and curl reproductions.
   - Added modern promotional landing page under `src/landing/` (`index.html`, `styles.css`, `new_logo.png`).
 - **CLI & Runtime Enhancements**:
+  - **Hybrid Findings Mode & Deterministic Generators**: Added `FindingItem` / `FindingsReport` JSON schema, plus `security-review report --input findings.json` (deterministic Markdown pentest report compiler) and `security-review tasks --input findings.json` (direct `TASK-SEC-NNN` creation/append into `tasks.md`).
   - `diff --branch <target> [base]`: Deterministic target/base syntax with strict merge-base validation.
   - Token-budgeted payloads with sensitivity prioritization (`CRITICAL` -> `HIGH` -> `MEDIUM` -> `LOW`).
   - `sync-headers --dry-run` and bounded `INDEX.md` section management.
