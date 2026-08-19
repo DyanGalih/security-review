@@ -103,4 +103,13 @@ describe('Security Review init command', () => {
     const stagedCmd = path.join(tmpDir, '.opencode/commands/sr-staged.md');
     expect(fs.existsSync(stagedCmd)).toBe(true);
   });
+
+  it('should install security-verify skill as sr-verify', async () => {
+    await runCli(['init', tmpDir, '--yes', '--agent', 'antigravity', '--commands', 'security-verify']);
+    const verifySkill = path.join(tmpDir, '.agent/skills/sr-verify/SKILL.md');
+    expect(fs.existsSync(verifySkill)).toBe(true);
+    const content = fs.readFileSync(verifySkill, 'utf8');
+    expect(content).toContain('name: sr-verify');
+    expect(content).toContain('Proof of Concept');
+  });
 });

@@ -43,7 +43,7 @@ security-review init . --yes --agent cursor-agent,opencode --commands security-r
 - `target`: Target workspace directory path (default: `.`).
 - `-y, --yes`: Non-interactive mode (uses defaults or supplied flags without prompting).
 - `--agent <names>`: Comma-separated list of agent keys (`antigravity`, `claude`, `cursor-agent`, `opencode`, `codex`, `copilot`, `gemini`, `windsurf`, `cline`, etc., or `all`).
-- `--commands <list>`: Comma-separated list of command keys (`security-review`, `security-review-staged`, `security-review-branch`, `security-review-plan`, `security-review-tasks`, `security-review-followup`, `security-review-apply`, `security-review-export`, `init`, or `all`).
+- `--commands <list>`: Comma-separated list of command keys (`security-audit`, `security-review-staged`, `security-review-branch`, `security-review-plan`, `security-review-tasks`, `security-review-followup`, `security-review-apply`, `security-review-export`, `security-verify`, `init`, or `all`).
 - `--overwrite <mode>`: Overwrite strategy when target files exist (`replace` | `skip` | `keep-both`). Default in `--yes` mode is `replace`.
 
 ---

@@ -48,14 +48,15 @@ All Spec-Kit commands are defined in `src/extension.yml`:
 
 | Command | File Mapping | Description |
 |---|---|---|
-| `/speckit.security-review.audit` | `commands/security-review.md` | Full repository security audit & OWASP assessment. |
+| `/speckit.security-review.audit` | `commands/security-audit.md` | Full repository security audit & OWASP assessment. |
 | `/speckit.security-review.staged` | `commands/security-review-staged.md` | Staged changes review (`git diff --cached`). |
 | `/speckit.security-review.branch` | `commands/security-review-branch.md` | Branch / PR diff security review. |
-| `/speckit.security-review.plan` | `commands/security-review-plan.md` | Security review of Spec-Kit plan artifacts. |
-| `/speckit.security-review.tasks` | `commands/security-review-tasks.md` | Security review of Spec-Kit task artifacts. |
+| `/speckit.security-review.plan` | `commands/security-review-plan.md` | Security review of plan artifacts. |
+| `/speckit.security-review.tasks` | `commands/security-review-tasks.md` | Security review of task artifacts. |
 | `/speckit.security-review.followup` | `commands/security-review-followup.md` | Converts review findings into actionable remediation tasks. |
 | `/speckit.security-review.apply` | `commands/security-review-apply.md` | Applies approved remediation items into `tasks.md` and `plan.md`. |
 | `/speckit.security-review.export` | `commands/security-review-export.md` | Exports formal Executive & Technical Pentest Report. |
+| `/speckit.security-review.verify` | `commands/security-verify.md` | Re-verify findings, test exploitability, and generate PoCs. |
 | `/speckit.security-review.init` | `commands/init.md` | Initializes project Security Constitution. |
 
 ---

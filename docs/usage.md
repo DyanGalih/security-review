@@ -18,6 +18,7 @@ Execute the canonical slash commands directly in your AI coding session:
 | `/sr-followup` | `sr-followup` | Convert security findings into backlog tasks & technical debt |
 | `/sr-apply` | `sr-apply` | Apply approved security tasks into `tasks.md` and `plan.md` |
 | `/sr-export` | `sr-export` | Synthesize executive & technical pentest assessment report |
+| `/sr-verify` | `sr-verify` | Re-verify findings, test exploitability, and generate PoCs |
 | `/sr-init` | `sr-init` | Initialize or update `security_constitution.md` |
 
 > [!NOTE]
@@ -75,7 +76,22 @@ Integrate security into the architecture planning lifecycle:
 
 ---
 
-## 4. Formal Pentest Report Export
+## 4. Finding Verification & Proof of Concept (PoC)
+
+Re-verify candidate findings, filter false positives, and generate non-destructive reproduction PoCs:
+```text
+/sr-verify docs/security-report.md
+/sr-verify TASK-SEC-001
+/sr-verify verify SQL injection in user search endpoint
+```
+Produces:
+- **Exploitability Classification**: `CONFIRMED`, `FALSE_POSITIVE`, `MITIGATED`, or `ACCEPTED_RISK`.
+- **Proof of Concept (PoC)**: Automated unit/integration test cases and safe curl payloads.
+- **Suppression Config**: Automatic YAML snippet for `security-review.yml` for verified false positives.
+
+---
+
+## 5. Formal Pentest Report Export
 
 Synthesize findings into an executive and technical whitebox security assessment:
 ```text
@@ -88,7 +104,7 @@ Generates a formal Markdown report including:
 
 ---
 
-## 5. Token-Budgeted CLI Acceleration
+## 6. Token-Budgeted CLI Acceleration
 
 Use the CLI companion for instant diff extraction and entrypoint discovery:
 

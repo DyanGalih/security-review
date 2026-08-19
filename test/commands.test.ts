@@ -23,6 +23,7 @@ const commandNames = [
   'security-review-followup.md',
   'security-review-apply.md',
   'security-review-export.md',
+  'security-verify.md',
   'init.md',
 ];
 

@@ -71,6 +71,7 @@ export const COMMAND_CATALOG: Record<string, string> = {
   'security-review-followup': 'security-review-followup.md',
   'security-review-apply':  'security-review-apply.md',
   'security-review-export': 'security-review-export.md',
+  'security-verify':        'security-verify.md',
   'init':                   'init.md',
 };
 
@@ -122,6 +123,9 @@ function getCommandPrefix(cmdKey: string): string {
   if (cmdKey === 'init') return 'sr-init';
   if (cmdKey === 'security-audit' || cmdKey === 'security-review' || cmdKey === 'audit' || cmdKey === 'review') {
     return 'sr-audit';
+  }
+  if (cmdKey === 'security-verify' || cmdKey === 'verify' || cmdKey === 'poc' || cmdKey === 'sr-poc') {
+    return 'sr-verify';
   }
   if (cmdKey.startsWith('security-review-')) {
     return `sr-${cmdKey.replace('security-review-', '')}`;
@@ -346,7 +350,7 @@ export async function runInitCommand(
     selectedCommands = allCmdKeys;
   } else {
     const commandChoices = [
-      { name: 'All Commands (Full Audit, Staged, Branch, Plan, Tasks, Apply, Followup, Export, Init)', value: 'all', checked: true },
+      { name: 'All Commands (Full Audit, Staged, Branch, Plan, Tasks, Apply, Followup, Export, Verify/PoC, Init)', value: 'all', checked: true },
       ...allCmdKeys.map((c) => ({ name: `${c} (/${getCommandPrefix(c)})`, value: c, checked: false })),
     ];
     const picked: string[] = await ask('Select Security Review commands to install:', commandChoices, true);
