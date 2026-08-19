@@ -143,44 +143,49 @@
           </thead>
           <tbody>
             <tr>
-              <td><code>/security-review</code></td>
+              <td><code>/sr-audit</code></td>
               <td>Milestone / Release</td>
               <td>Full-system whitebox security review and OWASP assessment.</td>
             </tr>
             <tr>
-              <td><code>/security-review.staged</code></td>
+              <td><code>/sr-staged</code></td>
               <td>Pre-commit</td>
               <td>Focused review of changes currently staged in Git (<code>git diff --cached</code>).</td>
             </tr>
             <tr>
-              <td><code>/security-review.branch</code></td>
+              <td><code>/sr-branch</code></td>
               <td>Feature / PR</td>
               <td>Reviews security risks introduced by feature branch diffs against base.</td>
             </tr>
             <tr>
-              <td><code>/security-review.plan</code></td>
+              <td><code>/sr-plan</code></td>
               <td>Design Phase</td>
-              <td>Audits implementation plans for missing trust boundaries and attack vectors.</td>
+              <td>Audits technical plans for missing trust boundaries and attack vectors.</td>
             </tr>
             <tr>
-              <td><code>/security-review.tasks</code></td>
+              <td><code>/sr-tasks</code></td>
               <td>Strategy Phase</td>
               <td>Ensures security requirements are sequenced properly in implementation tasks.</td>
             </tr>
             <tr>
-              <td><code>/security-review.followup</code></td>
+              <td><code>/sr-followup</code></td>
               <td>Triage</td>
               <td>Transforms security findings into structured remediation tasks.</td>
             </tr>
             <tr>
-              <td><code>/security-review.apply</code></td>
+              <td><code>/sr-apply</code></td>
               <td>Remediation</td>
               <td>Applies approved security refactors directly to <code>tasks.md</code> and <code>plan.md</code>.</td>
             </tr>
             <tr>
-              <td><code>/security-review.export</code></td>
+              <td><code>/sr-export</code></td>
               <td>Compliance</td>
               <td>Generates formal Executive and Technical Pentest Reports.</td>
+            </tr>
+            <tr>
+              <td><code>/sr-init</code></td>
+              <td>Initialization</td>
+              <td>Initializes or refines the project security constitution.</td>
             </tr>
           </tbody>
         </table>

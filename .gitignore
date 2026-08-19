@@ -56,7 +56,7 @@ pkg/
 target/
 Cargo.lock
 
-# Spec-Kit
+# Framework Cache
 .speckit/cache/
 *.speckit.local.yml
 

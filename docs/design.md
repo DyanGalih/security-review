@@ -1,237 +1,109 @@
-# Design Document
+# Architecture & Technical Design
 
-This document explains how the Security Review extension is structured and how it aligns with the Spec-Kit Extension Development Guide.
+This document details the architectural design of **Security Review (`v2.0.0`)**, a standalone CLI and multi-agent security audit toolkit with optional Spec-Kit extension compatibility.
 
-## Overview
+---
 
-The extension is intentionally lightweight. It does not ship a compiled runtime or a custom binary. Instead, it registers a prompt-backed slash command that Spec-Kit exposes to the agent after installation.
+## 1. System Overview
 
-Core model:
+Security Review delivers token-budgeted, multi-agent security intelligence by splitting duties between two layers:
 
-- `specify` installs and manages the extension
-- `extension.yml` declares metadata and command registration
-- `commands/` contains the source command files in this repository
-- Installation copies that prompt into the project-local command registry under `.claude/commands/`
-- The agent runs the review commands as `/speckit.security-review.audit`, `/speckit.security-review.staged`, `/speckit.security-review.branch`, `/speckit.security-review.plan`, `/speckit.security-review.tasks`, `/speckit.security-review.followup`, and `/speckit.security-review.apply`
-- Plan and task review commands fit around the Spec-Kit planning flow and help validate secure-by-design decisions before implementation
-- Repository-native memory artifacts such as `docs/memory/`, `specs/<feature>/memory.md`, `specs/<feature>/memory-synthesis.md`, and `.github/copilot-instructions.md` provide secure-by-design context when present
+1. **The CLI Layer (Execution & Token Optimization)**:
+   - High-speed git diff filtering (`security-review diff`).
+   - Security entrypoint and attack-surface scanning (`security-review scan`).
+   - Deterministic report frontmatter validation (`security-review validate`).
+   - Interactive multi-agent skill initialization (`security-review init`).
 
-## Guide Alignment
+2. **The Agent Layer (Reasoning & Auditing)**:
+   - Prompt-driven security audits with OWASP Top 10 (2025), CWE, and CVSS scoring.
+   - Architectural drift detection and trust boundary validation.
+   - Structured remediation task generation (`TASK-SEC-NNN`).
 
-The upstream Extension Development Guide establishes four important conventions that this repository now follows:
+---
 
-1. Manifest schema uses top-level `extension`, `requires`, and `provides` sections.
-2. Registered command names follow `speckit.<extension>.<command>`.
-3. Command files start with YAML frontmatter and then use Markdown body content.
-4. Local installation and registration are project-scoped under `.specify/` and `.claude/`.
-
-## Architecture
+## 2. Multi-Agent Integration Architecture
 
 ```text
-┌──────────────────────────────────────────────────────────────┐
-│                      Spec-Kit Project                        │
-│                                                              │
-│  specify extension add ...                                   │
-│            │                                                 │
-│            ▼                                                 │
-│   .specify/extensions/                                       │
-│            │                                                 │
-│            ▼                                                 │
-│   commands/*.md (source command files)                      │
-│            │                                                 │
-│            ▼                                                 │
-│   installed .claude/commands/speckit.security-review.audit.md │
-│            │                                                 │
-│            ▼                                                 │
-│   /speckit.security-review.audit                              │
-│            │                                                 │
-│            ▼                                                 │
-│   Security report with findings and remediation tasks        │
-└──────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                        AI Coding Workspace                             │
+│                                                                        │
+│   security-review init .                                               │
+│            │                                                           │
+│            ├──▶ .agent/skills/         (Antigravity)                   │
+│            ├──▶ .claude/skills/        (Claude Code)                   │
+│            ├──▶ .cursor/rules/         (Cursor)                        │
+│            ├──▶ .opencode/commands/    (OpenCode)                      │
+│            ├──▶ .codex/skills/         (Codex CLI)                     │
+│            ├──▶ .gemini/commands/      (Gemini Code Assist)            │
+│            ├──▶ .goose/recipes/        (Goose CLI)                     │
+│            └──▶ .windsurf/rules/       (Windsurf)                      │
+│                                                                        │
+│   Slash Command Execution:                                             │
+│   /sr-audit, /sr-staged, /sr-branch, /sr-plan, /sr-tasks, /sr-apply     │
+│            │                                                           │
+│            ▼                                                           │
+│   Token-Budgeted Context Extraction (via security-review diff/scan)    │
+│            │                                                           │
+│            ▼                                                           │
+│   Structured Security Assessment Report (YAML frontmatter + Markdown)  │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-The same install-and-register pattern applies to the staged, branch, plan, task, follow-up, and apply commands.
+---
 
-The upstream Spec-Kit workflow documented at speckit.org centers on `/plan`, `/tasks`, `/analyze`, and `/implement`. This extension layers security review commands around that documented flow rather than replacing it.
-The official lifecycle ends at `/implement`; there are no `test` or `deploy` slash commands in the documented core flow.
+## 3. Command Catalog & Prefix Mapping
 
-## Repository Structure
+All commands are provisioned with standardized short prefixes (`sr-*`) and support canonical alias mappings:
 
-```text
-security-review-extension/
-├── extension.yml
-├── config-template.yml
-├── commands/
-│   ├── security-review.md
-│   ├── security-review-plan.md
-│   ├── security-review-staged.md
-│   ├── security-review-branch.md
-│   ├── security-review-tasks.md
-│   ├── security-review-followup.md
-│   ├── security-review-apply.md
-│   └── init.md
-├── docs/
-│   ├── installation.md
-│   ├── usage.md
-│   └── design.md
-├── examples/
-│   └── example-output.md
-└── assets/
+| Command | Short Prefix | Standalone Alias | Purpose |
+|---|---|---|---|
+| `security-audit` | `sr-audit` | `security-review`, `audit` | Full repository security audit |
+| `security-review-staged` | `sr-staged` | `staged` | Pre-commit staged diff review |
+| `security-review-branch` | `sr-branch` | `branch` | Feature branch / PR diff review |
+| `security-review-plan` | `sr-plan` | `plan` | Technical plan & architecture review |
+| `security-review-tasks` | `sr-tasks` | `tasks` | Implementation tasks review |
+| `security-review-followup`| `sr-followup` | `followup` | Findings to backlog conversion |
+| `security-review-apply` | `sr-apply` | `apply` | Apply approved tasks to `tasks.md` |
+| `security-review-export`| `sr-export` | `export` | Formal pentest report synthesis |
+| `init` | `sr-init` | `init` | Security constitution initialization |
+
+---
+
+## 4. Spec-Kit Compatibility Layer
+
+To maintain 100% backward compatibility for projects built on Spec-Kit:
+- `src/extension.yml` defines the extension manifest.
+- Upstream command names like `speckit.security-review.audit` map directly to `commands/security-audit.md`.
+- Lifecycle hooks (`after_plan`, `after_tasks`, `after_implement`) are declared and functional.
+- For complete details, see [Spec-Kit Extension Guide](speckit-extension.md).
+
+---
+
+## 5. Document Header & Schema Strategy
+
+Every generated security review output starts with a strict YAML frontmatter block:
+
+```yaml
+---
+document_type: security-review
+review_type: <audit|staged|branch|plan|tasks|export>
+assessment_date: "2026-08-19"
+codebase_analyzed: "src/"
+total_files_analyzed: 14
+total_findings: 3
+overall_risk: HIGH
+critical_count: 0
+high_count: 2
+medium_count: 1
+low_count: 0
+informational_count: 0
+owasp_categories: [A01, A05]
+cwe_ids: [CWE-89, CWE-285]
+security_task: TASK-SEC-001
+---
 ```
 
-## Manifest Design
-
-The manifest is declarative and minimal.
-
-- `extension`: identity, version, repository, and descriptive metadata
-- `requires`: Spec-Kit compatibility requirement
-- `provides.commands`: slash-command registration
-- `tags`: catalog and discovery metadata
-
-The command remains named `speckit.security-review.audit` because the development guide reserves that namespace for extension commands even though installation and management are done through the `specify` CLI.
-
-## Command File Design
-
-The command file follows the guide's command-file format:
-
-1. YAML frontmatter for metadata
-2. Markdown body for the actual command instructions
-3. `$ARGUMENTS` passthrough so the user can supply natural-language scoping input
-
-This lets the extension stay prompt-driven while still supporting targeted reviews such as focusing on authentication, secrets, or specific directories.
-
-## Document Header Strategy
-
-Every generated security review document starts with a YAML frontmatter block. This block serves three purposes simultaneously:
-
-1. **Header-first LLM decisions**: An LLM reading the document encounters all structured metadata before the first finding. It can decide whether the document is relevant — by risk level, review type, OWASP categories, or date — without processing the report body. This reduces token usage in agentic pipelines that load multiple documents.
-
-2. **INDEX.md routing**: Each frontmatter block maps to a compact routing row in the consuming repo's `docs/memory/INDEX.md`. The row contains the same key fields in one line, allowing the LLM to filter across all security review documents using only the index — without loading any document body.
-
-3. **SQLite Phase 1 readiness**: The frontmatter fields are the exact schema that flash-mem and the compatibility memory-hub layer can ingest as SQL columns. No rework is required when the optimizer is enabled — the same frontmatter values populate the cache directly.
-
-The field definitions, indexing hints, INDEX.md row format, and SQLite column mapping are maintained in `docs/field-registry.md` and `docs/field-summaries.yml`.
-
-### Two-Stage Retrieval Flow
-
-```text
-Stage 1 (now — no SQLite required):
-  LLM reads docs/memory/INDEX.md
-    → filters rows by overall_risk, review_type, owasp_categories
-    → loads only matching document(s)
-    → reads frontmatter first → decides whether to read the full body
-
-Stage 2 (after flash-mem SQLite Phase 1 / compatibility optimizer):
-  SQL query on security_reviews table
-    → SELECT doc_path WHERE overall_risk IN ('CRITICAL','HIGH')
-    → LLM never touches INDEX.md or document bodies for non-matching docs
-    → loads only the filtered doc paths
-    → reads frontmatter first → reads relevant sections
-```
-
-The frontmatter defined today is the SQL schema for tomorrow. No data migration is needed.
-It also lets the full-project audit re-read project memory artifacts before evaluating the implementation.
-
-The plan review command uses the same flash-mem context to review `plan.md` and supporting design artifacts. If flash-mem is unavailable, it uses the spec-kit-memory-hub compatibility context. After `/speckit.tasks` generates the task list, the task review command checks whether the sequencing still preserves the secure-by-design intent. After a security review, the follow-up command can turn findings into concrete tasks or technical debt while checking whether incomplete issues are already tracked, and it emits backlog-ready task records with source finding references. The apply command is the explicit opt-in step that writes approved follow-up items back into `tasks.md` and, when necessary, `plan.md`.
-
-## Security Coverage Model
-
-The prompt is organized around these review layers:
-
-### OWASP Top 10 (2025)
-
-| Category                                  | Coverage Summary                           |
-| ----------------------------------------- | ------------------------------------------ |
-| A01 Broken Access Control                 | Authorization gaps, IDOR, SSRF             |
-| A02 Security Misconfiguration             | Headers, defaults, exposed internals       |
-| A03 Software Supply Chain Failures        | Dependencies, lockfiles, build integrity   |
-| A04 Cryptographic Failures                | Weak crypto, key handling, TLS             |
-| A05 Injection                             | SQL, NoSQL, command, template injection    |
-| A06 Insecure Design                       | Missing controls, unsafe workflows         |
-| A07 Authentication Failures               | Session, password, MFA, token flaws        |
-| A08 Software or Data Integrity Failures   | Deserialization, update trust, CI/CD abuse |
-| A09 Security Logging & Alerting Failures  | Logging coverage and alerting quality      |
-| A10 Mishandling of Exceptional Conditions | Fail-open paths and unsafe error handling  |
-
-### Additional Analysis Layers
-
-- Secure coding practices
-- Architecture and trust boundaries
-- Supply-chain and dependency review
-- DevSecOps configuration review
-- STRIDE-oriented threat framing
-
-## Installation and Registration Model
-
-The extension guide treats installation as project-local.
-
-### Release install
-
-```bash
-cd /path/to/spec-kit-project
-specify extension add security-review --from <release-zip>
-```
-
-### Development install
-
-```bash
-cd /path/to/spec-kit-project
-specify extension add --dev /path/to/security-review/src
-```
-
-### Registration checks
-
-```bash
-specify extension list
-ls .claude/commands/speckit.security-review.*
-cat .specify/extensions/.registry
-```
-
-## Memory Model
-
-The extension is most useful when the Spec-Kit project keeps design intent in memory:
-
-- Durable memory lives in `docs/memory/`
-- Feature-specific working memory lives in `specs/<feature>/memory.md`
-- The concise summary for active work lives in `specs/<feature>/memory-synthesis.md`
-- Copilot instructions in `.github/copilot-instructions.md` can reinforce the same design intent
-- Full-project audits should use those artifacts to assess whether the implementation still matches the intended design
-- Plan and task reviews should use those artifacts to make sure the planned work stays aligned before implementation begins
-- Staged and branch reviews should use it as context, but the diff under review still remains the source of truth
-
-## Output Design
-
-The report format is optimized for remediation, not just detection. Each finding should include:
-
-- Severity and location
-- OWASP mapping
-- Risk explanation
-- Exploit scenario where relevant
-- Concrete remediation guidance
-- Spec-Kit-ready follow-up tasks
-
-## Design Tradeoffs
-
-### Why a Prompt-Backed Command
-
-- Easier to maintain than a language-specific scanner
-- Works across mixed-language repositories
-- Lets the agent explain why a finding matters
-
-### Why Natural-Language Scoping Instead of CLI Flags
-
-- Matches the command-file model in the extension guide
-- Avoids inventing a parallel standalone CLI interface
-- Keeps the prompt flexible for different review contexts
-
-### Why Project-Local Installation
-
-- Matches the upstream development guide
-- Makes command registration explicit and inspectable
-- Keeps extension behavior tied to the current Spec-Kit project
-
-## Future Enhancements
-
-- Add a manifest-managed config entry if the project moves from an optional review brief to a formal extension configuration file
-- Add `.extensionignore` if release packaging should exclude development-only content
-- Add automated manifest and command-file validation tests
+### Frontmatter Schema Dual-Readiness
+- **Fast LLM Evaluation**: Agents can evaluate risk and categories by reading the frontmatter header without loading the entire document body.
+- **SQL / Flash-Mem Indexing**: Frontmatter columns directly mirror SQLite caching tables for fast indexed retrieval.
+- **Backward Compatibility**: `security_task` is canonical; `spec_kit_task` is supported as a transparent alias.

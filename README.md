@@ -54,17 +54,17 @@ After installation, use any of the binary aliases: `security-review`, `sec-revie
 
 Use Security Review directly with AI coding assistants (Antigravity, Claude Code, Cursor, OpenCode, Codex):
 
-| Slash Command | Development Phase | Purpose |
-|---|---|---|
-| `/security-review` | Milestone / Audit | Full repository security audit across all OWASP categories. |
-| `/security-review.staged` | Pre-commit | Focused security review of staged changes (`git diff --cached`). |
-| `/security-review.branch` | Feature / PR | Review security risks introduced by the current feature branch. |
-| `/security-review.plan` | Technical Design | Review implementation plan for trust boundaries and security gaps. |
-| `/security-review.tasks` | Strategy & Tasks | Verify that security requirements are sequenced in implementation tasks. |
-| `/security-review.followup` | Triage | Convert security findings into actionable remediation tasks. |
-| `/security-review.apply` | Remediation | Automatically apply approved security fixes to `tasks.md` and `plan.md`. |
-| `/security-review.export` | Formal Report | Export formal Executive and Technical Pentest Report. |
-| `/security-review.init` | Onboarding | Initialize or update the project Security Constitution. |
+| Slash Command | Skill ID | Development Phase | Purpose |
+|---|---|---|---|
+| `/sr-audit` | `sr-audit` | Milestone / Audit | Full repository security audit across all OWASP categories. |
+| `/sr-staged` | `sr-staged` | Pre-commit | Focused security review of staged changes (`git diff --cached`). |
+| `/sr-branch` | `sr-branch` | Feature / PR | Review security risks introduced by the current feature branch. |
+| `/sr-plan` | `sr-plan` | Technical Design | Review technical plan for trust boundaries and security gaps. |
+| `/sr-tasks` | `sr-tasks` | Strategy & Tasks | Verify that security requirements are sequenced in implementation tasks. |
+| `/sr-followup` | `sr-followup` | Triage | Convert security findings into actionable remediation tasks. |
+| `/sr-apply` | `sr-apply` | Remediation | Automatically apply approved security fixes to `tasks.md` and `plan.md`. |
+| `/sr-export` | `sr-export` | Formal Report | Export formal Executive and Technical Pentest Report. |
+| `/sr-init` | `sr-init` | Onboarding | Initialize or update the project Security Constitution. |
 
 👉 For full details on prompt contracts and agent workflows, see [Agent Skills Guide](docs/agent-skills.md).
 

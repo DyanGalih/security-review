@@ -1,13 +1,13 @@
-# Security Review Extension - Configuration Template
+# Security Review - Configuration Template
 #
-# Copy this file to your project root as 'speckit-security.yml'
+# Copy this file to your project root as 'security-review.yml'
 # if you want a reusable review brief for the command.
 #
-# Note: the extension is prompt-driven and does not read this file automatically.
+# Note: the toolkit is prompt-driven and reads configuration or conventions.
 # Use it as a human-readable team brief, and include the relevant settings in
 # the slash-command input when you want the agent to follow them.
 #
-# All settings are optional - the extension works with defaults.
+# All settings are optional - the toolkit works with defaults.
 
 security-review:
   # ============================================================
@@ -96,7 +96,7 @@ security-review:
     # Default: true
     include-stride: true
 
-    # Include Spec-Kit task generation
+    # Include security task generation
     # Default: true
     include-tasks: true
 
@@ -223,14 +223,13 @@ security-review:
     cicd-security: true
 
   # ============================================================
-  # MEMORY HUB CONTEXT
+  # MEMORY CONTEXT
   # ============================================================
 
   # Keep these paths in the team brief when you want the review to
-  # respect Spec-Kit repository-native memory. The extension does not
-  # read this file automatically; treat these as conventions for prompt input.
+  # respect repository-native memory. Treat these as conventions for prompt input.
   memory:
-    # Durable memory folder used by spec-kit-memory-hub
+    # Durable memory folder used by Flash-Mem or repository memory
     # Default: docs/memory
     memory-root: docs/memory
 

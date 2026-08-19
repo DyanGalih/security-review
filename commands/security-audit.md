@@ -652,7 +652,7 @@ Produce a comprehensive **SECURITY REVIEW REPORT** with the following structure:
 
 ---
 
-## Spec-Kit Alignment Updates
+## Remediation & Planning Updates
 
 ### Generated Remediation Tasks
 
@@ -662,9 +662,9 @@ Produce a comprehensive **SECURITY REVIEW REPORT** with the following structure:
 | TASK-SEC-002 | High     | Access Control | Add authorization to admin API | Implement         |
 | TASK-SEC-003 | Medium   | Dependencies   | Update vulnerable lodash       | Maintain          |
 
-### Suggested Spec-Kit Phases
+### Suggested Implementation Phases
 
-1. **Immediate (Critical/High):** Address in current sprint
+1. **Immediate (Critical/High):** Address in current sprint / feature branch
 2. **Short-term (Medium):** Address within 2 sprints
 3. **Long-term (Low/Info):** Address in security hardening sprint
 
