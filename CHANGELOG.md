@@ -4,7 +4,12 @@
 
 - **Major Rebrand & Standalone Decoupling**:
   - Rebranded package and binaries to standalone `security-review` (`https://github.com/DyanGalih/security-review`).
-  - Decoupled standalone CLI & Agent skills (`/security-review.*`) from Spec-Kit while preserving complete backward compatibility for Spec-Kit extensions (`speckit.security-review.*`).
+  - Decoupled standalone CLI & Agent skills (`/sr-*` and `/security-review.*`) from Spec-Kit while preserving complete backward compatibility for Spec-Kit extensions (`speckit.security-review.*`).
+  - Added interactive multi-agent skill installer via `security-review init .` supporting Antigravity, Claude Code, Cursor, OpenCode, Codex, Gemini CLI, Goose CLI, and Windsurf.
+  - Standardized short slash command prefixes (`/sr-audit`, `/sr-staged`, `/sr-branch`, `/sr-plan`, `/sr-tasks`, `/sr-followup`, `/sr-apply`, `/sr-export`, `/sr-init`).
+  - Renamed core audit command template from `security-review.md` to `security-audit.md` (while keeping `speckit.security-review.audit` in `extension.yml`).
+  - Generalized all 9 command prompts to remove framework-specific coupling while supporting generic planning documents (`plan.md`, `design.md`, `tasks.md`).
+  - Added `security_task` as primary report frontmatter field with seamless fallback support for `spec_kit_task`.
   - Added modern promotional landing page under `src/landing/` (`index.html`, `styles.css`, `new_logo.png`).
 - **CLI & Runtime Enhancements**:
   - `diff --branch <target> [base]`: Deterministic target/base syntax with strict merge-base validation.
@@ -13,7 +18,7 @@
   - Strict frontmatter schema validation (types, regex patterns, counts, export provenance).
   - Node.js engine requirement updated to `>= 22.0.0`.
 - **Documentation Restructure**:
-  - Modularized documentation inside `src/` with dedicated `agent-skills.md`, `cli-reference.md`, `speckit-extension.md`, and `installation.md`.
+  - Modularized documentation inside `src/` with dedicated `agent-skills.md`, `cli-reference.md`, `speckit-extension.md`, `design.md`, `usage.md`, and `installation.md`.
 
 ## v1.7.0
 
