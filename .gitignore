@@ -93,3 +93,4 @@ local-config.yml
 .flash-mem/
 .github/
 .vscode/
+.playwright-mcp/
