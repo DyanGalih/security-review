@@ -14,9 +14,15 @@ When registered in Spec-Kit, all commands are prefixed with `speckit.security-re
 
 ## 2. Installation in Spec-Kit
 
-### Remote Extension
+### Remote Extension via Registry
 ```bash
 specify extension add security-review
+```
+
+### From GitHub Release
+```bash
+specify extension add security-review --from \
+  https://github.com/DyanGalih/security-review/archive/refs/tags/v2.0.0.zip
 ```
 
 ### Local Development / Source Checkout
