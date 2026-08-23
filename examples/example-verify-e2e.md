@@ -1,0 +1,141 @@
+---
+document_type: security-review
+review_type: verify
+assessment_date: "2026-08-21"
+codebase_analyzed: example-ecommerce-web
+total_findings: 3
+overall_risk: HIGH
+critical_count: 1
+high_count: 0
+medium_count: 1
+low_count: 1
+informational_count: 0
+findings_evaluated: 3
+confirmed_count: 1
+false_positive_count: 1
+fix_suggestion_count: 1
+mitigated_count: 0
+accepted_risk_count: 0
+overall_exploitability: HIGH
+e2e_verified: true
+target_artifacts: ["docs/security-reviews/2026-08-19-audit.md"]
+owasp_categories: [A03, A05]
+cwe_identifiers: [CWE-79, CWE-601]
+---
+
+# Security Finding Verification & PoC Report
+
+## 1. Executive Verification Summary
+
+| Finding ID / Target | Vulnerability Type | Original Severity | Verification Status | Exploitability | Confidence | E2E Mode |
+|---|---|---|---|---|---|---|
+| `TASK-SEC-001` | DOM-based Cross-Site Scripting (XSS) | High | **CONFIRMED** | High | 95% | Playwright (Headless) |
+| `TASK-SEC-002` | Unvalidated URL Redirect | Medium | **FIX_SUGGESTION** | Low | 65% | Playwright (Headless) |
+| `TASK-SEC-003` | Cross-Site Request Forgery (CSRF) | High | **FALSE_POSITIVE** | None | 95% | Playwright (Headless) |
+
+### Summary Analysis
+Evaluated 3 candidate findings from previous audit reports against the running test environment (`http://localhost:3000`). Using Playwright browser automation, 1 DOM-based XSS vulnerability was empirically confirmed with full reproduction steps. 1 unvalidated redirect finding was downgraded to `FIX_SUGGESTION` because modern browser protections and client-side sanitizers prevent direct phishing redirection, though stricter URL allowlisting is advised. 1 CSRF finding was verified as `FALSE_POSITIVE` due to active SameSite=Strict session cookies and double-submit CSRF headers.
+
+---
+
+## 2. Detailed Finding Verifications & PoC Reproductions
+
+### Finding: TASK-SEC-001 — DOM XSS in Search Query Highlight
+- **Original Severity**: High
+- **Verification Status**: CONFIRMED
+- **Confidence Score**: 95%
+- **Affected File(s)**: `src/components/SearchHighlight.vue:L42`
+- **E2E Validation**: Playwright (Headless)
+
+#### A. Control & Data Flow Analysis
+- **Source**: URL search parameter `?q=<payload>` decoded from `window.location.search`.
+- **Intermediate Flow**: Passed unescaped into `v-html="highlightTerm(query)"`.
+- **Sink / Control**: Raw DOM innerHTML injection via client-side template renderer.
+
+#### B. Proof of Concept (PoC) & Steps to Reproduce
+
+**Runnable Test File**: `tests/security/TASK-SEC-001.spec.ts`
+
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('Verify TASK-SEC-001 - DOM XSS in Search Highlighting', async ({ page }) => {
+  const probePayload = '<img src=x onerror="window.__xss_probed=true">';
+  await page.goto(`http://localhost:3000/search?q=${encodeURIComponent(probePayload)}`);
+  
+  // Assert injection execution in client browser context
+  const xssTriggered = await page.evaluate(() => (window as unknown as { __xss_probed?: boolean }).__xss_probed === true);
+  expect(xssTriggered).toBe(true);
+});
+```
+
+**Steps to Reproduce (Manual / End-User)**:
+1. Open browser and navigate to: `http://localhost:3000/search?q=%3Cimg%20src=x%20onerror=%22window.__xss_probed=true%22%3E`
+2. Inspect the rendered search result element `.highlight-result`.
+3. **Observed Vulnerable Behavior**: The `<img>` tag is injected raw into the DOM, executing the onerror script handler.
+4. **Expected Remediated Behavior**: Special HTML characters (`<`, `>`, `"`) should be HTML-entity encoded and rendered via text content instead of `v-html`.
+
+#### C. Remediation Guidance
+Replace `v-html` with safe text interpolation `v-text` or sanitize the highlighted output with DOMPurify.
+
+---
+
+### Finding: TASK-SEC-002 — Open Redirect on Post-Login Return URL
+- **Original Severity**: Medium
+- **Verification Status**: FIX_SUGGESTION
+- **Confidence Score**: 65%
+- **Affected File(s)**: `src/controllers/auth.ts:L88`
+- **E2E Validation**: Playwright (Headless)
+
+#### A. Control & Data Flow Analysis
+- **Source**: Query parameter `?returnUrl=//attacker.com`.
+- **Intermediate Flow**: Navigation router validates relative path prefix `/` but does not reject protocol-relative `//` URLs.
+- **Sink / Control**: `window.location.href = returnUrl`. Modern browsers handle `//` redirection, but internal CSP restricts cross-origin navigation.
+
+#### B. Proof of Concept (PoC) & Steps to Reproduce
+
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('Test TASK-SEC-002 - Protocol-relative Open Redirect', async ({ page }) => {
+  await page.goto('http://localhost:3000/login?returnUrl=//evil.example.com');
+  await page.fill('#username', 'testuser');
+  await page.fill('#password', 'password123');
+  await page.click('#submit-btn');
+
+  // CSP blocks external navigation, keeping user on origin
+  expect(page.url()).toContain('localhost:3000');
+});
+```
+
+**Steps to Reproduce**:
+1. Navigate to: `http://localhost:3000/login?returnUrl=//evil.example.com`
+2. Complete login.
+3. **Observed Behavior**: Browser remains within app domain due to CSP, but protocol-relative redirect URL was accepted by router.
+4. **Advisory Fix Suggestion**: Ensure `returnUrl` strictly starts with a single `/` and not `//`, or validate against an explicit internal route allowlist.
+
+---
+
+### Finding: TASK-SEC-003 — CSRF on Profile Update
+- **Original Severity**: High
+- **Verification Status**: FALSE_POSITIVE
+- **Confidence Score**: 95%
+- **Affected File(s)**: `src/routes/profile.ts:L22`
+- **E2E Validation**: Playwright (Headless)
+
+#### A. Control & Data Flow Analysis
+- Static scanner flagged missing `@csrfToken` middleware on `/api/profile/update`.
+- E2E verification confirmed session authentication uses `SameSite=Strict` cookie policy, and API requests require a custom header `X-Requested-With: XMLHttpRequest` which browsers do not allow cross-origin without CORS preflight.
+
+---
+
+## 3. False Positive Suppression Config
+
+```yaml
+# Add to .security-review/security-review.yml under false-positives:
+false-positives:
+  - rule: "CSRF-001"
+    file: "src/routes/profile.ts"
+    reason: "Protected by SameSite=Strict cookies and mandatory X-Requested-With preflight header"
+    date: "2026-08-21"
+```

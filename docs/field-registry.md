@@ -18,7 +18,7 @@ These fields describe the review document itself and appear at the top of every 
 | Field | Type | Values / Range | Description | INDEX.md column? |
 |---|---|---|---|---|
 | `document_type` | string (enum) | `security-review` | Always `security-review`. Allows indexers to filter out non-review documents without reading content. | No (constant) |
-| `review_type` | string (enum) | `audit`, `branch`, `staged`, `plan`, `tasks`, `followup`, `export` | Which command generated this document. Determines expected sections and scope. | Yes |
+| `review_type` | string (enum) | `audit`, `branch`, `staged`, `plan`, `tasks`, `followup`, `export`, `verify` | Which command generated this document. Determines expected sections and scope. | Yes |
 | `assessment_date` | string (ISO 8601) | `YYYY-MM-DD` | Date the review was performed. Supports time-based filtering (e.g., "reviews from last 30 days"). | Yes |
 | `codebase_analyzed` | string | Free text | Name or path of the repository or component reviewed. | No |
 | `total_files_analyzed` | integer | ≥ 0 | Number of files the agent analyzed. Provides signal on review depth. | No |
@@ -26,6 +26,13 @@ These fields describe the review document itself and appear at the top of every 
 | `assessment_kind` | string (enum) | `whitebox-review`, `report-synthesis` | Export-only provenance distinguishing direct source review from synthesis. | No |
 | `source_artifacts` | string[] | Paths or identifiers | Export-only source reports or artifacts used for synthesis. | No |
 | `commit_or_branch` | string | Commit, branch, or `unknown` | Export-only source revision provenance. | No |
+| `findings_evaluated` | integer | ≥ 0 | Verification-only: total count of findings evaluated during verification. | No |
+| `confirmed_count` | integer | ≥ 0 | Verification-only: count of confirmed exploitable findings. | No |
+| `false_positive_count` | integer | ≥ 0 | Verification-only: count of verified false-positive findings. | No |
+| `mitigated_count` | integer | ≥ 0 | Verification-only: count of findings with active compensating controls. | No |
+| `accepted_risk_count` | integer | ≥ 0 | Verification-only: count of accepted architectural/business risks. | No |
+| `fix_suggestion_count` | integer | ≥ 0 | Verification-only: count of unconfirmed exploit findings downgraded to fix suggestions. | No |
+| `e2e_verified` | boolean | `true`, `false` | Verification-only: whether browser-based Playwright E2E verification was executed. | No |
 
 ---
 
@@ -36,6 +43,7 @@ These fields encode the overall risk posture and per-severity finding counts. Th
 | Field | Type | Values / Range | Description | INDEX.md column? |
 |---|---|---|---|---|
 | `overall_risk` | string (enum) | `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFORMATIONAL`, `NONE` | Highest severity tier with active findings; use `NONE` when no active findings exist. Primary routing signal — an LLM or query can skip LOW/INFORMATIONAL/NONE documents when investigating a critical incident. | Yes |
+| `overall_exploitability` | string (enum) | `HIGH`, `MEDIUM`, `LOW`, `NONE` | Verification-only: aggregated empirical exploitability level across evaluated findings. | No |
 | `critical_count` | integer | ≥ 0 | Number of Critical findings. SQL: `WHERE critical_count > 0` finds all docs with critical issues. | Yes (compact: `C:N`) |
 | `high_count` | integer | ≥ 0 | Number of High findings. | Yes (compact: `H:N`) |
 | `medium_count` | integer | ≥ 0 | Number of Medium findings. | Yes (compact: `M:N`) |

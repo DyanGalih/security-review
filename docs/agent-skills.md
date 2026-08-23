@@ -26,7 +26,7 @@ When working with an AI coding assistant, use the canonical standalone slash com
 | `/sr-followup` | `sr-followup` | Findings to tasks conversion | Converting security findings into structured tasks. |
 | `/sr-apply` | `sr-apply` | Apply approved refactors | Updating `tasks.md` and `plan.md` automatically. |
 | `/sr-export` | `sr-export` | Formal pentest report | Executive & Technical synthesis export. |
-| `/sr-verify` | `sr-verify` | Finding verification & PoC | Re-verify findings, test exploitability, generate PoCs. |
+| `/sr-verify` | `sr-verify` | Finding verification & PoC | Re-verify findings, validate exploitability via Playwright E2E / unit PoCs, downgrade unconfirmed exploits to fix suggestions. |
 | `/sr-init` | `sr-init` | Security constitution init | Establishing security rules during project onboarding. |
 
 ---

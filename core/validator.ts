@@ -70,7 +70,7 @@ export async function validateReportFrontmatter(filePath: string): Promise<Valid
   }
 
   // 2. Review Type Check
-  const validReviewTypes = ['audit', 'branch', 'staged', 'plan', 'tasks', 'followup', 'export', 'remediation', 'plan-review', 'tasks-review'];
+  const validReviewTypes = ['audit', 'branch', 'staged', 'plan', 'tasks', 'followup', 'export', 'remediation', 'plan-review', 'tasks-review', 'verify'];
   if (data.review_type === undefined || data.review_type === null) {
     issues.push({
       field: 'review_type',
@@ -146,6 +146,28 @@ export async function validateReportFrontmatter(filePath: string): Promise<Valid
           });
         }
       }
+    }
+  }
+
+  // 4b. Optional Verification & E2E Fields Validation
+  if (data.fix_suggestion_count !== undefined && data.fix_suggestion_count !== null) {
+    const val = Number(data.fix_suggestion_count);
+    if (!Number.isInteger(val) || val < 0) {
+      issues.push({
+        field: 'fix_suggestion_count',
+        message: `Field "fix_suggestion_count" must be a non-negative integer. Got "${data.fix_suggestion_count}".`,
+        severity: 'ERROR',
+      });
+    }
+  }
+
+  if (data.e2e_verified !== undefined && data.e2e_verified !== null) {
+    if (typeof data.e2e_verified !== 'boolean') {
+      issues.push({
+        field: 'e2e_verified',
+        message: `Field "e2e_verified" must be a boolean. Got "${data.e2e_verified}".`,
+        severity: 'ERROR',
+      });
     }
   }
 

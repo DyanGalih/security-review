@@ -53,10 +53,10 @@ export interface AgentContextPayload {
 }
 
 export type FindingSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFORMATIONAL';
-export type VerificationStatus = 'CONFIRMED' | 'FALSE_POSITIVE' | 'MITIGATED' | 'ACCEPTED_RISK';
+export type VerificationStatus = 'CONFIRMED' | 'FALSE_POSITIVE' | 'MITIGATED' | 'ACCEPTED_RISK' | 'FIX_SUGGESTION';
 
 export interface FindingPoc {
-  type?: 'test' | 'curl' | 'script' | string;
+  type?: 'test' | 'curl' | 'script' | 'playwright' | string;
   code: string;
   reproductionSteps?: string[];
   expectedVulnerable?: string;
@@ -85,12 +85,19 @@ export interface FindingItem {
 
 export interface FindingsReport {
   document_type?: 'security-review';
-  review_type?: 'audit' | 'staged' | 'branch' | 'plan' | 'tasks' | 'export' | 'verify';
+  review_type?: 'audit' | 'staged' | 'branch' | 'plan' | 'tasks' | 'export' | 'verify' | 'followup';
   assessment_date?: string;
   codebase_analyzed?: string;
   total_files_analyzed?: number;
+  total_findings?: number;
   overall_risk?: FindingSeverity | 'NONE';
   assessment_kind?: 'whitebox-review' | 'report-synthesis';
   findings: FindingItem[];
   architectural_risks?: Array<{ pattern: string; description: string }>;
+  confirmed_count?: number;
+  false_positive_count?: number;
+  mitigated_count?: number;
+  accepted_risk_count?: number;
+  fix_suggestion_count?: number;
+  e2e_verified?: boolean;
 }

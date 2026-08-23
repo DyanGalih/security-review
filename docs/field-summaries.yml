@@ -14,7 +14,7 @@ document_fields:
 
   review_type:
     type: string
-    enum: [audit, branch, staged, plan, tasks, followup, export]
+    enum: [audit, branch, staged, plan, tasks, followup, export, verify]
     description: "Which command generated this document. Determines expected sections and scope."
     index: true
 
@@ -57,6 +57,47 @@ document_fields:
   commit_or_branch:
     type: string
     description: "Export-only commit or branch reviewed, or 'unknown' when source was not directly accessed."
+    index: false
+
+  findings_evaluated:
+    type: integer
+    minimum: 0
+    description: "Verification-only: count of evaluated candidate findings."
+    index: false
+
+  confirmed_count:
+    type: integer
+    minimum: 0
+    description: "Verification-only: count of confirmed exploitable findings."
+    index: false
+
+  false_positive_count:
+    type: integer
+    minimum: 0
+    description: "Verification-only: count of verified false positives."
+    index: false
+
+  mitigated_count:
+    type: integer
+    minimum: 0
+    description: "Verification-only: count of findings with active mitigating controls."
+    index: false
+
+  accepted_risk_count:
+    type: integer
+    minimum: 0
+    description: "Verification-only: count of accepted architectural risks."
+    index: false
+
+  fix_suggestion_count:
+    type: integer
+    minimum: 0
+    description: "Verification-only: count of unconfirmed exploit findings downgraded to fix suggestions."
+    index: false
+
+  e2e_verified:
+    type: boolean
+    description: "Verification-only: whether browser-based Playwright E2E verification was executed."
     index: false
 
 risk_fields:

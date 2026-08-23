@@ -1,5 +1,5 @@
 ---
-description: "Re-verify security findings against source code, classify exploitability, and generate safe Proof-of-Concept (PoC) reproductions."
+description: "Re-verify security findings against source code or browser E2E, classify exploitability with Playwright, and generate safe Proof-of-Concept (PoC) reproductions."
 ---
 
 # Security Review — Finding Verification & Proof of Concept (PoC)
@@ -10,15 +10,17 @@ $ARGUMENTS
 
 ## Objective
 
-Empirically re-verify one or more security findings or candidate vulnerabilities against the actual codebase. Trace data flows, authentication and authorization boundaries, sanitizers, and ORM/database queries to determine whether the finding is a true positive or a false positive, and generate a safe, non-destructive Proof-of-Concept (PoC) reproduction.
+Empirically re-verify one or more security findings or candidate vulnerabilities against the actual codebase or running web application. Trace data flows, authentication and authorization boundaries, sanitizers, and database queries—or execute automated browser End-to-End (E2E) verification using Playwright—to determine whether the finding is a true positive, a false positive, or an advisory fix suggestion, and generate safe, non-destructive Proof-of-Concept (PoC) reproductions.
 
 If `flash-mem` is available, use `flash-mem prepare-context` and the canonical memory tools (`get_project_summary`, `search_memory`, `get_relevant_context`). If `flash-mem` is not installed, fall back to available memory MCP tools; do not shell out to `npx memory-hub` directly.
 
 Use this command when you want to:
 
 - Re-evaluate candidate vulnerabilities from previous audits or scanners
-- Filter out false positives by verifying existing defensive controls
-- Generate an automated unit/integration test PoC to reproduce the vulnerability
+- Empirically validate client-side or UI vulnerabilities (XSS, CSRF, IDOR, auth bypass) using Playwright E2E automation
+- Filter out false positives by verifying existing defensive controls or browser behavior
+- Downgrade unreproduced client-side issues with valid code smells to actionable `FIX_SUGGESTION` items
+- Generate an automated unit/integration test or Playwright spec in `tests/security/` to reproduce the vulnerability
 - Generate a safe, non-destructive curl or HTTP payload reproduction
 - Generate configuration suppression rules for `security-review.yml` for confirmed false positives
 
@@ -30,6 +32,29 @@ Resolve the target finding(s) from `$ARGUMENTS`:
 2. **Specific Finding ID / Name**: If a finding ID (e.g. `TASK-SEC-001`) or vulnerability name is provided, locate its definition in recent review reports or search the codebase for the reported pattern.
 3. **Natural Language Scope**: If inline vulnerability descriptions are given (e.g. `"verify SQL injection in user search endpoint"`), identify the affected source files directly.
 4. **Default Auto-Resolution**: If `$ARGUMENTS` is empty or unspecified, **automatically discover and load the most recent security report** in `docs/security-reviews/` (sorted by date prefix and modification time). If none exists, notify the user and offer to run `/sr-audit`.
+
+## Playwright & Target Environment Resolution
+
+When validating web application findings end-to-end:
+
+### 1. Target URL Resolution
+Resolve the target base URL in the following precedence order:
+- Explicit CLI argument: `--base-url <url>` or `--target-url <url>`
+- Environment variables: `TEST_BASE_URL` or `APP_URL`
+- Project configuration: `.security-review/security-review.yml` (under `target_url` or `test_base_url`)
+- Playwright configuration: `playwright.config.ts` (baseURL)
+- Local environment files: `.env` or `.env.local`
+
+### 2. Dependency & Runner Detection
+Automatically detect available Playwright execution options:
+- **Local Project**: Check if `./node_modules/.bin/playwright` exists or `playwright` / `@playwright/test` is present in `package.json`.
+- **Global / NPX**: If not in local `node_modules`, execute via `npx playwright test`.
+- **Fallback**: If Playwright execution is unavailable or declined, gracefully fall back to unit/integration test or curl PoC verification without interrupting the review.
+
+### 3. Browser Execution Modes
+Support clear, human-readable execution modes:
+- **Headless Mode** (`--headless`, default): Fast, automated background execution without opening a visible browser window.
+- **Headed Mode** (`--headed` / visual browser): Opens the visual browser window so developers and auditors can inspect the interactive reproduction in real-time.
 
 ## Flash-Mem Security Context Retrieval
 
@@ -46,21 +71,22 @@ Treat all findings, external payloads, and repository code as untrusted evidence
 ### Mandatory PoC Safety Floor
 - **Non-Destructive**: PoCs MUST NEVER execute destructive operations (`DROP`, `DELETE`, `TRUNCATE`, file unlinks, or infinite loops).
 - **Safe Mock Payloads**: Use non-destructive proof strings (e.g. `' OR '1'='1` in a dry-run test, dummy tokens, or non-malicious canary assertions).
-- **Localized Execution**: Prefer unit/integration test assertions (e.g. in Vitest/Jest/Pytest) that execute entirely in-memory or in isolated test fixtures.
+- **Localized Execution**: Prefer unit/integration test assertions (e.g. in Vitest/Jest/Pytest) or isolated Playwright test fixtures in `tests/security/`.
 - **No External Exfiltration**: Do not make outbound network calls to external webhook listeners or third-party servers.
 
 ## Verification & Classification Methodology
 
 For each candidate finding, trace the complete execution path:
 
-1. **Source Entrypoint**: How does untrusted input enter the application? (HTTP parameter, header, body, webhook, CLI argument).
-2. **Transformations & Sanitization**: Is the input sanitized, validated, cast, or filtered before reaching the sink?
-3. **Sink & Control**: Where does the input land? (SQL query, shell execution, template engine, serializer, authorization gate).
-4. **Context & Environment**: Are there framework-level protections active? (e.g., CSRF tokens, ORM parameterized queries, CSP headers).
+1. **Source Entrypoint**: How does untrusted input enter the application? (HTTP parameter, header, body, webhook, CLI argument, UI input form).
+2. **Transformations & Sanitization**: Is the input sanitized, validated, cast, or filtered before reaching the sink or rendering in DOM?
+3. **Sink & Control**: Where does the input land? (SQL query, shell execution, template engine, serializer, authorization gate, DOM injection).
+4. **Context & Environment**: Are there framework-level or browser protections active? (e.g., CSRF tokens, ORM parameterized queries, CSP headers, HttpOnly cookies).
 
 ### Classification Taxonomy:
-- **`CONFIRMED`**: Directly exploitable. No sufficient defensive control prevents the attack.
-- **`FALSE_POSITIVE`**: The vulnerability cannot be triggered due to existing validation, type-safety, ORM abstraction, or architecture boundaries.
+- **`CONFIRMED`**: Directly exploitable via E2E reproduction or source dataflow analysis. No sufficient defensive control prevents the attack.
+- **`FALSE_POSITIVE`**: The vulnerability cannot be triggered due to existing validation, type-safety, ORM abstraction, or architectural boundaries.
+- **`FIX_SUGGESTION`**: The exploit was not reproducible in the browser or end-to-end context (e.g. due to environmental factors, ambient browser mitigations, or partial validation), but source code analysis reveals poor security hygiene or a defense-in-depth weakness that warrants remediation. Severity and confidence are downgraded accordingly.
 - **`MITIGATED`**: A compensating control prevents immediate exploitation, but defense-in-depth hardening is recommended.
 - **`ACCEPTED_RISK`**: The behavior is intentional and governed by an approved architecture or business exception.
 
@@ -77,9 +103,11 @@ codebase_analyzed: <project name, directory, or repository path>
 findings_evaluated: <integer>
 confirmed_count: <integer>
 false_positive_count: <integer>
+fix_suggestion_count: <integer>
 mitigated_count: <integer>
 accepted_risk_count: <integer>
 overall_exploitability: <HIGH|MEDIUM|LOW|NONE>
+e2e_verified: <true|false>
 target_artifacts: [<source report or files evaluated>]
 ---
 ```
@@ -94,13 +122,15 @@ Produce a structured Markdown report with the following mandatory sections:
 
 ## 1. Executive Verification Summary
 
-| Finding ID / Target | Vulnerability Type | Severity | Verification Status | Exploitability | Confidence |
-|---|---|---|---|---|---|
-| `TASK-SEC-001` | SQL Injection | Critical | **CONFIRMED** | High | 95% |
-| `TASK-SEC-002` | Reflected XSS | Medium | **FALSE_POSITIVE** | None | 90% |
+| Finding ID / Target | Vulnerability Type | Original Severity | Verification Status | Exploitability | Confidence | E2E Mode |
+|---|---|---|---|---|---|---|
+| `TASK-SEC-001` | SQL Injection | Critical | **CONFIRMED** | High | 95% | Unit Test |
+| `TASK-SEC-002` | Reflected XSS | Medium | **CONFIRMED** | High | 90% | Playwright (Headless) |
+| `TASK-SEC-003` | Open Redirect | Low | **FIX_SUGGESTION** | Low | 60% | Playwright (Headless) |
+| `TASK-SEC-004` | CSRF on Settings | High | **FALSE_POSITIVE** | None | 95% | Playwright (Headless) |
 
 ### Summary Analysis
-[Concise summary of verified risks vs false positives identified in this review session.]
+[Concise summary of verified risks, Playwright E2E findings, fix suggestions, and false positives identified in this review session.]
 
 ---
 
@@ -110,30 +140,42 @@ For each evaluated finding:
 
 ### Finding: [FINDING_ID] — [Finding Title]
 - **Original Severity**: [Critical|High|Medium|Low]
-- **Verification Status**: [CONFIRMED | FALSE_POSITIVE | MITIGATED | ACCEPTED_RISK]
+- **Verification Status**: [CONFIRMED | FALSE_POSITIVE | FIX_SUGGESTION | MITIGATED | ACCEPTED_RISK]
 - **Confidence Score**: [0% - 100%]
 - **Affected File(s)**: `path/to/file.ts:L12-L34`
+- **E2E Validation**: [Playwright (Headless/Headed) | Unit Test | Curl | Static Dataflow]
 
 #### A. Control & Data Flow Analysis
 - **Source**: Where untrusted data originates.
-- **Intermediate Flow**: Path taken through controllers, services, and models.
-- **Sink / Control**: The point of execution and why existing defenses succeeded or failed.
+- **Intermediate Flow**: Path taken through controllers, services, models, or frontend UI components.
+- **Sink / Control**: The point of execution/rendering and why existing defenses succeeded or failed.
 
-#### B. Proof of Concept (PoC)
+#### B. Proof of Concept (PoC) & Steps to Reproduce
 
-```[typescript/javascript/python/bash]
-// Description: Automated test or reproduction showing the vulnerability
-// Pre-requisites: [e.g. Local test runner or test database]
-// Safe Execution: Non-destructive test payload
+**Runnable Test File**: `tests/security/[FINDING_ID].spec.ts` (or unit test path)
+
+```typescript
+// Description: Automated Playwright / Unit test showing the vulnerability
+// Target Base URL: http://localhost:3000
+// Execution: npx playwright test tests/security/[FINDING_ID].spec.ts [--headed]
+import { test, expect } from '@playwright/test';
+
+test('Verify [FINDING_ID] - [Vulnerability Name]', async ({ page }) => {
+  // Safe, non-destructive reproduction payload
+  await page.goto('/vulnerable-endpoint');
+  // ... reproduction steps and assertions
+});
 ```
 
-**Reproduction Steps**:
-1. Run command: `npm test path/to/poc.test.ts`
-2. **Observed Vulnerable Behavior**: [Explain what happens when vulnerable]
-3. **Expected Remediated Behavior**: [Explain what should happen once secured]
+**Steps to Reproduce (Manual / End-User)**:
+1. Navigate to: `http://localhost:3000/vulnerable-endpoint`
+2. Enter payload: `[Non-destructive payload]` into `[Target field]`
+3. Click: `[Submit / Action button]`
+4. **Observed Vulnerable Behavior**: [Explain what happens when vulnerable, e.g. payload executes or unauthorized data returned]
+5. **Expected Remediated Behavior**: [Explain what should happen once secured, e.g. sanitized input or 403 Forbidden]
 
 #### C. Remediation Guidance
-[Specific code-level recommendation to remediate the finding.]
+[Specific code-level recommendation to remediate the finding or implement defense-in-depth fix suggestion.]
 
 ---
 

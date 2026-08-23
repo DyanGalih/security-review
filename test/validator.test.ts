@@ -111,4 +111,47 @@ commit_or_branch: "main"
 
     expect(result.valid).toBe(true);
   });
+
+  it('should successfully validate example-verify-e2e.md with Playwright E2E and fix_suggestion fields', async () => {
+    const examplePath = join(__dirname, '../examples/example-verify-e2e.md');
+    const result = await validateReportFrontmatter(examplePath);
+
+    expect(result.valid).toBe(true);
+    expect(result.frontmatterPresent).toBe(true);
+    expect(result.metadata).toBeDefined();
+    expect(result.metadata?.review_type).toBe('verify');
+    expect(result.metadata?.e2e_verified).toBe(true);
+    expect(result.metadata?.fix_suggestion_count).toBe(1);
+    expect(result.metadata?.confirmed_count).toBe(1);
+    expect(result.metadata?.false_positive_count).toBe(1);
+  });
+
+  it('should reject invalid fix_suggestion_count or e2e_verified types', async () => {
+    const tmpPath = join(tmpdir(), `test-invalid-verify-${Date.now()}.md`);
+    await writeFile(
+      tmpPath,
+      `---
+document_type: security-review
+review_type: verify
+total_findings: 1
+critical_count: 1
+high_count: 0
+medium_count: 0
+low_count: 0
+overall_risk: CRITICAL
+fix_suggestion_count: -5
+e2e_verified: "not-a-boolean"
+---
+# Verify Content
+`,
+      'utf8'
+    );
+
+    const result = await validateReportFrontmatter(tmpPath);
+    await unlink(tmpPath);
+
+    expect(result.valid).toBe(false);
+    expect(result.issues.some((i) => i.field === 'fix_suggestion_count')).toBe(true);
+    expect(result.issues.some((i) => i.field === 'e2e_verified')).toBe(true);
+  });
 });
