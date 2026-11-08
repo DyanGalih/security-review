@@ -121,7 +121,7 @@ target_artifacts: [<source report or files evaluated>]
 ---
 ```
 
-Count each evaluated finding once in both `total_findings`/its original-severity tier and the verification-status counts; preserve the original severity for unverified findings. Set `e2e_verified` to true only when an authorized browser check actually ran, and record inconclusive attempts in the finding analysis rather than claiming verification.
+Count every evaluated finding once in `findings_evaluated` and, when classified, once in its verification-status count. `total_findings` and the severity counts cover only active findings (`CONFIRMED`, `MITIGATED`, `FIX_SUGGESTION`, and unverified or inconclusive findings) at their original severity; exclude `FALSE_POSITIVE` and `ACCEPTED_RISK` so `overall_risk` stays the highest active tier and is `NONE` when no active findings remain. Set `e2e_verified` to true only when an authorized browser check actually ran, and record inconclusive attempts in the finding analysis rather than claiming verification.
 
 ## Output Structure
 
@@ -167,7 +167,7 @@ For each evaluated finding:
 
 ```typescript
 // Description: Automated Playwright / Unit test showing the vulnerability
-// Target Base URL: http://localhost:3000
+// Target Base URL: the confirmed URL, set as Playwright `baseURL` (paths below stay relative)
 // Execution (when locally installed): ./node_modules/.bin/playwright test tests/security/[FINDING_ID].spec.ts [--headed]
 import { test, expect } from '@playwright/test';
 

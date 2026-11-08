@@ -150,12 +150,21 @@ export async function validateReportFrontmatter(filePath: string): Promise<Valid
   }
 
   // 4b. Optional Verification & E2E Fields Validation
-  if (data.fix_suggestion_count !== undefined && data.fix_suggestion_count !== null) {
-    const val = data.fix_suggestion_count;
+  const verificationCountFields = [
+    'findings_evaluated',
+    'confirmed_count',
+    'false_positive_count',
+    'fix_suggestion_count',
+    'mitigated_count',
+    'accepted_risk_count',
+  ];
+  for (const field of verificationCountFields) {
+    const val = data[field];
+    if (val === undefined || val === null) continue;
     if (typeof val !== 'number' || !Number.isInteger(val) || val < 0) {
       issues.push({
-        field: 'fix_suggestion_count',
-        message: `Field "fix_suggestion_count" must be a non-negative integer. Got "${data.fix_suggestion_count}".`,
+        field,
+        message: `Field "${field}" must be a non-negative integer. Got "${val}".`,
         severity: 'ERROR',
       });
     }

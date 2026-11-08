@@ -1,6 +1,6 @@
 # Changelog
 
-## v2.0.0
+## Unreleased
 
 - **Playwright End-to-End Security Finding Verification (`/sr-verify`)**:
   - Added automated browser-driven E2E verification using Playwright to test finding exploitability against running web applications.
@@ -9,6 +9,10 @@
   - Expanded finding classification taxonomy to include `FIX_SUGGESTION` for independently verified hygiene improvements without downgrading unverified vulnerabilities.
   - Standardized non-destructive test generation under `tests/security/<finding-id>.spec.ts` with step-by-step reproduction instructions in verification reports.
   - Extended report schema, field registry, and validator with `fix_suggestion_count` and `e2e_verified`.
+  - Verify reports now count only active findings in `total_findings` and severity counts; false positives and accepted risks are tracked through `findings_evaluated` and status counts.
+
+## v2.0.0
+
 - **Major Rebrand & Standalone Decoupling**:
   - Rebranded package and binaries to standalone `security-review` (`https://github.com/DyanGalih/security-review`).
   - Decoupled standalone CLI & Agent skills (`/sr-*` and `/security-review.*`) from Spec-Kit while preserving complete backward compatibility for Spec-Kit extensions (`speckit.security-review.*`).

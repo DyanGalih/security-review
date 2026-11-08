@@ -26,7 +26,7 @@ These fields describe the review document itself and appear at the top of every 
 | `assessment_kind` | string (enum) | `whitebox-review`, `report-synthesis` | Export-only provenance distinguishing direct source review from synthesis. | No |
 | `source_artifacts` | string[] | Paths or identifiers | Export-only source reports or artifacts used for synthesis. | No |
 | `commit_or_branch` | string | Commit, branch, or `unknown` | Export-only source revision provenance. | No |
-| `findings_evaluated` | integer | ≥ 0 | Verification-only: total count of findings evaluated during verification. | No |
+| `findings_evaluated` | integer | ≥ 0 | Verification-only: total count of findings evaluated during verification, including false positives and accepted risks that are excluded from `total_findings` and the severity counts. | No |
 | `confirmed_count` | integer | ≥ 0 | Verification-only: count of confirmed exploitable findings. | No |
 | `false_positive_count` | integer | ≥ 0 | Verification-only: count of verified false-positive findings. | No |
 | `mitigated_count` | integer | ≥ 0 | Verification-only: count of findings with active compensating controls. | No |

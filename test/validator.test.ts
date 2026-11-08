@@ -125,8 +125,10 @@ commit_or_branch: "main"
     expect(result.metadata?.confirmed_count).toBe(1);
     expect(result.metadata?.false_positive_count).toBe(1);
     expect(result.metadata?.critical_count).toBe(0);
-    expect(result.metadata?.high_count).toBe(2);
+    expect(result.metadata?.high_count).toBe(1);
     expect(result.metadata?.medium_count).toBe(1);
+    expect(result.metadata?.total_findings).toBe(2);
+    expect(result.metadata?.findings_evaluated).toBe(3);
   });
 
   it('includes the required report fields in the verification command header', async () => {
@@ -152,6 +154,7 @@ medium_count: 0
 low_count: 0
 overall_risk: CRITICAL
 fix_suggestion_count: true
+confirmed_count: -1
 e2e_verified: "not-a-boolean"
 ---
 # Verify Content

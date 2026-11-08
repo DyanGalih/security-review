@@ -3,10 +3,10 @@ document_type: security-review
 review_type: verify
 assessment_date: "2026-08-21"
 codebase_analyzed: example-ecommerce-web
-total_findings: 3
+total_findings: 2
 overall_risk: HIGH
 critical_count: 0
-high_count: 2
+high_count: 1
 medium_count: 1
 low_count: 0
 informational_count: 0
@@ -30,11 +30,11 @@ cwe_identifiers: [CWE-79, CWE-601]
 | Finding ID / Target | Vulnerability Type | Original Severity | Verification Status | Exploitability | Confidence | E2E Mode |
 |---|---|---|---|---|---|---|
 | `TASK-SEC-001` | DOM-based Cross-Site Scripting (XSS) | High | **CONFIRMED** | High | 95% | Playwright (Headless) |
-| `TASK-SEC-002` | Unvalidated URL Redirect | Medium | **FIX_SUGGESTION** | Low | 65% | Playwright (Headless) |
+| `TASK-SEC-002` | Unvalidated URL Redirect | Medium | **FIX_SUGGESTION** | None | 90% | Playwright (Headless) |
 | `TASK-SEC-003` | Cross-Site Request Forgery (CSRF) | High | **FALSE_POSITIVE** | None | 95% | Playwright (Headless) |
 
 ### Summary Analysis
-Evaluated 3 candidate findings from previous audit reports against an authorized, isolated test environment (`http://localhost:3000`). Using Playwright browser automation, 1 DOM-based XSS vulnerability was empirically confirmed. 1 redirect finding was classified as `FIX_SUGGESTION` after verifying that the server rejects external return URLs; the client-side prefix check still warrants hardening. 1 CSRF finding was verified as `FALSE_POSITIVE` after confirming the server enforces its stated controls.
+Evaluated 3 candidate findings from previous audit reports against an authorized, isolated test environment (`http://localhost:3000`). Using Playwright browser automation, 1 DOM-based XSS vulnerability was empirically confirmed. 1 redirect finding was classified as `FIX_SUGGESTION` after verifying that the only redirect is issued by the server, which rejects external return URLs; an unused client-side helper with a weaker prefix check should still be removed. 1 CSRF finding was verified as `FALSE_POSITIVE` after confirming the server enforces its stated controls. Severity counts cover the 2 active findings; the false positive is counted only in `findings_evaluated` and `false_positive_count`.
 
 ---
 
@@ -61,7 +61,7 @@ import { test, expect } from '@playwright/test';
 
 test('Verify TASK-SEC-001 - DOM XSS in Search Highlighting', async ({ page }) => {
   const probePayload = '<img src=x onerror="window.__xss_probed=true">';
-  await page.goto(`http://localhost:3000/search?q=${encodeURIComponent(probePayload)}`);
+  await page.goto(`/search?q=${encodeURIComponent(probePayload)}`);
   
   // Assert injection execution in client browser context
   const xssTriggered = await page.evaluate(() => (window as unknown as { __xss_probed?: boolean }).__xss_probed === true);
@@ -83,14 +83,14 @@ Replace `v-html` with safe text interpolation `v-text` or sanitize the highlight
 ### Finding: TASK-SEC-002 — Open Redirect on Post-Login Return URL
 - **Original Severity**: Medium
 - **Verification Status**: FIX_SUGGESTION
-- **Confidence Score**: 65%
-- **Affected File(s)**: `src/controllers/auth.ts:L88`
+- **Confidence Score**: 90%
+- **Affected File(s)**: `src/controllers/auth.ts:L88`, `src/utils/navigation.ts:L12`
 - **E2E Validation**: Playwright (Headless)
 
 #### A. Control & Data Flow Analysis
-- **Source**: Query parameter `?returnUrl=//attacker.com`.
-- **Intermediate Flow**: Navigation router validates relative path prefix `/` but does not reject protocol-relative `//` URLs.
-- **Sink / Control**: `window.location.href = returnUrl`. The server rejects external return URLs before sending the redirect to the client; the client-side prefix check still needs hardening.
+- **Source**: Query parameter `?returnUrl=//attacker.com`, submitted with the login form.
+- **Intermediate Flow**: The server parses `returnUrl` with `new URL(returnUrl, APP_ORIGIN)` and falls back to `/account` unless the resolved origin equals `APP_ORIGIN`. The browser never reads `returnUrl`; the client navigates only to the server's `302 Location`.
+- **Sink / Control**: `res.redirect(safeReturnUrl)` on the server. The scanner flagged `isSafeReturnPath()` in `src/utils/navigation.ts`, whose `startsWith('/')` check accepts `//`, but that helper has no callers on any navigation path, so there is no credible exploit path today.
 
 #### B. Proof of Concept (PoC) & Steps to Reproduce
 
@@ -99,21 +99,21 @@ import { test, expect } from '@playwright/test';
 
 test('Test TASK-SEC-002 - Protocol-relative Open Redirect', async ({ page }) => {
   if (!process.env.TEST_USERNAME || !process.env.TEST_PASSWORD) throw new Error('Use isolated test account credentials');
-  await page.goto('http://localhost:3000/login?returnUrl=//evil.example.com');
+  await page.goto('/login?returnUrl=//evil.example.com');
   await page.fill('#username', process.env.TEST_USERNAME);
   await page.fill('#password', process.env.TEST_PASSWORD);
   await page.click('#submit-btn');
 
-  // The server-side return URL check routes back to the account page.
-  await expect(page).toHaveURL('http://localhost:3000/account');
+  // The server-side origin check redirects back to the account page.
+  await expect(page).toHaveURL(/\/account$/);
 });
 ```
 
 **Steps to Reproduce**:
 1. Navigate to: `http://localhost:3000/login?returnUrl=//evil.example.com`
 2. Complete login.
-3. **Observed Behavior**: The server rejects the external return URL and routes to the account page; the client-side prefix check still accepts `//`.
-4. **Advisory Fix Suggestion**: Ensure `returnUrl` strictly starts with a single `/` and not `//`, or validate against an explicit internal route allowlist.
+3. **Observed Behavior**: The server rejects the external return URL and redirects to the account page; no client-side code reads `returnUrl`.
+4. **Advisory Fix Suggestion**: Delete the unused `isSafeReturnPath()` helper, or make it reject `//` and `\` prefixes, so a future caller cannot reintroduce the redirect.
 
 ---
 

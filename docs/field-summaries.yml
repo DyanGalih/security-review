@@ -62,7 +62,7 @@ document_fields:
   findings_evaluated:
     type: integer
     minimum: 0
-    description: "Verification-only: count of evaluated candidate findings."
+    description: "Verification-only: count of evaluated candidate findings, including false positives and accepted risks excluded from total_findings."
     index: false
 
   confirmed_count:
