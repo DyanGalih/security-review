@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { generateTasksMarkdown, appendTasksToFile } from '../../core/generator.js';
 import { resolveActiveTasksFile, resolveLatestFindingsJson } from '../../core/detector.js';
+import { FindingsValidationError, parseFindingsReport } from '../../core/findings.js';
 import { FindingItem } from '../../core/types.js';
 
 export interface TasksCommandOptions {
@@ -33,16 +34,15 @@ export async function executeTasksCommand(options: TasksCommandOptions): Promise
 
   let findings: FindingItem[];
   try {
-    const parsed = JSON.parse(rawJson);
-    if (Array.isArray(parsed)) {
-      findings = parsed;
-    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.findings)) {
-      findings = parsed.findings;
+    const parsed = parseFindingsReport(rawJson);
+    for (const warning of parsed.warnings) console.error(`[tasks warning]: ${warning}`);
+    findings = parsed.report.findings;
+  } catch (err: unknown) {
+    if (err instanceof FindingsValidationError) {
+      for (const error of err.errors) console.error(`[tasks error]: ${error}`);
     } else {
-      throw new Error('Invalid JSON structure. Expected array or object with findings array.');
+      console.error(`[tasks error]: Failed to parse findings JSON: ${err instanceof Error ? err.message : String(err)}`);
     }
-  } catch (err: any) {
-    console.error(`[tasks error]: Failed to parse findings JSON: ${err.message}`);
     process.exit(1);
   }
 

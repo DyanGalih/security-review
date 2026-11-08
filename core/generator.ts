@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import yaml from 'js-yaml';
+import { isLegacyFinding, resolveCompleteness } from './findings.js';
 import { FindingItem, FindingsReport, FindingSeverity } from './types.js';
 
 export function computeReportStats(findings: FindingItem[]): {
@@ -61,12 +62,84 @@ export function computeReportStats(findings: FindingItem[]): {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Containment helpers. Finding text is untrusted; nothing it contains may open
+// a heading, close a fence, or start a new block outside its own field.
+// ---------------------------------------------------------------------------
+
+// CommonMark treats \r, \r\n, and \n as line endings; every helper normalizes to \n first.
+const LINE_ENDING = /\r\n?|\n/g;
+// A whole line that is a thematic break (same marker three or more times, spaces allowed) or a setext
+// underline (any run of = or -). Both are checked before container prefixes are stripped.
+// Leading whitespace of any width is skipped: indented four or more spaces, the run is still a break or
+// underline when it continues an enclosing list item.
+const THEMATIC_BREAK = /^[ \t]*([-*_])(?:[ \t]*\1){2,}[ \t]*$/;
+const SETEXT_UNDERLINE = /^[ \t]*[-=]+[ \t]*$/;
+// Leading whitespace plus any run of blockquote or list markers (`>`, `-`, `*`, `+`, `1.`), each optionally
+// followed by spaces or tabs. A heading behind them still renders as a heading inside the container, and
+// a marker indented four or more spaces still continues an enclosing list item.
+const CONTAINER_PREFIX = /^((?:[ \t]*(?:>|[*+-]|\d{1,9}[.)]))*[ \t]*)/;
+// What is left after the prefix: an ATX heading, a fence, or a thematic-break or setext run.
+const BLOCK_STARTER = /^(#|`{3,}|~{3,}|\*{3,}|_{3,}|[-=]+\s*$)/;
+const NOT_RECORDED = 'not recorded';
+
+// ponytail: line-level escaping neutralizes every CommonMark block starter (ATX and setext headings,
+// fenced-code openers, thematic breaks) at line start, behind container markers, and under indentation.
+// Ceiling: raw HTML blocks are not neutralized, and emphasis markers at line start may be over-escaped.
+// Upgrade path: render finding text through a CommonMark parser instead of escaping it.
+function escapeLine(line: string): string {
+  if (THEMATIC_BREAK.test(line) || SETEXT_UNDERLINE.test(line)) {
+    return line.replace(/^([ \t]*)(\S)/, '$1\\$2');
+  }
+  const prefix = CONTAINER_PREFIX.exec(line)?.[1] ?? '';
+  const rest = line.slice(prefix.length);
+  return BLOCK_STARTER.test(rest) ? `${prefix}\\${rest}` : line;
+}
+
+/** Backslash-escapes any line that would start a heading, fence, thematic break, or setext underline. */
+export function escapeBlockStarters(text: string): string {
+  return text.replace(LINE_ENDING, '\n').split('\n').map(escapeLine).join('\n');
+}
+
+/** Collapses line breaks so text rendered inside a heading or list item stays on its line. */
+export function inline(text: string): string {
+  return text.replace(LINE_ENDING, ' ');
+}
+
+/** Table cell: no line breaks, no unescaped pipes; backslashes are escaped first so `\|` cannot re-arm a pipe. */
+function cell(text: string): string {
+  return text.replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(LINE_ENDING, '<br>');
+}
+
+/** A fence long enough that no backtick run inside `content` can close it. */
+export function fenceFor(content: string): string {
+  const longest = Math.max(0, ...(content.match(/`+/g) ?? []).map((run) => run.length));
+  return '`'.repeat(Math.max(3, longest + 1));
+}
+
+const FENCE_INFO = /^[A-Za-z0-9_-]+$/;
+
+function fenced(content: string, info = ''): string {
+  const fence = fenceFor(content);
+  const safeInfo = FENCE_INFO.test(info) ? info : '';
+  return `${fence}${safeInfo}\n${content}\n${fence}\n\n`;
+}
+
+function prose(title: string, text: string | undefined): string {
+  if (!text) return '';
+  return `#### ${title}\n${escapeBlockStarters(text)}\n\n`;
+}
+
 export function generateMarkdownReport(report: FindingsReport): string {
   const stats = computeReportStats(report.findings);
   const dateStr = report.assessment_date || new Date().toISOString().split('T')[0];
-  const codebase = report.codebase_analyzed || 'src/';
+  const codebase = inline(report.codebase_analyzed || 'src/');
   const filesCount = report.total_files_analyzed ?? 0;
   const reviewType = report.review_type || 'audit';
+  const completeness = resolveCompleteness(report);
+  if (completeness.error) {
+    throw new Error(completeness.error);
+  }
 
   const frontmatterObj: Record<string, unknown> = {
     document_type: 'security-review',
@@ -83,7 +156,11 @@ export function generateMarkdownReport(report: FindingsReport): string {
     informational_count: stats.informational,
     owasp_categories: stats.owaspCategories,
     cwe_ids: stats.cweIds,
+    coverage_complete: completeness.complete,
   };
+  if (!completeness.complete) {
+    frontmatterObj.coverage_caveats = completeness.caveats;
+  }
 
   if (report.findings.length > 0 && report.findings[0].id) {
     frontmatterObj.security_task = report.findings[0].id;
@@ -115,39 +192,42 @@ export function generateMarkdownReport(report: FindingsReport): string {
     md += `*No vulnerabilities identified during this review.*\n\n`;
   } else {
     report.findings.forEach((finding, idx) => {
-      const fid = finding.id || `SEC-${String(idx + 1).padStart(3, '0')}`;
-      md += `### ${fid}: ${finding.title}\n\n`;
-      md += `- **Severity:** ${finding.severity}\n`;
-      md += `- **Category:** ${finding.category}\n`;
-      if (finding.cwe) md += `- **CWE:** ${finding.cwe}\n`;
-      if (finding.file) md += `- **Location:** \`${finding.file}${finding.lineRange ? `:${finding.lineRange}` : ''}\`\n`;
-      if (finding.verificationStatus) md += `- **Verification Status:** \`${finding.verificationStatus}\`\n`;
+      const fid = inline(finding.id || `SEC-${String(idx + 1).padStart(3, '0')}`);
+      md += `### ${fid}: ${inline(finding.title)}\n\n`;
+      md += `- **Severity:** ${inline(finding.severity)}\n`;
+      md += `- **Category:** ${inline(finding.category)}\n`;
+      if (finding.cwe) md += `- **CWE:** ${inline(finding.cwe)}\n`;
+      if (finding.file) {
+        md += `- **Location:** \`${inline(finding.file)}${finding.lineRange ? `:${inline(finding.lineRange)}` : ''}\`\n`;
+      }
+      if (finding.verificationStatus) md += `- **Verification Status:** \`${inline(finding.verificationStatus)}\`\n`;
       md += `\n`;
 
-      md += `#### Description\n${finding.description}\n\n`;
+      md += prose('Description', finding.description);
+      md += prose('Exploit Scenario', finding.exploitScenario);
+      md += prose('Impact', finding.impact);
 
-      if (finding.exploitScenario) {
-        md += `#### Exploit Scenario\n${finding.exploitScenario}\n\n`;
-      }
+      // Closure fields: a legacy finding states what it does not carry.
+      const legacy = isLegacyFinding(finding);
+      const confidence = legacy || !finding.confidence
+        ? NOT_RECORDED
+        : finding.confidence + (finding.confidenceRationale ? ` — ${escapeBlockStarters(finding.confidenceRationale)}` : '');
+      md += `#### Confidence\n${confidence}\n\n`;
+      md += `#### Counterevidence\n${finding.counterevidence ? escapeBlockStarters(finding.counterevidence) : NOT_RECORDED}\n\n`;
+      md += `#### Severity Change Conditions\n${finding.severityChangeConditions ? escapeBlockStarters(finding.severityChangeConditions) : NOT_RECORDED}\n\n`;
 
-      if (finding.impact) {
-        md += `#### Impact\n${finding.impact}\n\n`;
-      }
-
-      if (finding.remediation) {
-        md += `#### Remediation\n${finding.remediation}\n\n`;
-      }
+      md += prose('Remediation', finding.remediation);
 
       if (finding.proposedFix) {
-        md += `#### Proposed Fix\n\`\`\`\n${finding.proposedFix}\n\`\`\`\n\n`;
+        md += `#### Proposed Fix\n${fenced(finding.proposedFix)}`;
       }
 
       if (finding.poc) {
-        md += `#### Proof of Concept (PoC)\n\`\`\`${finding.poc.type || ''}\n${finding.poc.code}\n\`\`\`\n\n`;
+        md += `#### Proof of Concept (PoC)\n${fenced(finding.poc.code, finding.poc.type || '')}`;
         if (finding.poc.reproductionSteps && finding.poc.reproductionSteps.length > 0) {
           md += `**Reproduction Steps:**\n`;
           finding.poc.reproductionSteps.forEach((step, sIdx) => {
-            md += `${sIdx + 1}. ${step}\n`;
+            md += `${sIdx + 1}. ${inline(escapeBlockStarters(step))}\n`;
           });
           md += `\n`;
         }
@@ -157,11 +237,32 @@ export function generateMarkdownReport(report: FindingsReport): string {
     });
   }
 
+  // Coverage: what was reviewed and how each surface closed.
+  md += `## 3. Coverage\n\n`;
+  const coverage = report.coverage ?? [];
+  if (coverage.length === 0) {
+    md += `No coverage was recorded.\n\n`;
+  } else {
+    md += `| Surface | Risk Area | Outcome | Evidence |\n`;
+    md += `|---|---|---|---|\n`;
+    for (const entry of coverage) {
+      md += `| ${cell(entry.surface)} | ${cell(entry.riskArea)} | ${cell(entry.outcome)} | ${cell(entry.evidence ?? '')} |\n`;
+    }
+    md += `\n`;
+  }
+  md += `**Completeness:** ${completeness.complete ? 'complete' : 'incomplete'}\n`;
+  if (!completeness.complete) {
+    for (const caveat of completeness.caveats) {
+      md += `- ${inline(escapeBlockStarters(caveat))}\n`;
+    }
+  }
+  md += `\n`;
+
   // Architectural Risks
   if (report.architectural_risks && report.architectural_risks.length > 0) {
-    md += `## 3. Architectural Drift & Systemic Risks\n\n`;
+    md += `## 4. Architectural Drift & Systemic Risks\n\n`;
     report.architectural_risks.forEach((risk) => {
-      md += `- **${risk.pattern}:** ${risk.description}\n`;
+      md += `- **${inline(escapeBlockStarters(risk.pattern))}:** ${inline(escapeBlockStarters(risk.description))}\n`;
     });
     md += `\n`;
   }
@@ -177,16 +278,16 @@ export function generateTasksMarkdown(findings: FindingItem[]): string {
   let md = `## Security Remediation Tasks\n\n`;
 
   findings.forEach((f, idx) => {
-    const taskId = f.id || `TASK-SEC-${String(idx + 1).padStart(3, '0')}`;
-    md += `- [ ] **${taskId}: ${f.title}**\n`;
-    md += `  - **Severity:** ${f.severity}\n`;
-    md += `  - **Category:** ${f.category}${f.cwe ? ` (${f.cwe})` : ''}\n`;
+    const taskId = inline(f.id || `TASK-SEC-${String(idx + 1).padStart(3, '0')}`);
+    md += `- [ ] **${taskId}: ${inline(f.title)}**\n`;
+    md += `  - **Severity:** ${inline(f.severity)}\n`;
+    md += `  - **Category:** ${inline(f.category)}${f.cwe ? ` (${inline(f.cwe)})` : ''}\n`;
     if (f.file) {
-      md += `  - **Target File:** \`${f.file}${f.lineRange ? `:${f.lineRange}` : ''}\`\n`;
+      md += `  - **Target File:** \`${inline(f.file)}${f.lineRange ? `:${inline(f.lineRange)}` : ''}\`\n`;
     }
-    md += `  - **Description:** ${f.description}\n`;
+    md += `  - **Description:** ${inline(f.description)}\n`;
     if (f.remediation) {
-      md += `  - **Remediation:** ${f.remediation}\n`;
+      md += `  - **Remediation:** ${inline(f.remediation)}\n`;
     }
     md += `  - **Acceptance Criteria:** Verify vulnerability is resolved and test passes.\n\n`;
   });

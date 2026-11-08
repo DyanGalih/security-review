@@ -112,6 +112,8 @@ cwe_ids: [<CWE-89>, ...]
 assessment_kind: <whitebox-review|report-synthesis>
 source_artifacts: [<report path or identifier>, ...]
 commit_or_branch: <commit, branch, or unknown>
+coverage_complete: <true|false>
+coverage_caveats: [<reason the synthesis is incomplete>, ...]  # required when coverage_complete is false
 ---
 ````
 

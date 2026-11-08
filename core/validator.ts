@@ -1,5 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import yaml from 'js-yaml';
+import { REVIEW_TYPES } from './schema.js';
+import { resolveCompleteness } from './findings.js';
 import type { ValidationIssue, ValidationResult } from './types.js';
 
 const FRONTMATTER_REGEX = /^---\r?\n([\s\S]*?)\r?\n---/;
@@ -70,17 +72,16 @@ export async function validateReportFrontmatter(filePath: string): Promise<Valid
   }
 
   // 2. Review Type Check
-  const validReviewTypes = ['audit', 'branch', 'staged', 'plan', 'tasks', 'followup', 'export', 'remediation', 'plan-review', 'tasks-review'];
   if (data.review_type === undefined || data.review_type === null) {
     issues.push({
       field: 'review_type',
       message: 'Missing required frontmatter field: "review_type"',
       severity: 'ERROR',
     });
-  } else if (!validReviewTypes.includes(String(data.review_type))) {
+  } else if (!(REVIEW_TYPES as readonly string[]).includes(String(data.review_type))) {
     issues.push({
       field: 'review_type',
-      message: `Unrecognized review type: "${data.review_type}". Expected one of: ${validReviewTypes.join(', ')}`,
+      message: `Unrecognized review type: "${data.review_type}". Expected one of: ${REVIEW_TYPES.join(', ')}`,
       severity: 'ERROR',
     });
   }
@@ -225,7 +226,25 @@ export async function validateReportFrontmatter(filePath: string): Promise<Valid
   validatePatternArray('asvs_categories', ASVS_REGEX, 'ASVS');
   validatePatternArray('mitre_attack', MITRE_REGEX, 'MITRE ATT&CK');
 
-  // 7. Export Provenance Validation
+  // 7. Review Completeness
+  if (data.coverage_complete === undefined || data.coverage_complete === null) {
+    issues.push({
+      field: 'coverage_complete',
+      message: 'Missing required frontmatter field: "coverage_complete"',
+      severity: 'ERROR',
+    });
+  } else {
+    const completeness = resolveCompleteness(data);
+    if (completeness.error) {
+      issues.push({
+        field: completeness.error.startsWith('coverage_caveats') ? 'coverage_caveats' : 'coverage_complete',
+        message: completeness.error,
+        severity: 'ERROR',
+      });
+    }
+  }
+
+  // 8. Export Provenance Validation
   if (data.review_type === 'export') {
     const requiredExportFields = ['assessment_kind', 'source_artifacts', 'commit_or_branch'] as const;
     for (const field of requiredExportFields) {

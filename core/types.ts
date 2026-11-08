@@ -1,3 +1,5 @@
+import type { CONFIDENCE_LEVELS, COVERAGE_OUTCOMES, REVIEW_TYPES, VERIFICATION_STATUSES } from './schema.js';
+
 export type FileSensitivity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
 
 export interface ChangedFile {
@@ -53,7 +55,19 @@ export interface AgentContextPayload {
 }
 
 export type FindingSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW' | 'INFORMATIONAL';
-export type VerificationStatus = 'CONFIRMED' | 'FALSE_POSITIVE' | 'MITIGATED' | 'ACCEPTED_RISK';
+export type VerificationStatus = (typeof VERIFICATION_STATUSES)[number];
+export type ReviewType = (typeof REVIEW_TYPES)[number];
+export type ConfidenceLevel = (typeof CONFIDENCE_LEVELS)[number];
+export type CoverageOutcome = (typeof COVERAGE_OUTCOMES)[number];
+
+/** One reviewed surface and how it closed. */
+export interface CoverageEntry {
+  surface: string;
+  riskArea: string;
+  outcome: CoverageOutcome;
+  /** Required for ruled_out, not_applicable, and needs_follow_up. */
+  evidence?: string;
+}
 
 export interface FindingPoc {
   type?: 'test' | 'curl' | 'script' | string;
@@ -79,13 +93,20 @@ export interface FindingItem {
   remediation?: string;
   proposedFix?: string;
   verificationStatus?: VerificationStatus;
-  confidence?: number;
+  /** Calibrated confidence. Required unless the finding is legacy (has none of the closure fields). */
+  confidence?: ConfidenceLevel;
+  /** Required when confidence is not high: the specific gap (for example "static-only trace"). */
+  confidenceRationale?: string;
+  /** The strongest case against the finding, or what was checked and found absent. */
+  counterevidence?: string;
+  /** The single piece of evidence that would raise or lower the severity. */
+  severityChangeConditions?: string;
   poc?: FindingPoc;
 }
 
 export interface FindingsReport {
   document_type?: 'security-review';
-  review_type?: 'audit' | 'staged' | 'branch' | 'plan' | 'tasks' | 'export' | 'verify';
+  review_type?: ReviewType;
   assessment_date?: string;
   codebase_analyzed?: string;
   total_files_analyzed?: number;
@@ -93,4 +114,9 @@ export interface FindingsReport {
   assessment_kind?: 'whitebox-review' | 'report-synthesis';
   findings: FindingItem[];
   architectural_risks?: Array<{ pattern: string; description: string }>;
+  coverage?: CoverageEntry[];
+  /** Absent means false, with the caveat "completeness not recorded". */
+  coverage_complete?: boolean;
+  /** Required and non-empty when coverage_complete is false. */
+  coverage_caveats?: string[];
 }

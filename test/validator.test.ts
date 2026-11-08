@@ -4,6 +4,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { writeFile, unlink, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import { randomUUID } from 'node:crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -39,6 +40,7 @@ high_count: 0
 medium_count: 0
 low_count: 0
 overall_risk: NONE
+coverage_complete: true
 ---
 # Content
 `,
@@ -65,6 +67,7 @@ high_count: 1
 medium_count: 1
 low_count: 1
 overall_risk: HIGH
+coverage_complete: true
 owasp_categories: [INVALID_OWASP]
 cwe_identifiers: [INVALID_CWE]
 ---
@@ -97,6 +100,7 @@ high_count: 0
 medium_count: 0
 low_count: 0
 overall_risk: NONE
+coverage_complete: true
 assessment_kind: whitebox-review
 source_artifacts: ["docs/security-reviews/2026-08-19-auth.md"]
 commit_or_branch: "main"
@@ -110,5 +114,48 @@ commit_or_branch: "main"
     await unlink(tmpPath);
 
     expect(result.valid).toBe(true);
+  });
+
+  async function validateFrontmatter(body: string) {
+    const tmpPath = join(tmpdir(), `test-fm-${Date.now()}-${randomUUID()}.md`);
+    await writeFile(tmpPath, `---\n${body}\n---\n# Content\n`, 'utf8');
+    try {
+      return await validateReportFrontmatter(tmpPath);
+    } finally {
+      await unlink(tmpPath);
+    }
+  }
+
+  const baseCounts = `total_findings: 0
+critical_count: 0
+high_count: 0
+medium_count: 0
+low_count: 0
+overall_risk: NONE`;
+
+  it('accepts review_type verify and rejects a removed alias with the allowed list', async () => {
+    const verify = await validateFrontmatter(`document_type: security-review\nreview_type: verify\n${baseCounts}\ncoverage_complete: true`);
+    expect(verify.issues.some((i) => i.field === 'review_type')).toBe(false);
+
+    const alias = await validateFrontmatter(`document_type: security-review\nreview_type: remediation\n${baseCounts}\ncoverage_complete: true`);
+    const issue = alias.issues.find((i) => i.field === 'review_type');
+    expect(alias.valid).toBe(false);
+    expect(issue?.message).toContain('audit, branch, staged, plan, tasks, followup, export, verify');
+  });
+
+  it('requires coverage_complete and caveats when the review is incomplete', async () => {
+    const missing = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}`);
+    expect(missing.valid).toBe(false);
+    expect(missing.issues.some((i) => i.field === 'coverage_complete')).toBe(true);
+
+    const noCaveats = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: false`);
+    expect(noCaveats.valid).toBe(false);
+    expect(noCaveats.issues.some((i) => i.field === 'coverage_caveats')).toBe(true);
+
+    const withCaveats = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: false\ncoverage_caveats: ["budget exhausted before the admin routes"]`);
+    expect(withCaveats.valid).toBe(true);
+
+    const complete = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true`);
+    expect(complete.valid).toBe(true);
   });
 });

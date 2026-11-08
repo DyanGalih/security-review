@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **Closure discipline and coverage ledger** (change `review-closure-coverage`):
+  - Findings carry `confidence` (`high` | `medium` | `low`), `confidenceRationale`, `counterevidence`, and `severityChangeConditions`; reports render them per finding. **BREAKING**: the numeric `confidence` type is replaced by the label (nothing in the CLI read the number).
+  - Findings JSON gains `coverage[]`, `coverage_complete`, and `coverage_caveats`; every report gains a numbered `Coverage` section and the frontmatter field `coverage_complete`. Absent completeness renders as `false` with the caveat `completeness not recorded`.
+  - One shared loader validates findings JSON for `report`, `tasks`, and `sdd propose`; errors exit 1, legacy findings (none of the new fields) render with warnings. Finding text can no longer open headings or close fences in the rendered Markdown.
+  - `validate` accepts `review_type: verify` and requires `coverage_complete`. **BREAKING**: the undocumented aliases `remediation`, `plan-review`, and `tasks-review` are no longer accepted. **Migration**: existing report files need `coverage_complete: false` plus a `coverage_caveats` entry (for example `predates coverage tracking`) added to their frontmatter, or regeneration with `report`; until then `validate` rejects them and `sync-headers` leaves them out of the index.
+  - Prompts `sr-audit`, `sr-staged`, `sr-branch`, and `sr-verify` gain Candidate Closure and Coverage Ledger sections; `sr-branch` and `sr-staged` gain Diff Scope (newly reached sinks, removed or narrowed controls, weakened shared helpers). Re-run `security-review init` to refresh installed prompts.
+  - `docs/field-registry.md` gains a `Required` column, finding-level and coverage-entry field tables; a schema drift test keeps the registry, `field-summaries.yml`, validator, generator, types, and prompt headers in agreement. `npm run lint` now type-checks `test/` as well.
+
 ## v2.0.0
 
 - **Major Rebrand & Standalone Decoupling**:

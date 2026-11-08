@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { detectSDDEnvironment, resolveActiveTasksFile, resolveLatestFindingsJson, SDDFramework } from '../../core/detector.js';
 import { provisionSddChange } from '../../core/sdd-bridge.js';
-import { FindingItem, FindingsReport } from '../../core/types.js';
+import { FindingsValidationError, parseFindingsReport } from '../../core/findings.js';
+import { FindingItem } from '../../core/types.js';
 
 export interface SddStatusOptions {
   path?: string;
@@ -68,16 +69,15 @@ export async function executeSddProposeCommand(options: SddProposeCliOptions): P
 
   let findings: FindingItem[];
   try {
-    const parsed = JSON.parse(rawJson);
-    if (Array.isArray(parsed)) {
-      findings = parsed;
-    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.findings)) {
-      findings = parsed.findings;
+    const parsed = parseFindingsReport(rawJson);
+    for (const warning of parsed.warnings) console.error(`[sdd propose warning]: ${warning}`);
+    findings = parsed.report.findings;
+  } catch (err: unknown) {
+    if (err instanceof FindingsValidationError) {
+      for (const error of err.errors) console.error(`[sdd propose error]: ${error}`);
     } else {
-      throw new Error('Invalid JSON. Expected array of findings or findings report object.');
+      console.error(`[sdd propose error]: Failed to parse findings JSON: ${err instanceof Error ? err.message : String(err)}`);
     }
-  } catch (err: any) {
-    console.error(`[sdd propose error]: Failed to parse findings JSON: ${err.message}`);
     process.exit(1);
   }
 
