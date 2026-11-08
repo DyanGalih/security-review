@@ -32,6 +32,10 @@ export const COVERAGE_OUTCOMES_REQUIRING_EVIDENCE = ['ruled_out', 'not_applicabl
 
 export const VERIFICATION_STATUSES = ['CONFIRMED', 'FALSE_POSITIVE', 'MITIGATED', 'ACCEPTED_RISK'] as const;
 
+export const FINDING_SEVERITIES = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFORMATIONAL'] as const;
+
+export const OVERALL_RISKS = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFORMATIONAL', 'NONE'] as const;
+
 /** Frontmatter keys the validator rejects a report for lacking. */
 export const REQUIRED_FRONTMATTER_FIELDS = [
   'document_type',

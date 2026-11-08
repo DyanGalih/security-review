@@ -78,6 +78,15 @@ describe('parseFindingsReport', () => {
     expect(errors).toEqual(['findings[0]: must be an object']);
   });
 
+  it('rejects findings missing required core fields (id, title, severity, category, description)', () => {
+    const errors = errorsOf({ findings: [{}] });
+    expect(errors).toContain('findings[0]: id is required');
+    expect(errors).toContain('findings[0]: title is required');
+    expect(errors).toContain('findings[0]: severity must be one of CRITICAL, HIGH, MEDIUM, LOW, INFORMATIONAL');
+    expect(errors).toContain('findings[0]: category is required');
+    expect(errors).toContain('findings[0]: description is required');
+  });
+
   it('rejects an invalid verificationStatus', () => {
     expect(errorsOf([{ ...fullFinding, verificationStatus: 'MAYBE' }])[0]).toContain('verificationStatus');
   });
@@ -112,6 +121,10 @@ describe('parseFindingsReport', () => {
   it('rejects an unknown report-level review_type', () => {
     expect(errorsOf({ findings: [], review_type: 'remediation' })[0]).toContain('review_type');
     expect(parseFindingsReport(JSON.stringify({ findings: [], review_type: 'verify' })).report.review_type).toBe('verify');
+  });
+
+  it('rejects an invalid report-level overall_risk', () => {
+    expect(errorsOf({ findings: [], overall_risk: 'UNKNOWN' })[0]).toContain('overall_risk');
   });
 
   it('rejects malformed JSON and non-report shapes', () => {

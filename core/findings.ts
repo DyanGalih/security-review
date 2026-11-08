@@ -4,6 +4,8 @@ import {
   CONFIDENCE_LEVELS,
   COVERAGE_OUTCOMES,
   COVERAGE_OUTCOMES_REQUIRING_EVIDENCE,
+  FINDING_SEVERITIES,
+  OVERALL_RISKS,
   REVIEW_TYPES,
   VERIFICATION_STATUSES,
 } from './schema.js';
@@ -46,6 +48,22 @@ export function isLegacyFinding(
 }
 
 function validateFinding(finding: Record<string, unknown>, label: string, errors: string[]): void {
+  if (!isNonEmptyString(finding.id)) {
+    errors.push(`${label}: id is required`);
+  }
+  if (!isNonEmptyString(finding.title)) {
+    errors.push(`${label}: title is required`);
+  }
+  if (!oneOf(FINDING_SEVERITIES, typeof finding.severity === 'string' ? finding.severity.toUpperCase() : finding.severity)) {
+    errors.push(`${label}: severity must be one of ${FINDING_SEVERITIES.join(', ')}`);
+  }
+  if (!isNonEmptyString(finding.category)) {
+    errors.push(`${label}: category is required`);
+  }
+  if (!isNonEmptyString(finding.description)) {
+    errors.push(`${label}: description is required`);
+  }
+
   if (finding.verificationStatus !== undefined && !oneOf(VERIFICATION_STATUSES, finding.verificationStatus)) {
     errors.push(`${label}: verificationStatus must be one of ${VERIFICATION_STATUSES.join(', ')}`);
   }
@@ -160,6 +178,10 @@ export function parseFindingsReport(raw: string): ParsedFindings {
 
   if (base.review_type !== undefined && !oneOf(REVIEW_TYPES, base.review_type)) {
     errors.push(`review_type: must be one of ${REVIEW_TYPES.join(', ')}`);
+  }
+
+  if (base.overall_risk !== undefined && !oneOf(OVERALL_RISKS, typeof base.overall_risk === 'string' ? base.overall_risk.toUpperCase() : base.overall_risk)) {
+    errors.push(`overall_risk: must be one of ${OVERALL_RISKS.join(', ')}`);
   }
 
   const completeness = resolveCompleteness(base);

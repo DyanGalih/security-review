@@ -110,6 +110,9 @@ describe('report schema drift', () => {
     for (const name of withHeader) {
       const text = promptFiles.find((p) => p.name === name)!.text;
       expect(/^coverage_complete: /m.test(text), `${name} header has coverage_complete`).toBe(true);
+      for (const field of REQUIRED_FRONTMATTER_FIELDS) {
+        expect(new RegExp(`^${field}: `, 'm').test(text), `${name} header has ${field}`).toBe(true);
+      }
     }
   });
 
@@ -137,6 +140,7 @@ describe('report schema drift', () => {
       const text = promptFiles.find((p) => p.name === name)?.text ?? '';
       expect(text, `${name} has ## Candidate Closure`).toContain('\n## Candidate Closure\n');
       expect(text, `${name} has ## Coverage Ledger`).toContain('\n## Coverage Ledger\n');
+      expect(text, `${name} has ## Coverage section in output format`).toContain('## Coverage');
       const closure = text.split('\n## Candidate Closure\n')[1];
       for (const state of ['`confirmed`', '`ruled_out`', '`open_proof_gap`', 'does not rule out']) {
         expect(closure, `${name} closure section mentions ${state}`).toContain(state);

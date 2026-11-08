@@ -130,15 +130,29 @@ document_type: security-review
 review_type: verify
 assessment_date: <YYYY-MM-DD>
 codebase_analyzed: <project name, directory, or repository path>
-findings_evaluated: <integer>
-confirmed_count: <integer>
-false_positive_count: <integer>
-mitigated_count: <integer>
-accepted_risk_count: <integer>
-overall_exploitability: <HIGH|MEDIUM|LOW|NONE>
-target_artifacts: [<source report or files evaluated>]
+total_findings: <integer>
+overall_risk: <CRITICAL|HIGH|MEDIUM|LOW|INFORMATIONAL|NONE>
+critical_count: <integer>
+high_count: <integer>
+medium_count: <integer>
+low_count: <integer>
+informational_count: <integer>
+owasp_categories: [<A01>, <A05>, ...]
+cwe_ids: [<CWE-89>, ...]
 coverage_complete: <true|false>
 coverage_caveats: [<reason the verification is incomplete>, ...]  # required when coverage_complete is false
+field_summaries:
+  document_type: "Always 'security-review'. Allows indexers to skip non-review documents."
+  review_type: "Which command generated this document: audit, branch, staged, plan, tasks, followup, export, or verify."
+  coverage_complete: "Whether every planned surface was reviewed and closed; false when any caveat applies."
+  coverage_caveats: "Why the review is incomplete (required when coverage_complete is false)."
+  assessment_date: "ISO 8601 date the review was performed (YYYY-MM-DD)."
+  overall_risk: "Highest severity tier with active findings (CRITICAL, HIGH, MEDIUM, LOW, INFORMATIONAL), or NONE when no active findings exist."
+  critical_count: "Number of Critical findings (CVSS 9.0-10.0)."
+  high_count: "Number of High findings (CVSS 7.0-8.9)."
+  medium_count: "Number of Medium findings (CVSS 4.0-6.9)."
+  low_count: "Number of Low findings (CVSS 0.1-3.9)."
+  informational_count: "Number of Informational findings."
 ---
 ```
 
@@ -154,8 +168,8 @@ Produce a structured Markdown report with the following mandatory sections:
 
 | Finding ID / Target | Vulnerability Type | Severity | Verification Status | Exploitability | Confidence |
 |---|---|---|---|---|---|
-| `TASK-SEC-001` | SQL Injection | Critical | **CONFIRMED** | High | 95% |
-| `TASK-SEC-002` | Reflected XSS | Medium | **FALSE_POSITIVE** | None | 90% |
+| `TASK-SEC-001` | SQL Injection | Critical | **CONFIRMED** | High | high |
+| `TASK-SEC-002` | Reflected XSS | Medium | **FALSE_POSITIVE** | None | medium — static trace only |
 
 ### Summary Analysis
 [Concise summary of verified risks vs false positives identified in this review session.]
@@ -169,7 +183,9 @@ For each evaluated finding:
 ### Finding: [FINDING_ID] — [Finding Title]
 - **Original Severity**: [Critical|High|Medium|Low]
 - **Verification Status**: [CONFIRMED | FALSE_POSITIVE | MITIGATED | ACCEPTED_RISK]
-- **Confidence Score**: [0% - 100%]
+- **Confidence**: high | medium | low — <rationale when not high>
+- **Counterevidence**: <the strongest case against the finding, or what was checked and found absent>
+- **Severity Change Conditions**: <the one piece of evidence that would raise or lower the severity>
 - **Affected File(s)**: `path/to/file.ts:L12-L34`
 
 #### A. Control & Data Flow Analysis
@@ -195,7 +211,19 @@ For each evaluated finding:
 
 ---
 
-## 3. False Positive Suppression Config (If applicable)
+## 3. Coverage
+
+| Surface | Risk Area | Outcome | Evidence |
+|---|---|---|---|
+| `GET /api/search` | SQL Injection | reported | Exploited via raw string query in userRepo.ts:45 |
+| `POST /api/login` | Auth Bypass | ruled_out | Verified bcrypt compare & rate limiter at authController.ts:22 |
+
+**Completeness:** complete | incomplete
+- <caveat, one per reason, when incomplete>
+
+---
+
+## 4. False Positive Suppression Config (If applicable)
 
 If any findings were classified as `FALSE_POSITIVE`, emit the configuration snippet to add to `.security-review/security-review.yml`:
 
