@@ -6,7 +6,7 @@
   - Added automated browser-driven E2E verification using Playwright to test finding exploitability against running web applications.
   - Supported `--headless` (default background) and `--headed` (real-time visual browser) execution modes.
   - Added automatic environment resolution (`TEST_BASE_URL`, `APP_URL`, `.security-review/security-review.yml`, `playwright.config.ts`, `.env`) and local/global Playwright dependency detection.
-  - Expanded finding classification taxonomy to include `FIX_SUGGESTION` for downgrading unreproduced exploits with valid code smells to advisory remediations.
+  - Expanded finding classification taxonomy to include `FIX_SUGGESTION` for independently verified hygiene improvements without downgrading unverified vulnerabilities.
   - Standardized non-destructive test generation under `tests/security/<finding-id>.spec.ts` with step-by-step reproduction instructions in verification reports.
   - Extended report schema, field registry, and validator with `fix_suggestion_count` and `e2e_verified`.
 - **Major Rebrand & Standalone Decoupling**:

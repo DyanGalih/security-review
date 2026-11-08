@@ -19,7 +19,7 @@ Use this command when you want to:
 - Re-evaluate candidate vulnerabilities from previous audits or scanners
 - Empirically validate client-side or UI vulnerabilities (XSS, CSRF, IDOR, auth bypass) using Playwright E2E automation
 - Filter out false positives by verifying existing defensive controls or browser behavior
-- Downgrade unreproduced client-side issues with valid code smells to actionable `FIX_SUGGESTION` items
+- Classify independently verified hygiene improvements as `FIX_SUGGESTION` without downgrading unverified vulnerabilities
 - Generate an automated unit/integration test or Playwright spec in `tests/security/` to reproduce the vulnerability
 - Generate a safe, non-destructive curl or HTTP payload reproduction
 - Generate configuration suppression rules for `security-review.yml` for confirmed false positives
@@ -45,10 +45,12 @@ Resolve the target base URL in the following precedence order:
 - Playwright configuration: `playwright.config.ts` (baseURL)
 - Local environment files: `.env` or `.env.local`
 
+Before opening a browser or running a PoC, display the resolved URL and obtain explicit confirmation that it is an authorized, isolated test environment. A URL discovered from configuration or environment is not authorization. If the target cannot be confirmed, do not run E2E tests; use static analysis or an isolated local test instead. Never use real accounts or state-changing production workflows for browser verification.
+
 ### 2. Dependency & Runner Detection
 Automatically detect available Playwright execution options:
 - **Local Project**: Check if `./node_modules/.bin/playwright` exists or `playwright` / `@playwright/test` is present in `package.json`.
-- **Global / NPX**: If not in local `node_modules`, execute via `npx playwright test`.
+- **Global**: Use an already installed global Playwright runner if available; do not download a runner automatically via `npx`.
 - **Fallback**: If Playwright execution is unavailable or declined, gracefully fall back to unit/integration test or curl PoC verification without interrupting the review.
 
 ### 3. Browser Execution Modes
@@ -86,7 +88,7 @@ For each candidate finding, trace the complete execution path:
 ### Classification Taxonomy:
 - **`CONFIRMED`**: Directly exploitable via E2E reproduction or source dataflow analysis. No sufficient defensive control prevents the attack.
 - **`FALSE_POSITIVE`**: The vulnerability cannot be triggered due to existing validation, type-safety, ORM abstraction, or architectural boundaries.
-- **`FIX_SUGGESTION`**: The exploit was not reproducible in the browser or end-to-end context (e.g. due to environmental factors, ambient browser mitigations, or partial validation), but source code analysis reveals poor security hygiene or a defense-in-depth weakness that warrants remediation. Severity and confidence are downgraded accordingly.
+- **`FIX_SUGGESTION`**: An independently verified defense-in-depth or hygiene improvement with no remaining credible exploit path. A failed or unavailable E2E attempt alone is inconclusive: retain the original severity and do not suppress or downgrade the finding. Use `MITIGATED` only when a compensating control has been verified.
 - **`MITIGATED`**: A compensating control prevents immediate exploitation, but defense-in-depth hardening is recommended.
 - **`ACCEPTED_RISK`**: The behavior is intentional and governed by an approved architecture or business exception.
 
@@ -100,6 +102,13 @@ document_type: security-review
 review_type: verify
 assessment_date: <YYYY-MM-DD>
 codebase_analyzed: <project name, directory, or repository path>
+total_findings: <integer; sum of severity counts>
+overall_risk: <CRITICAL|HIGH|MEDIUM|LOW|INFORMATIONAL|NONE>
+critical_count: <integer>
+high_count: <integer>
+medium_count: <integer>
+low_count: <integer>
+informational_count: <integer>
 findings_evaluated: <integer>
 confirmed_count: <integer>
 false_positive_count: <integer>
@@ -111,6 +120,8 @@ e2e_verified: <true|false>
 target_artifacts: [<source report or files evaluated>]
 ---
 ```
+
+Count each evaluated finding once in both `total_findings`/its original-severity tier and the verification-status counts; preserve the original severity for unverified findings. Set `e2e_verified` to true only when an authorized browser check actually ran, and record inconclusive attempts in the finding analysis rather than claiming verification.
 
 ## Output Structure
 
@@ -157,7 +168,7 @@ For each evaluated finding:
 ```typescript
 // Description: Automated Playwright / Unit test showing the vulnerability
 // Target Base URL: http://localhost:3000
-// Execution: npx playwright test tests/security/[FINDING_ID].spec.ts [--headed]
+// Execution (when locally installed): ./node_modules/.bin/playwright test tests/security/[FINDING_ID].spec.ts [--headed]
 import { test, expect } from '@playwright/test';
 
 test('Verify [FINDING_ID] - [Vulnerability Name]', async ({ page }) => {

@@ -31,7 +31,7 @@ These fields describe the review document itself and appear at the top of every 
 | `false_positive_count` | integer | ≥ 0 | Verification-only: count of verified false-positive findings. | No |
 | `mitigated_count` | integer | ≥ 0 | Verification-only: count of findings with active compensating controls. | No |
 | `accepted_risk_count` | integer | ≥ 0 | Verification-only: count of accepted architectural/business risks. | No |
-| `fix_suggestion_count` | integer | ≥ 0 | Verification-only: count of unconfirmed exploit findings downgraded to fix suggestions. | No |
+| `fix_suggestion_count` | integer | ≥ 0 | Verification-only: count of independently verified hygiene or defense-in-depth suggestions. | No |
 | `e2e_verified` | boolean | `true`, `false` | Verification-only: whether browser-based Playwright E2E verification was executed. | No |
 
 ---
@@ -96,7 +96,7 @@ Each generated security review document should have a corresponding routing row 
 | Column | Example | Description |
 |---|---|---|
 | `doc_path` | `docs/security-reviews/2026-05-07-auth.md` | Relative path to the review document |
-| `review_type` | `audit` | One of: `audit`, `branch`, `staged`, `plan`, `tasks`, `followup`, `export` |
+| `review_type` | `audit` | One of: `audit`, `branch`, `staged`, `plan`, `tasks`, `followup`, `export`, `verify` |
 | `assessment_date` | `2026-05-07` | ISO 8601 date |
 | `overall_risk` | `HIGH` | Highest active severity tier |
 | `finding_counts` | `C:2 H:4 M:6 L:4` | Compact per-severity counts |

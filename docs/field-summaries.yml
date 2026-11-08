@@ -92,7 +92,7 @@ document_fields:
   fix_suggestion_count:
     type: integer
     minimum: 0
-    description: "Verification-only: count of unconfirmed exploit findings downgraded to fix suggestions."
+    description: "Verification-only: count of independently verified hygiene or defense-in-depth suggestions."
     index: false
 
   e2e_verified:

@@ -5,10 +5,10 @@ assessment_date: "2026-08-21"
 codebase_analyzed: example-ecommerce-web
 total_findings: 3
 overall_risk: HIGH
-critical_count: 1
-high_count: 0
+critical_count: 0
+high_count: 2
 medium_count: 1
-low_count: 1
+low_count: 0
 informational_count: 0
 findings_evaluated: 3
 confirmed_count: 1
@@ -34,7 +34,7 @@ cwe_identifiers: [CWE-79, CWE-601]
 | `TASK-SEC-003` | Cross-Site Request Forgery (CSRF) | High | **FALSE_POSITIVE** | None | 95% | Playwright (Headless) |
 
 ### Summary Analysis
-Evaluated 3 candidate findings from previous audit reports against the running test environment (`http://localhost:3000`). Using Playwright browser automation, 1 DOM-based XSS vulnerability was empirically confirmed with full reproduction steps. 1 unvalidated redirect finding was downgraded to `FIX_SUGGESTION` because modern browser protections and client-side sanitizers prevent direct phishing redirection, though stricter URL allowlisting is advised. 1 CSRF finding was verified as `FALSE_POSITIVE` due to active SameSite=Strict session cookies and double-submit CSRF headers.
+Evaluated 3 candidate findings from previous audit reports against an authorized, isolated test environment (`http://localhost:3000`). Using Playwright browser automation, 1 DOM-based XSS vulnerability was empirically confirmed. 1 redirect finding was classified as `FIX_SUGGESTION` after verifying that the server rejects external return URLs; the client-side prefix check still warrants hardening. 1 CSRF finding was verified as `FALSE_POSITIVE` after confirming the server enforces its stated controls.
 
 ---
 
@@ -90,7 +90,7 @@ Replace `v-html` with safe text interpolation `v-text` or sanitize the highlight
 #### A. Control & Data Flow Analysis
 - **Source**: Query parameter `?returnUrl=//attacker.com`.
 - **Intermediate Flow**: Navigation router validates relative path prefix `/` but does not reject protocol-relative `//` URLs.
-- **Sink / Control**: `window.location.href = returnUrl`. Modern browsers handle `//` redirection, but internal CSP restricts cross-origin navigation.
+- **Sink / Control**: `window.location.href = returnUrl`. The server rejects external return URLs before sending the redirect to the client; the client-side prefix check still needs hardening.
 
 #### B. Proof of Concept (PoC) & Steps to Reproduce
 
@@ -98,20 +98,21 @@ Replace `v-html` with safe text interpolation `v-text` or sanitize the highlight
 import { test, expect } from '@playwright/test';
 
 test('Test TASK-SEC-002 - Protocol-relative Open Redirect', async ({ page }) => {
+  if (!process.env.TEST_USERNAME || !process.env.TEST_PASSWORD) throw new Error('Use isolated test account credentials');
   await page.goto('http://localhost:3000/login?returnUrl=//evil.example.com');
-  await page.fill('#username', 'testuser');
-  await page.fill('#password', 'password123');
+  await page.fill('#username', process.env.TEST_USERNAME);
+  await page.fill('#password', process.env.TEST_PASSWORD);
   await page.click('#submit-btn');
 
-  // CSP blocks external navigation, keeping user on origin
-  expect(page.url()).toContain('localhost:3000');
+  // The server-side return URL check routes back to the account page.
+  await expect(page).toHaveURL('http://localhost:3000/account');
 });
 ```
 
 **Steps to Reproduce**:
 1. Navigate to: `http://localhost:3000/login?returnUrl=//evil.example.com`
 2. Complete login.
-3. **Observed Behavior**: Browser remains within app domain due to CSP, but protocol-relative redirect URL was accepted by router.
+3. **Observed Behavior**: The server rejects the external return URL and routes to the account page; the client-side prefix check still accepts `//`.
 4. **Advisory Fix Suggestion**: Ensure `returnUrl` strictly starts with a single `/` and not `//`, or validate against an explicit internal route allowlist.
 
 ---
