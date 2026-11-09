@@ -150,6 +150,37 @@ export async function validateReportFrontmatter(filePath: string): Promise<Valid
     }
   }
 
+  // 4b. Optional Verification & E2E Fields Validation
+  const verificationCountFields = [
+    'findings_evaluated',
+    'confirmed_count',
+    'false_positive_count',
+    'fix_suggestion_count',
+    'mitigated_count',
+    'accepted_risk_count',
+  ];
+  for (const field of verificationCountFields) {
+    const val = data[field];
+    if (val === undefined || val === null) continue;
+    if (typeof val !== 'number' || !Number.isInteger(val) || val < 0) {
+      issues.push({
+        field,
+        message: `Field "${field}" must be a non-negative integer. Got "${val}".`,
+        severity: 'ERROR',
+      });
+    }
+  }
+
+  if (data.e2e_verified !== undefined && data.e2e_verified !== null) {
+    if (typeof data.e2e_verified !== 'boolean') {
+      issues.push({
+        field: 'e2e_verified',
+        message: `Field "e2e_verified" must be a boolean. Got "${data.e2e_verified}".`,
+        severity: 'ERROR',
+      });
+    }
+  }
+
   // 5. Risk Assessment Field & Consistency
   const riskField = data.overall_risk ?? data.risk_level;
   if (!riskField) {

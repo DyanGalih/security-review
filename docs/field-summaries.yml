@@ -59,6 +59,47 @@ document_fields:
     description: "Export-only commit or branch reviewed, or 'unknown' when source was not directly accessed."
     index: false
 
+  findings_evaluated:
+    type: integer
+    minimum: 0
+    description: "Verification-only: count of evaluated candidate findings, including false positives and accepted risks excluded from total_findings."
+    index: false
+
+  confirmed_count:
+    type: integer
+    minimum: 0
+    description: "Verification-only: count of confirmed exploitable findings."
+    index: false
+
+  false_positive_count:
+    type: integer
+    minimum: 0
+    description: "Verification-only: count of verified false positives."
+    index: false
+
+  mitigated_count:
+    type: integer
+    minimum: 0
+    description: "Verification-only: count of findings with active mitigating controls."
+    index: false
+
+  accepted_risk_count:
+    type: integer
+    minimum: 0
+    description: "Verification-only: count of accepted architectural risks."
+    index: false
+
+  fix_suggestion_count:
+    type: integer
+    minimum: 0
+    description: "Verification-only: count of independently verified hygiene or defense-in-depth suggestions."
+    index: false
+
+  e2e_verified:
+    type: boolean
+    description: "Verification-only: whether browser-based Playwright E2E verification was executed."
+    index: false
+
   coverage_complete:
     type: boolean
     description: "Whether every planned surface was reviewed and closed. Omitted completeness renders as false with the caveat 'completeness not recorded'."

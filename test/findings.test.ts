@@ -91,6 +91,13 @@ describe('parseFindingsReport', () => {
     expect(errorsOf([{ ...fullFinding, verificationStatus: 'MAYBE' }])[0]).toContain('verificationStatus');
   });
 
+  it('accepts the verification FIX_SUGGESTION status through the shared loader', () => {
+    const { report } = parseFindingsReport(JSON.stringify([
+      { ...fullFinding, verificationStatus: 'FIX_SUGGESTION' },
+    ]));
+    expect(report.findings[0].verificationStatus).toBe('FIX_SUGGESTION');
+  });
+
   it('validates coverage entries', () => {
     const ruledOut = errorsOf({
       findings: [],

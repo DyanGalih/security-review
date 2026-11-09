@@ -85,8 +85,8 @@ Re-verify candidate findings, filter false positives, and generate non-destructi
 /sr-verify verify SQL injection in user search endpoint
 ```
 Produces:
-- **Exploitability Classification**: `CONFIRMED`, `FALSE_POSITIVE`, `MITIGATED`, or `ACCEPTED_RISK`.
-- **Proof of Concept (PoC)**: Automated unit/integration test cases and safe curl payloads.
+- **Exploitability Classification**: `CONFIRMED`, `FALSE_POSITIVE`, `FIX_SUGGESTION`, `MITIGATED`, or `ACCEPTED_RISK`.
+- **Proof of Concept (PoC)**: Automated unit/integration test cases, Playwright E2E specs (`tests/security/`) against an explicitly authorized test URL, and safe curl payloads.
 - **Suppression Config**: Automatic YAML snippet for `security-review.yml` for verified false positives.
 
 ---

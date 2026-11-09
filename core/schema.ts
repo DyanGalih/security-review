@@ -30,7 +30,7 @@ export const COVERAGE_OUTCOMES = [
 /** Coverage outcomes that must carry non-empty `evidence`. */
 export const COVERAGE_OUTCOMES_REQUIRING_EVIDENCE = ['ruled_out', 'not_applicable', 'needs_follow_up'] as const;
 
-export const VERIFICATION_STATUSES = ['CONFIRMED', 'FALSE_POSITIVE', 'MITIGATED', 'ACCEPTED_RISK'] as const;
+export const VERIFICATION_STATUSES = ['CONFIRMED', 'FALSE_POSITIVE', 'MITIGATED', 'ACCEPTED_RISK', 'FIX_SUGGESTION'] as const;
 
 export const FINDING_SEVERITIES = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'INFORMATIONAL'] as const;
 

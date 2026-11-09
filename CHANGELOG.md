@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **Playwright End-to-End Security Finding Verification (`/sr-verify`)**:
+  - Added automated browser-driven E2E verification using Playwright to test finding exploitability against running web applications.
+  - Supported `--headless` (default background) and `--headed` (real-time visual browser) execution modes.
+  - Added automatic environment resolution (`TEST_BASE_URL`, `APP_URL`, `.security-review/security-review.yml`, `playwright.config.ts`, `.env`) and local/global Playwright dependency detection.
+  - Expanded finding classification taxonomy to include `FIX_SUGGESTION` for independently verified hygiene improvements without downgrading unverified vulnerabilities.
+  - Standardized non-destructive test generation under `tests/security/<finding-id>.spec.ts` with step-by-step reproduction instructions in verification reports.
+  - Extended report schema, field registry, and validator with `fix_suggestion_count` and `e2e_verified`.
+  - Verify reports now count only active findings in `total_findings` and severity counts; false positives and accepted risks are tracked through `findings_evaluated` and status counts.
+
 - **Closure discipline and coverage ledger** (change `review-closure-coverage`):
   - Findings carry `confidence` (`high` | `medium` | `low`), `confidenceRationale`, `counterevidence`, and `severityChangeConditions`; reports render them per finding. **BREAKING**: the numeric `confidence` type is replaced by the label (nothing in the CLI read the number).
   - Findings JSON gains `coverage[]`, `coverage_complete`, and `coverage_caveats`; every report gains a numbered `Coverage` section and the frontmatter field `coverage_complete`. Absent completeness renders as `false` with the caveat `completeness not recorded`.
