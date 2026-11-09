@@ -86,8 +86,10 @@ Re-verify candidate findings, filter false positives, and generate non-destructi
 ```
 Produces:
 - **Exploitability Classification**: `CONFIRMED`, `FALSE_POSITIVE`, `FIX_SUGGESTION`, `MITIGATED`, or `ACCEPTED_RISK`.
-- **Proof of Concept (PoC)**: Automated unit/integration test cases, Playwright E2E specs (`tests/security/`) against an explicitly authorized test URL, and safe curl payloads.
+- **Proof of Concept (PoC)**: Automated unit/integration test cases, Playwright E2E specs, and curl/HTTP reproductions, run only inside an OS-enforced sandbox (no external network, empty allow-listed environment, read-only target and toolchain, scratch-only writes, resource limits, no host paths beyond the target, toolchain, and scratch directory). Network traffic goes only to a local instance started inside the sandbox or to a test URL you explicitly confirm as authorized and isolated. Specs are written to the sandbox scratch directory and offered as proposed files for `tests/security/`.
 - **Suppression Config**: Automatic YAML snippet for `security-review.yml` for verified false positives.
+
+When the host cannot provide every sandbox control, `/sr-verify` does not execute: it keeps the finding at reduced confidence, names the missing control, marks coverage incomplete, and writes a validation plan. Each finding is verified in a fresh context; otherwise the report states that verification was not independent.
 
 ---
 
