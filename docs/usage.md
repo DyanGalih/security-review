@@ -86,8 +86,10 @@ Re-verify candidate findings, filter false positives, and generate non-destructi
 ```
 Produces:
 - **Exploitability Classification**: `CONFIRMED`, `FALSE_POSITIVE`, `MITIGATED`, or `ACCEPTED_RISK`.
-- **Proof of Concept (PoC)**: Automated unit/integration test cases and safe curl payloads.
+- **Proof of Concept (PoC)**: Automated unit/integration test cases and curl/HTTP reproductions, run only inside an OS-enforced sandbox (no external network, empty allow-listed environment, read-only target and toolchain, scratch-only writes, resource limits, no host paths beyond the target, toolchain, and scratch directory); curl/HTTP reproductions go only to a local instance started inside the sandbox.
 - **Suppression Config**: Automatic YAML snippet for `security-review.yml` for verified false positives.
+
+When the host cannot provide every sandbox control, `/sr-verify` does not execute: it keeps the finding at reduced confidence, names the missing control, marks coverage incomplete, and writes a validation plan. Each finding is verified in a fresh context; otherwise the report states that verification was not independent.
 
 ---
 

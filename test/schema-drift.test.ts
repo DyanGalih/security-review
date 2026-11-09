@@ -52,6 +52,27 @@ function firstField(row: string[]): string {
   return backticked(row[0])[0];
 }
 
+/**
+ * The text of one prompt section: from `heading` to the next heading of the same or a higher level.
+ * Scoping each assertion to the section that owns the rule keeps a phrase elsewhere in the file from
+ * masking its removal.
+ */
+function promptSection(name: string, heading: string): string {
+  const text = promptFiles.find((p) => p.name === name)?.text ?? '';
+  const marker = `\n${heading}\n`;
+  const start = text.indexOf(marker);
+  expect(start, `${name} has ${heading}`).toBeGreaterThan(-1);
+  const level = heading.match(/^#+/)![0].length;
+  const rest = text.slice(start + marker.length);
+  const end = rest.search(new RegExp(`\\n#{1,${level}} `));
+  return end === -1 ? rest : rest.slice(0, end);
+}
+
+function expectPhrases(name: string, heading: string, phrases: readonly string[]): void {
+  const body = promptSection(name, heading);
+  for (const phrase of phrases) expect(body, `${name} ${heading} contains "${phrase}"`).toContain(phrase);
+}
+
 describe('report schema drift', () => {
   it('registry review_type enum matches REVIEW_TYPES', () => {
     const row = sectionRows('## Document-Level Fields').find((r) => firstField(r) === 'review_type');
@@ -150,6 +171,72 @@ describe('report schema drift', () => {
       const text = promptFiles.find((p) => p.name === name)?.text ?? '';
       expect(text, `${name} has ## Diff Scope`).toContain('\n## Diff Scope\n');
       expect(text).not.toContain('Confirmed Secure Patterns');
+    }
+  });
+
+  it('review prompts carry the finding bar, and audit and verify carry their execution and focus rules', () => {
+    const elements = [
+      'lower-trust principal',
+      'accepted input or action',
+      'intended control',
+      'crossed boundary',
+      'affected principal or resource',
+      'observed or owner-observable result',
+    ];
+    for (const name of REVIEW_PROMPTS) {
+      expectPhrases(name, '## Finding Bar', [
+        ...elements,
+        'not yet established',
+        'needs_follow_up',
+        'shown absent in source',
+        'not_applicable',
+        'only narrows the principal',
+        'Only `/sr-verify` executes target code',
+      ]);
+      expectPhrases(name, '### Not a finding', ['checklist', 'defense-in-depth', 'guessed', 'self-impact', 'stronger than', 'hardening note']);
+      expectPhrases(name, '## Candidate Closure', [
+        '`high` only for an executed reproduction',
+        'meets the Finding Bar',
+        'shown absent in source',
+        'only narrows the principal',
+      ]);
+      expectPhrases(name, '## Coverage Ledger', ['per surface and risk area']);
+    }
+
+    expectPhrases('security-audit.md', '## Determine Review Scope', ['ask one question']);
+    expectPhrases('security-audit.md', '## Focus Selection', ['not from a dependency or language name', 'not_applicable']);
+
+    expectPhrases('security-verify.md', '### Execution Sandbox', [
+      'no external network',
+      'empty allow-listed environment',
+      'read-only target and toolchain',
+      'writes limited to a scratch directory',
+      'CPU, memory, process, disk, and time limits',
+      'no host paths visible beyond the target, toolchain, and scratch directory',
+      'Never copy secret values',
+      'scratch directory',
+      'local instance started inside the sandbox',
+      'Execution Environment',
+    ]);
+    expectPhrases('security-verify.md', '### Without a Sandbox', ['confidenceRationale', 'reported', 'coverage_complete: false', 'decline']);
+    expectPhrases('security-verify.md', '### Independent Verification', ['Verification was not independent']);
+
+    const verify = promptFiles.find((p) => p.name === 'security-verify.md')!.text;
+    const mitigated = verify.split('\n').find((line) => line.includes('**`MITIGATED`**'));
+    expect(mitigated, 'security-verify.md defines MITIGATED').toBeDefined();
+    expect(mitigated, 'MITIGATED records the control as counterevidence').toContain('counterevidence');
+    expect(mitigated, 'MITIGATED applies only while the bar is met on another path').toContain('another path');
+    expect(mitigated, 'a control on every path is FALSE_POSITIVE with ruled_out coverage').toContain('`ruled_out` coverage');
+    expect(mitigated, 'MITIGATED does not recommend hardening').not.toContain('hardening is recommended');
+    const verdictLine = (status: string) => verify.split('\n').find((line) => line.includes(`**\`${status}\`**`)) ?? '';
+    expect(verdictLine('CONFIRMED'), 'CONFIRMED requires the Finding Bar').toContain('Finding Bar');
+    expect(verdictLine('FALSE_POSITIVE'), 'FALSE_POSITIVE maps to ruled_out').toContain('`ruled_out` coverage');
+    expect(verdictLine('FALSE_POSITIVE'), 'FALSE_POSITIVE covers absent bar elements').toContain('`not_applicable` coverage');
+    expect(verdictLine('FALSE_POSITIVE'), 'generic trust needs confirmation for that call').toContain('confirmed for that call');
+    expect(promptSection('security-verify.md', '### Classification Taxonomy:'), 'open proof gap has no status').toContain('leave it out of the four counts');
+    for (const heading of ['## 1. Executive Verification Summary', '## 2. Detailed Finding Verifications & PoC Reproductions']) {
+      const body = promptSection('security-verify.md', heading);
+      expect(body, `security-verify.md ${heading} shows confidence as a label, not a percentage`).not.toMatch(/\d+\s*%/);
     }
   });
 

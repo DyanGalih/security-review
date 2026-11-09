@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Finding bar and verification safety** (change `finding-bar-and-verify-safety`):
+  - `sr-audit`, `sr-staged`, `sr-branch`, and `sr-verify` gain a Finding Bar: a finding names the lower-trust principal, accepted input or action, intended control, crossed boundary, affected principal or resource, and observed or owner-observable result. Below-bar candidates become `needs_follow_up` or `not_applicable` coverage; checklist deviations, defense-in-depth advice, and self-impact are not findings. Coverage entries are kept per surface and risk area.
+  - **Behaviour change**: `high` confidence now requires an executed reproduction; a complete source trace that was not executed is at most `medium`.
+  - `sr-audit` chooses focus areas from trust boundaries found in source and asks one question when a request could mean a focused answer or a full audit.
+  - **Behaviour change**: `sr-verify` runs reproductions only inside an OS-enforced sandbox (no external network, empty allow-listed environment, read-only target and toolchain, scratch-only writes, resource limits, no host paths beyond the target, toolchain, and scratch directory), names the mechanism for each control, and never copies secret values from execution output into the report. When the host cannot provide every control it no longer runs reproductions; it keeps the finding at reduced confidence, marks coverage incomplete, and writes a validation plan. `MITIGATED` keeps the finding at lowered severity, and confidence is shown as a label. Re-run `security-review init` to refresh installed prompts.
+
 - **Closure discipline and coverage ledger** (change `review-closure-coverage`):
   - Findings carry `confidence` (`high` | `medium` | `low`), `confidenceRationale`, `counterevidence`, and `severityChangeConditions`; reports render them per finding. **BREAKING**: the numeric `confidence` type is replaced by the label (nothing in the CLI read the number).
   - Findings JSON gains `coverage[]`, `coverage_complete`, and `coverage_caveats`; every report gains a numbered `Coverage` section and the frontmatter field `coverage_complete`. Absent completeness renders as `false` with the caveat `completeness not recorded`.
