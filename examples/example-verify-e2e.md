@@ -100,14 +100,18 @@ Replace `v-html` with safe text interpolation `v-text` or sanitize the highlight
 
 #### B. Proof of Concept (PoC) & Steps to Reproduce
 
+**Execution Environment**: the same sandbox as TASK-SEC-001; the local test instance seeds the dummy `poc-user` account from a scratch fixture, and no credentials are passed through the environment
+
 ```typescript
 import { test, expect } from '@playwright/test';
 
+// Dummy account seeded into the local test instance from a scratch fixture; not a real credential.
+const POC_USER = { username: 'poc-user', password: 'poc-only-placeholder' };
+
 test('Test TASK-SEC-002 - Protocol-relative Open Redirect', async ({ page }) => {
-  if (!process.env.TEST_USERNAME || !process.env.TEST_PASSWORD) throw new Error('Use isolated test account credentials');
   await page.goto('/login?returnUrl=//evil.example.com');
-  await page.fill('#username', process.env.TEST_USERNAME);
-  await page.fill('#password', process.env.TEST_PASSWORD);
+  await page.fill('#username', POC_USER.username);
+  await page.fill('#password', POC_USER.password);
   await page.click('#submit-btn');
 
   // The server-side origin check redirects back to the account page.
@@ -117,7 +121,7 @@ test('Test TASK-SEC-002 - Protocol-relative Open Redirect', async ({ page }) => 
 
 **Steps to Reproduce**:
 1. Navigate to: `http://localhost:3000/login?returnUrl=//evil.example.com`
-2. Complete login.
+2. Log in as the dummy `poc-user` account.
 3. **Observed Behavior**: The server rejects the external return URL and redirects to the account page; no client-side code reads `returnUrl`.
 4. **Advisory Fix Suggestion**: Delete the unused `isSafeReturnPath()` helper, or make it reject `//` and `\` prefixes, so a future caller cannot reintroduce the redirect.
 

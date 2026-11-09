@@ -45,7 +45,7 @@ Resolve the target base URL in the following precedence order:
 - Playwright configuration: `playwright.config.ts` (baseURL)
 - Local environment files: `.env` or `.env.local`
 
-Before opening a browser or running a PoC, display the resolved URL and obtain explicit confirmation that it is an authorized, isolated test environment. A URL discovered from configuration or environment is not authorization. If the target cannot be confirmed, do not run E2E tests; use static analysis or an isolated local test instead. Never use real accounts or state-changing production workflows for browser verification.
+Before opening a browser or running a PoC, display the resolved URL and obtain explicit confirmation that it is an authorized, isolated test environment. A URL discovered from configuration or environment is not authorization. If the target cannot be confirmed, do not run E2E tests; use static analysis or an isolated local test instead. Never use real accounts or state-changing production workflows for browser verification. When a check needs a login, use a dummy account seeded into the test instance from a scratch fixture; never pass credentials through the environment.
 
 ### 2. Dependency & Runner Detection
 Automatically detect available Playwright execution options:
@@ -347,7 +347,7 @@ false-positives:
     date: "<YYYY-MM-DD>"
 ```
 
-## 4. Automatic File Persistence
+## 5. Automatic File Persistence
 
 When completing the finding verification, you MUST write the full Markdown verification report directly to disk:
 1. **Target File Path**: `docs/security-reviews/<YYYY-MM-DD>-verify.md` (or `docs/security-reviews/<YYYY-MM-DD>-<scope>-verify.md` if specific scope is provided).
@@ -356,6 +356,6 @@ When completing the finding verification, you MUST write the full Markdown verif
 
 ---
 
-## 5. Durable Memory Preservation
+## 6. Durable Memory Preservation
 
 If durable lessons or validated false-positive patterns exist, ask for authorization before persisting them to project memory.
