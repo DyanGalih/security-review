@@ -7,6 +7,16 @@
   - **Behaviour change**: `high` confidence now requires an executed reproduction; a complete source trace that was not executed is at most `medium`.
   - `sr-audit` chooses focus areas from trust boundaries found in source and asks one question when a request could mean a focused answer or a full audit.
   - **Behaviour change**: `sr-verify` runs reproductions only inside an OS-enforced sandbox (no external network, empty allow-listed environment, read-only target and toolchain, scratch-only writes, resource limits, no host paths beyond the target, toolchain, and scratch directory), names the mechanism for each control, and never copies secret values from execution output into the report. When the host cannot provide every control it no longer runs reproductions; it keeps the finding at reduced confidence, marks coverage incomplete, and writes a validation plan. `MITIGATED` keeps the finding at lowered severity, and confidence is shown as a label. Re-run `security-review init` to refresh installed prompts.
+  - Merged with Playwright E2E verification: browser checks are the one network exception, limited to the explicitly confirmed authorized test origin, with every other sandbox control kept. Playwright specs are written and run in the scratch directory and offered as proposed `tests/security/` files instead of being written into the target repository. `FIX_SUGGESTION` applies only to a previously reported finding with no remaining credible exploit path.
+
+- **Playwright End-to-End Security Finding Verification (`/sr-verify`)**:
+  - Added automated browser-driven E2E verification using Playwright to test finding exploitability against running web applications.
+  - Supported `--headless` (default background) and `--headed` (real-time visual browser) execution modes.
+  - Added automatic environment resolution (`TEST_BASE_URL`, `APP_URL`, `.security-review/security-review.yml`, `playwright.config.ts`, `.env`) and local/global Playwright dependency detection.
+  - Expanded finding classification taxonomy to include `FIX_SUGGESTION` for independently verified hygiene improvements without downgrading unverified vulnerabilities.
+  - Standardized non-destructive test generation under `tests/security/<finding-id>.spec.ts` with step-by-step reproduction instructions in verification reports.
+  - Extended report schema, field registry, and validator with `fix_suggestion_count` and `e2e_verified`.
+  - Verify reports now count only active findings in `total_findings` and severity counts; false positives and accepted risks are tracked through `findings_evaluated` and status counts.
 
 - **Closure discipline and coverage ledger** (change `review-closure-coverage`):
   - Findings carry `confidence` (`high` | `medium` | `low`), `confidenceRationale`, `counterevidence`, and `severityChangeConditions`; reports render them per finding. **BREAKING**: the numeric `confidence` type is replaced by the label (nothing in the CLI read the number).

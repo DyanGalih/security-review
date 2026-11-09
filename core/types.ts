@@ -70,7 +70,7 @@ export interface CoverageEntry {
 }
 
 export interface FindingPoc {
-  type?: 'test' | 'curl' | 'script' | string;
+  type?: 'test' | 'curl' | 'script' | 'playwright' | string;
   code: string;
   reproductionSteps?: string[];
   expectedVulnerable?: string;
@@ -110,10 +110,17 @@ export interface FindingsReport {
   assessment_date?: string;
   codebase_analyzed?: string;
   total_files_analyzed?: number;
+  total_findings?: number;
   overall_risk?: FindingSeverity | 'NONE';
   assessment_kind?: 'whitebox-review' | 'report-synthesis';
   findings: FindingItem[];
   architectural_risks?: Array<{ pattern: string; description: string }>;
+  confirmed_count?: number;
+  false_positive_count?: number;
+  mitigated_count?: number;
+  accepted_risk_count?: number;
+  fix_suggestion_count?: number;
+  e2e_verified?: boolean;
   coverage?: CoverageEntry[];
   /** Absent means false, with the caveat "completeness not recorded". */
   coverage_complete?: boolean;

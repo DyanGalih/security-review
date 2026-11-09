@@ -131,6 +131,9 @@ describe('report schema drift', () => {
     for (const name of withHeader) {
       const text = promptFiles.find((p) => p.name === name)!.text;
       expect(/^coverage_complete: /m.test(text), `${name} header has coverage_complete`).toBe(true);
+      for (const field of REQUIRED_FRONTMATTER_FIELDS) {
+        expect(new RegExp(`^${field}: `, 'm').test(text), `${name} header has ${field}`).toBe(true);
+      }
     }
   });
 
@@ -158,6 +161,7 @@ describe('report schema drift', () => {
       const text = promptFiles.find((p) => p.name === name)?.text ?? '';
       expect(text, `${name} has ## Candidate Closure`).toContain('\n## Candidate Closure\n');
       expect(text, `${name} has ## Coverage Ledger`).toContain('\n## Coverage Ledger\n');
+      expect(text, `${name} has ## Coverage section in output format`).toContain('## Coverage');
       const closure = text.split('\n## Candidate Closure\n')[1];
       for (const state of ['`confirmed`', '`ruled_out`', '`open_proof_gap`', 'does not rule out']) {
         expect(closure, `${name} closure section mentions ${state}`).toContain(state);
@@ -233,7 +237,11 @@ describe('report schema drift', () => {
     expect(verdictLine('FALSE_POSITIVE'), 'FALSE_POSITIVE maps to ruled_out').toContain('`ruled_out` coverage');
     expect(verdictLine('FALSE_POSITIVE'), 'FALSE_POSITIVE covers absent bar elements').toContain('`not_applicable` coverage');
     expect(verdictLine('FALSE_POSITIVE'), 'generic trust needs confirmation for that call').toContain('confirmed for that call');
-    expect(promptSection('security-verify.md', '### Classification Taxonomy:'), 'open proof gap has no status').toContain('leave it out of the four counts');
+    expect(promptSection('security-verify.md', '### Classification Taxonomy:'), 'open proof gap has no status').toContain('leave it out of the verification-status counts');
+    expect(verdictLine('FIX_SUGGESTION'), 'FIX_SUGGESTION applies only to a previously reported finding').toContain('previously reported finding');
+    expect(verdictLine('FIX_SUGGESTION'), 'new defense-in-depth advice stays below the bar').toContain('Not a finding');
+    expect(promptSection('security-verify.md', '### Execution Sandbox'), 'E2E is limited to the confirmed origin').toContain('confirmed under Target URL Resolution');
+    expect(promptSection('security-verify.md', '### Mandatory PoC Safety Floor'), 'specs are proposed, not written into the target').toContain('do not write it into the target repository');
     for (const heading of ['## 1. Executive Verification Summary', '## 2. Detailed Finding Verifications & PoC Reproductions']) {
       const body = promptSection('security-verify.md', heading);
       expect(body, `security-verify.md ${heading} shows confidence as a label, not a percentage`).not.toMatch(/\d+\s*%/);

@@ -28,6 +28,13 @@ These fields describe the review document itself and appear at the top of every 
 | `commit_or_branch` | string | Commit, branch, or `unknown` | Export-only source revision provenance. | No | Export only |
 | `coverage_complete` | boolean | `true`, `false` | Whether every planned surface was reviewed and closed. A report that omits completeness is rendered as `false` with the caveat `completeness not recorded`. | No | Yes |
 | `coverage_caveats` | string[] | Free text, one entry per reason | Why the review is incomplete (budget, missing runtime, unavailable credentials, unreviewed paths). | No | When false |
+| `findings_evaluated` | integer | ≥ 0 | Verification-only: total count of findings evaluated during verification, including false positives and accepted risks that are excluded from `total_findings` and the severity counts. | No | No |
+| `confirmed_count` | integer | ≥ 0 | Verification-only: count of confirmed exploitable findings. | No | No |
+| `false_positive_count` | integer | ≥ 0 | Verification-only: count of verified false-positive findings. | No | No |
+| `mitigated_count` | integer | ≥ 0 | Verification-only: count of findings with active compensating controls. | No | No |
+| `accepted_risk_count` | integer | ≥ 0 | Verification-only: count of accepted architectural/business risks. | No | No |
+| `fix_suggestion_count` | integer | ≥ 0 | Verification-only: count of independently verified hygiene or defense-in-depth suggestions. | No | No |
+| `e2e_verified` | boolean | `true`, `false` | Verification-only: whether browser-based Playwright E2E verification was executed. | No | No |
 
 ---
 
@@ -79,7 +86,7 @@ Each entry of the `findings` array in findings JSON (the input to `security-revi
 | `impact` | string | Markdown | Demonstrated consequence. | No |
 | `remediation` | string | Markdown | How to fix it. | No |
 | `proposedFix` | string | Code | Suggested patch, rendered in a fence. | No |
-| `verificationStatus` | string (enum) | `CONFIRMED`, `FALSE_POSITIVE`, `MITIGATED`, `ACCEPTED_RISK` | Result of `/sr-verify` re-verification. | No |
+| `verificationStatus` | string (enum) | `CONFIRMED`, `FALSE_POSITIVE`, `MITIGATED`, `ACCEPTED_RISK`, `FIX_SUGGESTION` | Result of `/sr-verify` re-verification. | No |
 | `confidence` | string (enum) | `high`, `medium`, `low` | `high`: working proof or complete reachable trace; `medium`: strong static evidence not executed; `low`: plausible with a material gap. | Yes unless legacy |
 | `confidenceRationale` | string | Free text | The specific gap. | When confidence is not `high` |
 | `counterevidence` | string | Markdown | The strongest case against the finding, or what was checked and found absent. | Yes unless legacy |

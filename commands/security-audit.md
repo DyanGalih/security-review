@@ -650,11 +650,26 @@ Produce a comprehensive **SECURITY REVIEW REPORT** with the following structure:
 - [CVE references if applicable]
 - [OWASP references]
 
+**Confidence:** high | medium | low — <rationale when not high>
+**Counterevidence:** <the strongest case against the finding, or what was checked and found absent>
+**Severity Change Conditions:** <the one piece of evidence that would raise or lower the severity>
 **Security Task:** TASK-SEC-001
 
 ---
 
 [Repeat for each finding]
+
+---
+
+## Coverage
+
+| Surface | Risk Area | Outcome | Evidence |
+|---|---|---|---|
+| `POST /login` | auth bypass | ruled_out | requireAuth at auth.ts:12 on every route |
+| `GET /search` | injection | reported | Unparameterized query at search.ts:40 |
+
+**Completeness:** complete | incomplete
+- <caveat, one per reason, when incomplete>
 
 ---
 
@@ -954,9 +969,16 @@ If the user requested JSON findings output or token-optimized hybrid mode (e.g.,
       "exploitScenario": "<Exploit Scenario>",
       "impact": "<Impact>",
       "remediation": "<Remediation Steps>",
-      "proposedFix": "<Code fix snippet>"
+      "proposedFix": "<Code fix snippet>",
+      "confidence": "high",
+      "counterevidence": "<checked and absent controls>",
+      "severityChangeConditions": "<what raises/lowers severity>"
     }
-  ]
+  ],
+  "coverage": [
+    { "surface": "POST /login", "riskArea": "auth bypass", "outcome": "ruled_out", "evidence": "requireAuth middleware" }
+  ],
+  "coverage_complete": true
 }
 ```
 

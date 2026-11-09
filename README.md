@@ -73,7 +73,7 @@ Use Security Review directly with AI coding assistants (Antigravity, Claude Code
 | `/sr-followup` | `sr-followup` | Triage | Convert security findings into actionable remediation tasks. |
 | `/sr-apply` | `sr-apply` | Remediation | Automatically apply approved security fixes to `tasks.md` and `plan.md`. |
 | `/sr-export` | `sr-export` | Formal Report | Export formal Executive and Technical Pentest Report. |
-| `/sr-verify` | `sr-verify` | Verification & PoC | Re-verify findings, test exploitability, and generate PoCs. |
+| `/sr-verify` | `sr-verify` | Verification & PoC | Re-verify findings, test client-side exploitability with Playwright E2E, and generate PoCs. |
 | `/sr-init` | `sr-init` | Onboarding | Initialize or update the project Security Constitution. |
 
 👉 For full details on prompt contracts and agent workflows, see [Agent Skills Guide](docs/agent-skills.md).

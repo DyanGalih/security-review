@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { validateReportFrontmatter } from '../core/validator.js';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { writeFile, unlink, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, unlink, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
 
@@ -157,5 +157,79 @@ overall_risk: NONE`;
 
     const complete = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true`);
     expect(complete.valid).toBe(true);
+  });
+  it('should successfully validate example-verify-e2e.md with Playwright E2E and fix_suggestion fields', async () => {
+    const examplePath = join(__dirname, '../examples/example-verify-e2e.md');
+    const result = await validateReportFrontmatter(examplePath);
+
+    expect(result.valid).toBe(true);
+    expect(result.frontmatterPresent).toBe(true);
+    expect(result.metadata).toBeDefined();
+    expect(result.metadata?.review_type).toBe('verify');
+    expect(result.metadata?.e2e_verified).toBe(true);
+    expect(result.metadata?.fix_suggestion_count).toBe(1);
+    expect(result.metadata?.confirmed_count).toBe(1);
+    expect(result.metadata?.false_positive_count).toBe(1);
+    expect(result.metadata?.critical_count).toBe(0);
+    expect(result.metadata?.high_count).toBe(1);
+    expect(result.metadata?.medium_count).toBe(1);
+    expect(result.metadata?.total_findings).toBe(2);
+    expect(result.metadata?.findings_evaluated).toBe(3);
+  });
+
+  it('includes the required report fields in the verification command header', async () => {
+    const command = await readFile(join(__dirname, '../commands/security-verify.md'), 'utf8');
+    const header = command.match(/```yaml\n(---\n[\s\S]*?\n---)\n```/)?.[1];
+    expect(header).toBeDefined();
+    for (const field of ['total_findings', 'overall_risk', 'critical_count', 'high_count', 'medium_count', 'low_count']) {
+      expect(header).toContain(`${field}:`);
+    }
+  });
+
+  it('should reject non-integer fix_suggestion_count and invalid e2e_verified types', async () => {
+    const tmpPath = join(tmpdir(), `test-invalid-verify-${Date.now()}.md`);
+    await writeFile(
+      tmpPath,
+      `---
+document_type: security-review
+review_type: verify
+total_findings: 1
+critical_count: 1
+high_count: 0
+medium_count: 0
+low_count: 0
+overall_risk: CRITICAL
+fix_suggestion_count: true
+confirmed_count: -1
+e2e_verified: "not-a-boolean"
+---
+# Verify Content
+`,
+      'utf8'
+    );
+
+    const result = await validateReportFrontmatter(tmpPath);
+    await unlink(tmpPath);
+
+    expect(result.valid).toBe(false);
+    expect(result.issues.some((i) => i.field === 'fix_suggestion_count')).toBe(true);
+    expect(result.issues.some((i) => i.field === 'e2e_verified')).toBe(true);
+
+    await writeFile(tmpPath, `---
+document_type: security-review
+review_type: verify
+total_findings: 0
+critical_count: 0
+high_count: 0
+medium_count: 0
+low_count: 0
+overall_risk: NONE
+fix_suggestion_count: "1"
+---
+# Verify Content
+`, 'utf8');
+    const quotedCount = await validateReportFrontmatter(tmpPath);
+    await unlink(tmpPath);
+    expect(quotedCount.issues.some((i) => i.field === 'fix_suggestion_count')).toBe(true);
   });
 });
