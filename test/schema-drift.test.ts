@@ -242,6 +242,15 @@ describe('report schema drift', () => {
     expect(verdictLine('FIX_SUGGESTION'), 'new defense-in-depth advice stays below the bar').toContain('Not a finding');
     expect(promptSection('security-verify.md', '### Execution Sandbox'), 'E2E is limited to the confirmed origin').toContain('confirmed under Target URL Resolution');
     expect(promptSection('security-verify.md', '### Mandatory PoC Safety Floor'), 'specs are proposed, not written into the target').toContain('do not write it into the target repository');
+    const header = promptSection('security-verify.md', '## Document Header');
+    const confidenceRow = registry.split('\n').find((line) => line.startsWith('| `confidence` |')) ?? '';
+    expect(confidenceRow, 'registry reserves high for an executed reproduction').toContain('`high`: executed reproduction only');
+    expect(confidenceRow, 'registry no longer allows high for an unexecuted trace').not.toContain('complete reachable trace');
+    expect(header, 'counts use the current severity').toContain('at their current severity');
+    expect(header, 'MITIGATED counts at its lowered severity').toContain('`MITIGATED`, which counts at its lowered severity');
+    expect(header, 'no blanket original-severity count').not.toContain('findings) at their original severity');
+    expect(promptSection('security-verify.md', '## 2. Detailed Finding Verifications & PoC Reproductions'), 'template exposes the current rating').toContain('**Current Severity**');
+    expect(promptSection('security-verify.md', '## 1. Executive Verification Summary'), 'summary table shows the counted rating').toContain('| Original Severity | Current Severity |');
     for (const heading of ['## 1. Executive Verification Summary', '## 2. Detailed Finding Verifications & PoC Reproductions']) {
       const body = promptSection('security-verify.md', heading);
       expect(body, `security-verify.md ${heading} shows confidence as a label, not a percentage`).not.toMatch(/\d+\s*%/);

@@ -29,11 +29,11 @@ cwe_identifiers: [CWE-79, CWE-601]
 
 ## 1. Executive Verification Summary
 
-| Finding ID / Target | Vulnerability Type | Original Severity | Verification Status | Exploitability | Confidence | E2E Mode |
-|---|---|---|---|---|---|---|
-| `TASK-SEC-001` | DOM-based Cross-Site Scripting (XSS) | High | **CONFIRMED** | High | high | Playwright (Headless) |
-| `TASK-SEC-002` | Unvalidated URL Redirect | Medium | **FIX_SUGGESTION** | None | high | Playwright (Headless) |
-| `TASK-SEC-003` | Cross-Site Request Forgery (CSRF) | High | **FALSE_POSITIVE** | None | high | Playwright (Headless) |
+| Finding ID / Target | Vulnerability Type | Original Severity | Current Severity | Verification Status | Exploitability | Confidence | E2E Mode |
+|---|---|---|---|---|---|---|---|
+| `TASK-SEC-001` | DOM-based Cross-Site Scripting (XSS) | High | High | **CONFIRMED** | High | high | Playwright (Headless) |
+| `TASK-SEC-002` | Unvalidated URL Redirect | Medium | Medium | **FIX_SUGGESTION** | None | high | Playwright (Headless) |
+| `TASK-SEC-003` | Cross-Site Request Forgery (CSRF) | High | High | **FALSE_POSITIVE** | None | high | Playwright (Headless) |
 
 ### Summary Analysis
 Evaluated 3 candidate findings from previous audit reports against an authorized, isolated test environment (`http://localhost:3000`). Using Playwright browser automation, 1 DOM-based XSS vulnerability was empirically confirmed. 1 redirect finding was classified as `FIX_SUGGESTION` after verifying that the only redirect is issued by the server, which rejects external return URLs; an unused client-side helper with a weaker prefix check should still be removed. 1 CSRF finding was verified as `FALSE_POSITIVE` after confirming the server enforces its stated controls. Severity counts cover the 2 active findings; the false positive is counted only in `findings_evaluated` and `false_positive_count`.
@@ -44,6 +44,7 @@ Evaluated 3 candidate findings from previous audit reports against an authorized
 
 ### Finding: TASK-SEC-001 — DOM XSS in Search Query Highlight
 - **Original Severity**: High
+- **Current Severity**: High
 - **Verification Status**: CONFIRMED
 - **Confidence**: high
 - **Affected File(s)**: `src/components/SearchHighlight.vue:L42`
@@ -86,6 +87,7 @@ Replace `v-html` with safe text interpolation `v-text` or sanitize the highlight
 
 ### Finding: TASK-SEC-002 — Open Redirect on Post-Login Return URL
 - **Original Severity**: Medium
+- **Current Severity**: Medium
 - **Verification Status**: FIX_SUGGESTION
 - **Confidence**: high
 - **Affected File(s)**: `src/controllers/auth.ts:L88`, `src/utils/navigation.ts:L12`
@@ -123,6 +125,7 @@ test('Test TASK-SEC-002 - Protocol-relative Open Redirect', async ({ page }) => 
 
 ### Finding: TASK-SEC-003 — CSRF on Profile Update
 - **Original Severity**: High
+- **Current Severity**: High
 - **Verification Status**: FALSE_POSITIVE
 - **Confidence**: high
 - **Affected File(s)**: `src/routes/profile.ts:L22`

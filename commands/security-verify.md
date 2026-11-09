@@ -247,7 +247,7 @@ field_summaries:
 ---
 ```
 
-Count every evaluated finding once in `findings_evaluated` and, when classified, once in its verification-status count. `total_findings` and the severity counts cover only active findings (`CONFIRMED`, `MITIGATED`, `FIX_SUGGESTION`, and unverified or inconclusive findings) at their original severity; exclude `FALSE_POSITIVE` and `ACCEPTED_RISK` so `overall_risk` stays the highest active tier and is `NONE` when no active findings remain. Set `e2e_verified` to true only when an authorized browser check actually ran, and record inconclusive attempts in the finding analysis rather than claiming verification.
+Count every evaluated finding once in `findings_evaluated` and, when classified, once in its verification-status count. `total_findings` and the severity counts cover only active findings (`CONFIRMED`, `MITIGATED`, `FIX_SUGGESTION`, and unverified or inconclusive findings) at their current severity: the original severity for every status except `MITIGATED`, which counts at its lowered severity; exclude `FALSE_POSITIVE` and `ACCEPTED_RISK` so `overall_risk` stays the highest active tier and is `NONE` when no active findings remain. Set `e2e_verified` to true only when an authorized browser check actually ran, and record inconclusive attempts in the finding analysis rather than claiming verification.
 
 ## Output Structure
 
@@ -259,12 +259,12 @@ Produce a structured Markdown report with the following mandatory sections:
 
 ## 1. Executive Verification Summary
 
-| Finding ID / Target | Vulnerability Type | Original Severity | Verification Status | Exploitability | Confidence | E2E Mode |
-|---|---|---|---|---|---|---|
-| `TASK-SEC-001` | SQL Injection | Critical | **CONFIRMED** | High | high | Unit Test |
-| `TASK-SEC-002` | Reflected XSS | Medium | **CONFIRMED** | High | high | Playwright (Headless) |
-| `TASK-SEC-003` | Open Redirect | Low | **FIX_SUGGESTION** | Low | medium — static trace only | Playwright (Headless) |
-| `TASK-SEC-004` | CSRF on Settings | High | **FALSE_POSITIVE** | None | high | Playwright (Headless) |
+| Finding ID / Target | Vulnerability Type | Original Severity | Current Severity | Verification Status | Exploitability | Confidence | E2E Mode |
+|---|---|---|---|---|---|---|---|
+| `TASK-SEC-001` | SQL Injection | Critical | Critical | **CONFIRMED** | High | high | Unit Test |
+| `TASK-SEC-002` | Reflected XSS | Medium | Medium | **CONFIRMED** | High | high | Playwright (Headless) |
+| `TASK-SEC-003` | Open Redirect | Low | Low | **FIX_SUGGESTION** | Low | medium — static trace only | Playwright (Headless) |
+| `TASK-SEC-004` | CSRF on Settings | High | High | **FALSE_POSITIVE** | None | high | Playwright (Headless) |
 
 ### Summary Analysis
 [Concise summary of verified risks, Playwright E2E findings, fix suggestions, and false positives identified in this review session.]
@@ -277,6 +277,7 @@ For each evaluated finding:
 
 ### Finding: [FINDING_ID] — [Finding Title]
 - **Original Severity**: [Critical|High|Medium|Low]
+- **Current Severity**: [Critical|High|Medium|Low]; equals Original Severity unless `MITIGATED` lowered it
 - **Verification Status**: [CONFIRMED | FALSE_POSITIVE | FIX_SUGGESTION | MITIGATED | ACCEPTED_RISK]
 - **Confidence**: high | medium | low — <rationale when not high>
 - **Counterevidence**: <the strongest case against the finding, or what was checked and found absent>

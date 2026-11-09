@@ -87,7 +87,7 @@ Each entry of the `findings` array in findings JSON (the input to `security-revi
 | `remediation` | string | Markdown | How to fix it. | No |
 | `proposedFix` | string | Code | Suggested patch, rendered in a fence. | No |
 | `verificationStatus` | string (enum) | `CONFIRMED`, `FALSE_POSITIVE`, `MITIGATED`, `ACCEPTED_RISK`, `FIX_SUGGESTION` | Result of `/sr-verify` re-verification. | No |
-| `confidence` | string (enum) | `high`, `medium`, `low` | `high`: working proof or complete reachable trace; `medium`: strong static evidence not executed; `low`: plausible with a material gap. | Yes unless legacy |
+| `confidence` | string (enum) | `high`, `medium`, `low` | `high`: executed reproduction only; `medium`: complete source trace or strong static evidence not executed; `low`: plausible with a material gap. | Yes unless legacy |
 | `confidenceRationale` | string | Free text | The specific gap. | When confidence is not `high` |
 | `counterevidence` | string | Markdown | The strongest case against the finding, or what was checked and found absent. | Yes unless legacy |
 | `severityChangeConditions` | string | Free text | The one piece of evidence that would raise or lower the severity. | Yes unless legacy |
