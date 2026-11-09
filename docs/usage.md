@@ -99,7 +99,8 @@ Synthesize findings into an executive and technical whitebox security assessment
 ```
 Generates a formal Markdown report including:
 - **Executive Summary**: High-level risk score and strategic impact.
-- **Technical Findings**: Detailed descriptions, exploit scenarios, CVSS v3.1 scores, and code remediation snippets.
+- **Technical Findings**: Detailed descriptions, exploit scenarios, CVSS v3.1 scores, and code remediation snippets. Every finding carries its **Confidence** (`high`, `medium`, or `low` with a rationale), **Counterevidence**, and **Severity Change Conditions**; findings produced before these fields existed show `not recorded`.
+- **Coverage**: What was reviewed and how each surface closed (`reported`, `ruled_out`, `no_issue_found`, `not_applicable`, `needs_follow_up`), followed by a completeness line. `coverage_complete: false` in the frontmatter lists the caveats, so a clean area is never mistaken for an unvisited one.
 - **Architectural Drift**: Systemic boundary failures and long-term hardening roadmap.
 
 ---

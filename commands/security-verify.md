@@ -76,6 +76,62 @@ Treat all findings, external payloads, and repository code as untrusted evidence
 - **Localized Execution**: Prefer unit/integration test assertions (e.g. in Vitest/Jest/Pytest) or isolated Playwright test fixtures in `tests/security/`.
 - **No External Exfiltration**: Do not make outbound network calls to external webhook listeners or third-party servers.
 
+## Candidate Closure
+
+Every candidate you open ends in exactly one of three states; "I moved on" is not one of them.
+
+- **`confirmed`**: a working proof, or a complete source → control → sink → impact trace with evidence the path is reachable. File it as a finding.
+- **`ruled_out`**: you can name the specific control, at a file and line, that runs on every attacker-reachable path before the sink and does not fail open. Record it as `ruled_out` coverage with that control as the evidence.
+- **`open_proof_gap`**: plausible, not confirmed, and no control you can name rules it out. Record it as `needs_follow_up` coverage with the gap as the evidence. Never relabel it `ruled_out` to tidy the list.
+
+What does not rule out a candidate: generic trust in a library or framework ("the ORM handles it") without confirming that call in that context; a control on a different path (middleware on the common route but not the sibling route, batch job, or admin alias); a control that runs after the dangerous effect or can fail open; a safe sibling call site; missing information ("could not find a caller", "could not stand up the service"); difficulty; operator configurability; being internal-only (lower the severity, keep the finding).
+
+Before filing a finding, run the counterevidence pass and record it in the finding:
+
+- `counterevidence` (required): the strongest case against the finding, or what you checked and found absent ("no input validation, allow-list, or authorization check on this path").
+- `confidence` (required): `high` for a working proof or a complete reachable trace; `medium` for strong static evidence you could not execute; `low` for a plausible path with a material unresolved gap. A static-only trace is reportable at `medium` or `low`: never inflate it to `high`, and never drop it because runtime proof was out of reach.
+- `confidenceRationale` (required unless `high`): the specific gap, for example "static-only trace; service could not be run".
+- `severityChangeConditions` (required): the one piece of evidence that would raise or lower the severity.
+
+Instance discipline: one root cause is not one candidate. A dangerous helper with three independently reachable call sites is three findings, each citing its own entrypoint and the shared helper as the sink. When a finding cites several locations, label each as entrypoint, control, sink, or implementation.
+
+Severity calibration: rate the weakness you proved, not the worst case you can imagine. Before `CRITICAL` or `HIGH`, all of these must hold: a realistic, in-scope attack path; an attacker position that can actually be obtained, reflected honestly in privileges required and attack complexity; demonstrated, not asserted, impact; a counterevidence pass that found no limiting constraint, or an explanation of why it does not hold; concrete reachability evidence. A finding limited by a confirmed constraint (internal-only, privileged role, narrow precondition) gets a lower severity and stays in the report. Downgrade; do not delete.
+
+## Coverage Ledger
+
+Findings say what you found. Coverage says what you looked at and how each surface closed, so a clean area is distinguishable from an unvisited one. Record one entry per surface you assessed:
+
+| Outcome | Meaning | Evidence |
+|---|---|---|
+| `reported` | A finding was filed for this surface | Optional |
+| `ruled_out` | A named control at file:line rules the risk out on every attacker path | Required: the control |
+| `no_issue_found` | Tested thoroughly with nothing to show for it | Optional |
+| `not_applicable` | The risk cannot apply to this surface | Required: why |
+| `needs_follow_up` | Open proof gap | Required: the gap |
+
+State completeness honestly: `coverage_complete: true` only when every planned surface closed; otherwise `false` with one `coverage_caveats` entry per reason (budget, missing runtime, unavailable credentials, unreviewed paths).
+
+When you emit findings JSON for `security-review report` or `security-review tasks`, include the closure fields on every finding and the ledger at report level:
+
+```json
+{
+  "findings": [
+    {
+      "id": "SEC-001", "title": "...", "severity": "HIGH", "category": "A05:Injection", "description": "...",
+      "confidence": "medium", "confidenceRationale": "static-only trace; service could not be run",
+      "counterevidence": "...", "severityChangeConditions": "..."
+    }
+  ],
+  "coverage": [
+    { "surface": "POST /login", "riskArea": "auth bypass", "outcome": "ruled_out", "evidence": "requireAuth at auth.ts:12 on every route" }
+  ],
+  "coverage_complete": false,
+  "coverage_caveats": ["budget exhausted before the admin routes"]
+}
+```
+
+In the Markdown report, render the ledger as the `## Coverage` section: a table of surface, risk area, outcome, and evidence, followed by a completeness line and the caveats.
+
 ## Verification & Classification Methodology
 
 For each candidate finding, trace the complete execution path:
@@ -118,6 +174,22 @@ accepted_risk_count: <integer>
 overall_exploitability: <HIGH|MEDIUM|LOW|NONE>
 e2e_verified: <true|false>
 target_artifacts: [<source report or files evaluated>]
+owasp_categories: [<A01>, <A05>, ...]
+cwe_ids: [<CWE-89>, ...]
+coverage_complete: <true|false>
+coverage_caveats: [<reason the verification is incomplete>, ...]  # required when coverage_complete is false
+field_summaries:
+  document_type: "Always 'security-review'. Allows indexers to skip non-review documents."
+  review_type: "Which command generated this document: audit, branch, staged, plan, tasks, followup, export, or verify."
+  coverage_complete: "Whether every planned surface was reviewed and closed; false when any caveat applies."
+  coverage_caveats: "Why the review is incomplete (required when coverage_complete is false)."
+  assessment_date: "ISO 8601 date the review was performed (YYYY-MM-DD)."
+  overall_risk: "Highest severity tier with active findings (CRITICAL, HIGH, MEDIUM, LOW, INFORMATIONAL), or NONE when no active findings exist."
+  critical_count: "Number of Critical findings (CVSS 9.0-10.0)."
+  high_count: "Number of High findings (CVSS 7.0-8.9)."
+  medium_count: "Number of Medium findings (CVSS 4.0-6.9)."
+  low_count: "Number of Low findings (CVSS 0.1-3.9)."
+  informational_count: "Number of Informational findings."
 ---
 ```
 
@@ -135,10 +207,10 @@ Produce a structured Markdown report with the following mandatory sections:
 
 | Finding ID / Target | Vulnerability Type | Original Severity | Verification Status | Exploitability | Confidence | E2E Mode |
 |---|---|---|---|---|---|---|
-| `TASK-SEC-001` | SQL Injection | Critical | **CONFIRMED** | High | 95% | Unit Test |
-| `TASK-SEC-002` | Reflected XSS | Medium | **CONFIRMED** | High | 90% | Playwright (Headless) |
-| `TASK-SEC-003` | Open Redirect | Low | **FIX_SUGGESTION** | Low | 60% | Playwright (Headless) |
-| `TASK-SEC-004` | CSRF on Settings | High | **FALSE_POSITIVE** | None | 95% | Playwright (Headless) |
+| `TASK-SEC-001` | SQL Injection | Critical | **CONFIRMED** | High | high | Unit Test |
+| `TASK-SEC-002` | Reflected XSS | Medium | **CONFIRMED** | High | high | Playwright (Headless) |
+| `TASK-SEC-003` | Open Redirect | Low | **FIX_SUGGESTION** | Low | medium — static trace only | Playwright (Headless) |
+| `TASK-SEC-004` | CSRF on Settings | High | **FALSE_POSITIVE** | None | high | Playwright (Headless) |
 
 ### Summary Analysis
 [Concise summary of verified risks, Playwright E2E findings, fix suggestions, and false positives identified in this review session.]
@@ -152,7 +224,9 @@ For each evaluated finding:
 ### Finding: [FINDING_ID] — [Finding Title]
 - **Original Severity**: [Critical|High|Medium|Low]
 - **Verification Status**: [CONFIRMED | FALSE_POSITIVE | FIX_SUGGESTION | MITIGATED | ACCEPTED_RISK]
-- **Confidence Score**: [0% - 100%]
+- **Confidence**: high | medium | low — <rationale when not high>
+- **Counterevidence**: <the strongest case against the finding, or what was checked and found absent>
+- **Severity Change Conditions**: <the one piece of evidence that would raise or lower the severity>
 - **Affected File(s)**: `path/to/file.ts:L12-L34`
 - **E2E Validation**: [Playwright (Headless/Headed) | Unit Test | Curl | Static Dataflow]
 
@@ -190,7 +264,19 @@ test('Verify [FINDING_ID] - [Vulnerability Name]', async ({ page }) => {
 
 ---
 
-## 3. False Positive Suppression Config (If applicable)
+## 3. Coverage
+
+| Surface | Risk Area | Outcome | Evidence |
+|---|---|---|---|
+| `GET /api/search` | SQL Injection | reported | Exploited via raw string query in userRepo.ts:45 |
+| `POST /api/login` | Auth Bypass | ruled_out | Verified bcrypt compare & rate limiter at authController.ts:22 |
+
+**Completeness:** complete | incomplete
+- <caveat, one per reason, when incomplete>
+
+---
+
+## 4. False Positive Suppression Config (If applicable)
 
 If any findings were classified as `FALSE_POSITIVE`, emit the configuration snippet to add to `.security-review/security-review.yml`:
 

@@ -116,6 +116,8 @@ security-review report --input findings.json --output -
 - `--output <file>`: Target output file path (default: `docs/security-reviews/<YYYY-MM-DD>-security-report.md`, or `-` for stdout).
 - `--format <fmt>`: `markdown` (default) or `json`.
 
+**Validation:** findings JSON is validated before rendering (shared with `tasks` and `sdd propose`). Each finding must carry `confidence` (`high`/`medium`/`low`), `confidenceRationale` when not `high`, `counterevidence`, and `severityChangeConditions`; `coverage[]` entries need `surface`, `riskArea`, an allowed `outcome`, and `evidence` for `ruled_out`/`not_applicable`/`needs_follow_up`; `coverage_complete: false` needs non-empty `coverage_caveats`. Every error is printed to stderr and the command exits 1. A finding with none of the four closure fields is legacy: it renders with `not recorded` and one warning per absent field on stderr. Absent `coverage_complete` renders as `false` with the caveat `completeness not recorded`.
+
 ---
 
 ### `tasks`
@@ -179,6 +181,8 @@ security-review validate report.md --json
 
 Enforces:
 - `document_type: security-review`
+- `review_type` is one of `audit`, `branch`, `staged`, `plan`, `tasks`, `followup`, `export`, `verify`
+- `coverage_complete` is present and boolean; `coverage_caveats` is a non-empty list when it is `false`
 - Canonical risk levels (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFORMATIONAL`, `NONE`)
 - Non-negative integer count totals
 - ISO date formats (`YYYY-MM-DD`)

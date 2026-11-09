@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { generateTasksMarkdown, appendTasksToFile } from '../../core/generator.js';
-import { resolveActiveTasksFile, resolveLatestFindingsJson } from '../../core/detector.js';
-import { FindingItem } from '../../core/types.js';
+import { resolveActiveTasksFile } from '../../core/detector.js';
+import { loadFindingsForCli } from '../loader.js';
 
 export interface TasksCommandOptions {
   input?: string;
@@ -11,40 +11,8 @@ export interface TasksCommandOptions {
 }
 
 export async function executeTasksCommand(options: TasksCommandOptions): Promise<void> {
-  let inputPath = options.input;
-  if (!inputPath) {
-    inputPath = resolveLatestFindingsJson(process.cwd());
-    if (!inputPath) {
-      console.error('[tasks error]: Missing required --input argument and no findings.json was found in workspace.');
-      process.exit(1);
-    }
-  }
-
-  let rawJson: string;
-  if (inputPath === '-') {
-    rawJson = fs.readFileSync(0, 'utf8');
-  } else {
-    if (!fs.existsSync(inputPath)) {
-      console.error(`[tasks error]: Input file not found: ${inputPath}`);
-      process.exit(1);
-    }
-    rawJson = fs.readFileSync(inputPath, 'utf8');
-  }
-
-  let findings: FindingItem[];
-  try {
-    const parsed = JSON.parse(rawJson);
-    if (Array.isArray(parsed)) {
-      findings = parsed;
-    } else if (parsed && typeof parsed === 'object' && Array.isArray(parsed.findings)) {
-      findings = parsed.findings;
-    } else {
-      throw new Error('Invalid JSON structure. Expected array or object with findings array.');
-    }
-  } catch (err: any) {
-    console.error(`[tasks error]: Failed to parse findings JSON: ${err.message}`);
-    process.exit(1);
-  }
+  const parsed = loadFindingsForCli(options.input, 'tasks');
+  const findings = parsed.report.findings;
 
   const tasksMarkdown = generateTasksMarkdown(findings);
 

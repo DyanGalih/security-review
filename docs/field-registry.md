@@ -15,24 +15,26 @@ The frontmatter fields are the schema for all three layers. Define them once her
 
 These fields describe the review document itself and appear at the top of every YAML frontmatter block.
 
-| Field | Type | Values / Range | Description | INDEX.md column? |
-|---|---|---|---|---|
-| `document_type` | string (enum) | `security-review` | Always `security-review`. Allows indexers to filter out non-review documents without reading content. | No (constant) |
-| `review_type` | string (enum) | `audit`, `branch`, `staged`, `plan`, `tasks`, `followup`, `export`, `verify` | Which command generated this document. Determines expected sections and scope. | Yes |
-| `assessment_date` | string (ISO 8601) | `YYYY-MM-DD` | Date the review was performed. Supports time-based filtering (e.g., "reviews from last 30 days"). | Yes |
-| `codebase_analyzed` | string | Free text | Name or path of the repository or component reviewed. | No |
-| `total_files_analyzed` | integer | ≥ 0 | Number of files the agent analyzed. Provides signal on review depth. | No |
-| `total_findings` | integer | ≥ 0 | Total count of all findings across all severities. | No |
-| `assessment_kind` | string (enum) | `whitebox-review`, `report-synthesis` | Export-only provenance distinguishing direct source review from synthesis. | No |
-| `source_artifacts` | string[] | Paths or identifiers | Export-only source reports or artifacts used for synthesis. | No |
-| `commit_or_branch` | string | Commit, branch, or `unknown` | Export-only source revision provenance. | No |
-| `findings_evaluated` | integer | ≥ 0 | Verification-only: total count of findings evaluated during verification, including false positives and accepted risks that are excluded from `total_findings` and the severity counts. | No |
-| `confirmed_count` | integer | ≥ 0 | Verification-only: count of confirmed exploitable findings. | No |
-| `false_positive_count` | integer | ≥ 0 | Verification-only: count of verified false-positive findings. | No |
-| `mitigated_count` | integer | ≥ 0 | Verification-only: count of findings with active compensating controls. | No |
-| `accepted_risk_count` | integer | ≥ 0 | Verification-only: count of accepted architectural/business risks. | No |
-| `fix_suggestion_count` | integer | ≥ 0 | Verification-only: count of independently verified hygiene or defense-in-depth suggestions. | No |
-| `e2e_verified` | boolean | `true`, `false` | Verification-only: whether browser-based Playwright E2E verification was executed. | No |
+| Field | Type | Values / Range | Description | INDEX.md column? | Required |
+|---|---|---|---|---|---|
+| `document_type` | string (enum) | `security-review` | Always `security-review`. Allows indexers to filter out non-review documents without reading content. | No (constant) | Yes |
+| `review_type` | string (enum) | `audit`, `branch`, `staged`, `plan`, `tasks`, `followup`, `export`, `verify` | Which command generated this document. Determines expected sections and scope. | Yes | Yes |
+| `assessment_date` | string (ISO 8601) | `YYYY-MM-DD` | Date the review was performed. Supports time-based filtering (e.g., "reviews from last 30 days"). | Yes | No |
+| `codebase_analyzed` | string | Free text | Name or path of the repository or component reviewed. | No | No |
+| `total_files_analyzed` | integer | ≥ 0 | Number of files the agent analyzed. Provides signal on review depth. | No | No |
+| `total_findings` | integer | ≥ 0 | Total count of all findings across all severities. | No | Yes |
+| `assessment_kind` | string (enum) | `whitebox-review`, `report-synthesis` | Export-only provenance distinguishing direct source review from synthesis. | No | Export only |
+| `source_artifacts` | string[] | Paths or identifiers | Export-only source reports or artifacts used for synthesis. | No | Export only |
+| `commit_or_branch` | string | Commit, branch, or `unknown` | Export-only source revision provenance. | No | Export only |
+| `coverage_complete` | boolean | `true`, `false` | Whether every planned surface was reviewed and closed. A report that omits completeness is rendered as `false` with the caveat `completeness not recorded`. | No | Yes |
+| `coverage_caveats` | string[] | Free text, one entry per reason | Why the review is incomplete (budget, missing runtime, unavailable credentials, unreviewed paths). | No | When false |
+| `findings_evaluated` | integer | ≥ 0 | Verification-only: total count of findings evaluated during verification, including false positives and accepted risks that are excluded from `total_findings` and the severity counts. | No | No |
+| `confirmed_count` | integer | ≥ 0 | Verification-only: count of confirmed exploitable findings. | No | No |
+| `false_positive_count` | integer | ≥ 0 | Verification-only: count of verified false-positive findings. | No | No |
+| `mitigated_count` | integer | ≥ 0 | Verification-only: count of findings with active compensating controls. | No | No |
+| `accepted_risk_count` | integer | ≥ 0 | Verification-only: count of accepted architectural/business risks. | No | No |
+| `fix_suggestion_count` | integer | ≥ 0 | Verification-only: count of independently verified hygiene or defense-in-depth suggestions. | No | No |
+| `e2e_verified` | boolean | `true`, `false` | Verification-only: whether browser-based Playwright E2E verification was executed. | No | No |
 
 ---
 
@@ -40,15 +42,14 @@ These fields describe the review document itself and appear at the top of every 
 
 These fields encode the overall risk posture and per-severity finding counts. They are the primary filter columns for INDEX.md routing and SQL queries.
 
-| Field | Type | Values / Range | Description | INDEX.md column? |
-|---|---|---|---|---|
-| `overall_risk` | string (enum) | `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFORMATIONAL`, `NONE` | Highest severity tier with active findings; use `NONE` when no active findings exist. Primary routing signal — an LLM or query can skip LOW/INFORMATIONAL/NONE documents when investigating a critical incident. | Yes |
-| `overall_exploitability` | string (enum) | `HIGH`, `MEDIUM`, `LOW`, `NONE` | Verification-only: aggregated empirical exploitability level across evaluated findings. | No |
-| `critical_count` | integer | ≥ 0 | Number of Critical findings. SQL: `WHERE critical_count > 0` finds all docs with critical issues. | Yes (compact: `C:N`) |
-| `high_count` | integer | ≥ 0 | Number of High findings. | Yes (compact: `H:N`) |
-| `medium_count` | integer | ≥ 0 | Number of Medium findings. | Yes (compact: `M:N`) |
-| `low_count` | integer | ≥ 0 | Number of Low findings. | Yes (compact: `L:N`) |
-| `informational_count` | integer | ≥ 0 | Number of Informational findings. | No |
+| Field | Type | Values / Range | Description | INDEX.md column? | Required |
+|---|---|---|---|---|---|
+| `overall_risk` | string (enum) | `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFORMATIONAL`, `NONE` | Highest severity tier with active findings; use `NONE` when no active findings exist. Primary routing signal — an LLM or query can skip LOW/INFORMATIONAL/NONE documents when investigating a critical incident. | Yes | Yes |
+| `critical_count` | integer | ≥ 0 | Number of Critical findings. SQL: `WHERE critical_count > 0` finds all docs with critical issues. | Yes (compact: `C:N`) | Yes |
+| `high_count` | integer | ≥ 0 | Number of High findings. | Yes (compact: `H:N`) | Yes |
+| `medium_count` | integer | ≥ 0 | Number of Medium findings. | Yes (compact: `M:N`) | Yes |
+| `low_count` | integer | ≥ 0 | Number of Low findings. | Yes (compact: `L:N`) | Yes |
+| `informational_count` | integer | ≥ 0 | Number of Informational findings. | No | No |
 
 ---
 
@@ -56,18 +57,56 @@ These fields encode the overall risk posture and per-severity finding counts. Th
 
 These fields describe the security categories present in the document. They enable topic-based filtering without reading finding bodies.
 
-| Field | Type | Values / Range | Description | INDEX.md column? |
-|---|---|---|---|---|
-| `owasp_categories` | string[] | `A01`–`A10` (OWASP Top 10 2025 codes) | List of OWASP categories with at least one finding. Enables queries like "all documents touching injection (A05) or access control (A01)". | Yes (comma-separated) |
-| `cwe_ids` | string[] | CWE identifiers, e.g. `CWE-89` | List of CWE IDs referenced in the document. For precise technical filtering in audit workflows. | No |
-| `asvs_requirements` | string[] | Verified ASVS identifiers, e.g. `V2.1.1` | ASVS requirements mapped to findings. | No |
-| `mitre_techniques` | string[] | Verified ATT&CK identifiers, e.g. `T1190` | MITRE ATT&CK techniques mapped to findings. | No |
+| Field | Type | Values / Range | Description | INDEX.md column? | Required |
+|---|---|---|---|---|---|
+| `owasp_categories` | string[] | `A01`–`A10` (OWASP Top 10 2025 codes) | List of OWASP categories with at least one finding. Enables queries like "all documents touching injection (A05) or access control (A01)". | Yes (comma-separated) | No |
+| `cwe_ids` | string[] | CWE identifiers, e.g. `CWE-89` | List of CWE IDs referenced in the document. For precise technical filtering in audit workflows. | No | No |
+| `asvs_requirements` | string[] | Verified ASVS identifiers, e.g. `V2.1.1` | ASVS requirements mapped to findings. | No | No |
+| `mitre_techniques` | string[] | Verified ATT&CK identifiers, e.g. `T1190` | MITRE ATT&CK techniques mapped to findings. | No | No |
 
 ---
 
-## Finding-Level Field Summaries
+## Finding-Level Fields
 
-These fields appear in each individual finding block (not in frontmatter). Their definitions are included here so an LLM reading only the frontmatter can understand the schema before reading any finding.
+Each entry of the `findings` array in findings JSON (the input to `security-review report`, `tasks`, and `sdd propose`) carries these camelCase fields. A finding with none of `confidence`, `confidenceRationale`, `counterevidence`, and `severityChangeConditions` is a *legacy* finding: it still renders, with each absent field shown as `not recorded`. A finding with any of them must satisfy every rule below.
+
+| Field | Type | Values / Range | Description | Required |
+|---|---|---|---|---|
+| `id` | string | `SEC-NNN` or `TASK-SEC-NNN` | Unique identifier for cross-referencing and task tracking. | Yes |
+| `title` | string | Free text | Short finding title. | Yes |
+| `severity` | string (enum) | `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFORMATIONAL` | Rated severity. | Yes |
+| `category` | string | `AXX:Name` | OWASP Top 10 category. | Yes |
+| `cwe` | string | `CWE-NNN` | CWE identifier. | No |
+| `asvs` | string | `V2.1.1` | ASVS requirement. | No |
+| `mitre` | string | `T1190` | MITRE ATT&CK technique. | No |
+| `file` | string | Repo-relative path | Affected file. | No |
+| `lineRange` | string | `34-40` | Affected lines. | No |
+| `description` | string | Markdown | What the weakness is. | Yes |
+| `exploitScenario` | string | Markdown | How an attacker reaches it. | No |
+| `impact` | string | Markdown | Demonstrated consequence. | No |
+| `remediation` | string | Markdown | How to fix it. | No |
+| `proposedFix` | string | Code | Suggested patch, rendered in a fence. | No |
+| `verificationStatus` | string (enum) | `CONFIRMED`, `FALSE_POSITIVE`, `MITIGATED`, `ACCEPTED_RISK`, `FIX_SUGGESTION` | Result of `/sr-verify` re-verification. | No |
+| `confidence` | string (enum) | `high`, `medium`, `low` | `high`: working proof or complete reachable trace; `medium`: strong static evidence not executed; `low`: plausible with a material gap. | Yes unless legacy |
+| `confidenceRationale` | string | Free text | The specific gap. | When confidence is not `high` |
+| `counterevidence` | string | Markdown | The strongest case against the finding, or what was checked and found absent. | Yes unless legacy |
+| `severityChangeConditions` | string | Free text | The one piece of evidence that would raise or lower the severity. | Yes unless legacy |
+| `poc` | object | `{ type, code, reproductionSteps[], expectedVulnerable, expectedRemediated }` | Non-destructive proof of concept. | No |
+
+## Coverage Entry Fields
+
+The report-level `coverage` array records what was reviewed and how each surface closed, so a clean area is distinguishable from an unvisited one. Rendered as the numbered `Coverage` section of every report.
+
+| Field | Type | Values / Range | Description | Required |
+|---|---|---|---|---|
+| `surface` | string | Route, file, component | What was assessed. | Yes |
+| `riskArea` | string | Free text | The risk class assessed on that surface. | Yes |
+| `outcome` | string (enum) | `reported`, `ruled_out`, `no_issue_found`, `not_applicable`, `needs_follow_up` | How the candidate closed. | Yes |
+| `evidence` | string | Free text | The named control (`ruled_out`), the reason (`not_applicable`), or the gap (`needs_follow_up`). | For `ruled_out`, `not_applicable`, `needs_follow_up` |
+
+### Rendered finding labels
+
+These labels appear in each rendered finding block of a Markdown report. Their definitions are included here so an LLM reading only the frontmatter can understand the schema before reading any finding.
 
 | Field | Type | Values / Range | Description |
 |---|---|---|---|

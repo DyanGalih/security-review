@@ -100,6 +100,18 @@ document_fields:
     description: "Verification-only: whether browser-based Playwright E2E verification was executed."
     index: false
 
+  coverage_complete:
+    type: boolean
+    description: "Whether every planned surface was reviewed and closed. Omitted completeness renders as false with the caveat 'completeness not recorded'."
+    index: false
+
+  coverage_caveats:
+    type: array
+    items:
+      type: string
+    description: "Why the review is incomplete; required and non-empty when coverage_complete is false."
+    index: false
+
 risk_fields:
   overall_risk:
     type: string
@@ -213,6 +225,38 @@ finding_level_fields:
     type: string
     pattern: "^TASK-SEC-[0-9]{3}$"
     description: "Legacy Spec-Kit task ID alias."
+
+  confidence:
+    type: string
+    enum: [high, medium, low]
+    description: "Calibrated confidence; required unless the finding carries none of the closure fields (legacy)."
+
+  confidence_rationale:
+    type: string
+    description: "The specific gap; required when confidence is not high. JSON key: confidenceRationale."
+
+  counterevidence:
+    type: string
+    description: "The strongest case against the finding, or what was checked and found absent."
+
+  severity_change_conditions:
+    type: string
+    description: "The one piece of evidence that would raise or lower the severity. JSON key: severityChangeConditions."
+
+coverage_entry_fields:
+  surface:
+    type: string
+    description: "What was assessed (route, file, component)."
+  risk_area:
+    type: string
+    description: "The risk class assessed on that surface. JSON key: riskArea."
+  outcome:
+    type: string
+    enum: [reported, ruled_out, no_issue_found, not_applicable, needs_follow_up]
+    description: "How the candidate closed."
+  evidence:
+    type: string
+    description: "Required for ruled_out (the control), not_applicable (the reason), and needs_follow_up (the gap)."
 
 index_md_row:
   description: "Compact routing row for docs/memory/INDEX.md. Enables LLM to filter documents without loading bodies."

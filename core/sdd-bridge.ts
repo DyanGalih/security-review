@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { FindingItem, FindingSeverity } from './types.js';
-import { generateTasksMarkdown, computeReportStats } from './generator.js';
+import { generateTasksMarkdown, computeReportStats, escapeBlockStarters, inline, fenceFor } from './generator.js';
 import { detectSDDEnvironment, SDDFramework } from './detector.js';
 
 export interface SddProposeOptions {
@@ -42,28 +42,29 @@ export function buildOpenSpecProposal(findings: FindingItem[], changeName: strin
   const stats = computeReportStats(findings);
 
   // 1. proposal.md
-  let proposalMd = `# Proposal: Security Remediation (${changeName})\n\n`;
+  let proposalMd = `# Proposal: Security Remediation (${inline(changeName)})\n\n`;
   proposalMd += `## Problem Statement\n`;
   proposalMd += `A security assessment identified **${stats.total}** vulnerability findings (**${stats.critical}** Critical, **${stats.high}** High, **${stats.medium}** Medium, **${stats.low}** Low) requiring structured remediation.\n\n`;
   proposalMd += `### Identified Findings\n`;
   findings.forEach((f) => {
-    proposalMd += `- **${f.id}: ${f.title}** (${f.severity}) — \`${f.file || 'General'}\`\n`;
+    proposalMd += `- **${inline(f.id)}: ${inline(f.title)}** (${inline(f.severity)}) — \`${inline(f.file || 'General')}\`\n`;
   });
   proposalMd += `\n## Proposed Solution\n`;
   proposalMd += `Execute targeted security fixes across the affected components to eliminate trust boundary violations, patch injection flaws, enforce proper access controls, and establish automated regression test verification.\n`;
 
   // 2. specs/remediation/spec.md
-  let specMd = `# Capability Specification: Security Remediation (${changeName})\n\n`;
+  let specMd = `# Capability Specification: Security Remediation (${inline(changeName)})\n\n`;
   findings.forEach((f, idx) => {
-    specMd += `## ${idx + 1}. Requirement: Remediate ${f.id} (${f.title})\n\n`;
-    specMd += `- **Category:** ${f.category}${f.cwe ? ` / ${f.cwe}` : ''}\n`;
-    specMd += `- **Severity:** ${f.severity}\n`;
-    if (f.file) specMd += `- **Target File:** \`${f.file}${f.lineRange ? `:${f.lineRange}` : ''}\`\n`;
-    specMd += `- **Description:** ${f.description}\n\n`;
+    specMd += `## ${idx + 1}. Requirement: Remediate ${inline(f.id)} (${inline(f.title)})\n\n`;
+    specMd += `- **Category:** ${inline(f.category)}${f.cwe ? ` / ${inline(f.cwe)}` : ''}\n`;
+    specMd += `- **Severity:** ${inline(f.severity)}\n`;
+    if (f.file) specMd += `- **Target File:** \`${inline(f.file)}${f.lineRange ? `:${inline(f.lineRange)}` : ''}\`\n`;
+    specMd += `- **Description:** ${escapeBlockStarters(f.description)}\n\n`;
 
     specMd += `### Acceptance Criteria\n`;
     if (f.poc) {
-      specMd += `1. When verified against test payload:\n\`\`\`\n${f.poc.code}\n\`\`\`\n`;
+      const pocFence = fenceFor(f.poc.code);
+      specMd += `1. When verified against test payload:\n${pocFence}\n${f.poc.code}\n${pocFence}\n`;
       specMd += `2. The application MUST reject the unauthorized payload and return secure behavior.\n`;
     } else {
       specMd += `1. The vulnerability MUST be completely mitigated according to the remediation specification.\n`;
@@ -73,16 +74,17 @@ export function buildOpenSpecProposal(findings: FindingItem[], changeName: strin
   });
 
   // 3. design.md
-  let designMd = `# Technical Design: Security Remediation (${changeName})\n\n`;
+  let designMd = `# Technical Design: Security Remediation (${inline(changeName)})\n\n`;
   designMd += `## 1. Remediation Architecture\n\n`;
   designMd += `This design addresses the identified security defects while maintaining strict layer boundaries and backward compatibility.\n\n`;
   designMd += `## 2. Component Fixes\n\n`;
   findings.forEach((f) => {
-    designMd += `### ${f.id} — ${f.title}\n`;
-    if (f.file) designMd += `- **Affected File:** \`${f.file}\`\n`;
-    if (f.remediation) designMd += `- **Remediation Strategy:** ${f.remediation}\n`;
+    designMd += `### ${inline(f.id)} — ${inline(f.title)}\n`;
+    if (f.file) designMd += `- **Affected File:** \`${inline(f.file)}\`\n`;
+    if (f.remediation) designMd += `- **Remediation Strategy:** ${escapeBlockStarters(f.remediation)}\n`;
     if (f.proposedFix) {
-      designMd += `- **Proposed Code Patch:**\n\`\`\`\n${f.proposedFix}\n\`\`\`\n`;
+      const fixFence = fenceFor(f.proposedFix);
+      designMd += `- **Proposed Code Patch:**\n${fixFence}\n${f.proposedFix}\n${fixFence}\n`;
     }
     designMd += `\n`;
   });
