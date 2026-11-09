@@ -253,8 +253,12 @@ describe('report schema drift', () => {
     expect(promptSection('security-verify.md', '## 1. Executive Verification Summary'), 'summary table shows the counted rating').toContain('| Original Severity | Current Severity |');
     const numbered = verify.split('\n').map((line) => line.match(/^## (\d+)\. /)?.[1]).filter(Boolean);
     expect(numbered, 'verify output sections are numbered once each, in order').toEqual(numbered.map((_, i) => String(i + 1)));
-    expect(promptSection('security-verify.md', '### 1. Target URL Resolution'), 'logins use a seeded dummy account').toContain('never pass credentials through the environment');
+    expect(promptSection('security-verify.md', '### 1. Target URL Resolution'), 'logins use a generated dummy account').toContain('never pass credentials through the environment, hardcode them in a spec');
     expect(read('examples/example-verify-e2e.md'), 'the E2E example passes no environment credentials').not.toMatch(/process\.env\.\w*(PASSWORD|TOKEN|SECRET|USERNAME)/);
+    const literalCredential = /(password|passwd|secret|token|username|user)\]?['"]?\s*[:=,]\s*['"`]/i;
+    for (const rel of ['examples/example-verify-e2e.md', 'commands/security-verify.md']) {
+      expect(read(rel), `${rel} hardcodes no credential`).not.toMatch(literalCredential);
+    }
     for (const heading of ['## 1. Executive Verification Summary', '## 2. Detailed Finding Verifications & PoC Reproductions']) {
       const body = promptSection('security-verify.md', heading);
       expect(body, `security-verify.md ${heading} shows confidence as a label, not a percentage`).not.toMatch(/\d+\s*%/);

@@ -45,7 +45,7 @@ Resolve the target base URL in the following precedence order:
 - Playwright configuration: `playwright.config.ts` (baseURL)
 - Local environment files: `.env` or `.env.local`
 
-Before opening a browser or running a PoC, display the resolved URL and obtain explicit confirmation that it is an authorized, isolated test environment. A URL discovered from configuration or environment is not authorization. If the target cannot be confirmed, do not run E2E tests; use static analysis or an isolated local test instead. Never use real accounts or state-changing production workflows for browser verification. When a check needs a login, use a dummy account seeded into the test instance from a scratch fixture; never pass credentials through the environment.
+Before opening a browser or running a PoC, display the resolved URL and obtain explicit confirmation that it is an authorized, isolated test environment. A URL discovered from configuration or environment is not authorization. If the target cannot be confirmed, do not run E2E tests; use static analysis or an isolated local test instead. Never use real accounts or state-changing production workflows for browser verification. When a check needs a login, use a one-time dummy account that the isolated fixture generates at runtime and shares through scratch-only fixture data; never pass credentials through the environment, hardcode them in a spec, or copy their values into the report.
 
 ### 2. Dependency & Runner Detection
 Automatically detect available Playwright execution options:
