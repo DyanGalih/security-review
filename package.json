@@ -28,7 +28,7 @@
     "watch": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "tsc --noEmit",
+    "lint": "tsc --noEmit && tsc -p tsconfig.test.json",
     "cli": "tsx cli/index.ts"
   },
   "keywords": [

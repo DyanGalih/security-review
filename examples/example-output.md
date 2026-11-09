@@ -13,9 +13,13 @@ low_count: 4
 informational_count: 2
 owasp_categories: [A01, A02, A03, A04, A05, A07, A09]
 cwe_ids: [CWE-89, CWE-798, CWE-22, CWE-79, CWE-326, CWE-862]
+coverage_complete: false
+coverage_caveats: ["predates coverage tracking"]
 field_summaries:
   document_type: "Always 'security-review'. Allows indexers to skip non-review documents."
-  review_type: "Which command generated this document: audit, branch, staged, plan, tasks, followup, or export."
+  review_type: "Which command generated this document: audit, branch, staged, plan, tasks, followup, export, or verify."
+  coverage_complete: "Whether every planned surface was reviewed and closed; false when any caveat applies."
+  coverage_caveats: "Why the review is incomplete (required when coverage_complete is false)."
   assessment_date: "ISO 8601 date the review was performed (YYYY-MM-DD)."
   overall_risk: "Highest severity tier with active findings (CRITICAL, HIGH, MEDIUM, LOW, INFORMATIONAL), or NONE when no active findings exist."
   critical_count: "Number of Critical findings (CVSS 9.0-10.0)."

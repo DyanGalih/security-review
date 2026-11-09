@@ -147,6 +147,7 @@ high_count: 2
 medium_count: 0
 low_count: 0
 owasp_categories: [A01, A05]
+coverage_complete: true
 ---
 
 # Security Report
