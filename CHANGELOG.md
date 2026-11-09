@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Dependency vulnerability remediation** (change `fix-dependency-vulnerabilities`):
+  - Upgraded `vitest` in `devDependencies` to `^4.1.12`, resolving arbitrary file read / path traversal (GHSA-82fw-gwwq-j7x9) and RCE vulnerabilities (GHSA-5gmw-xhrv-c9v3, GHSA-85c8-ppgw-ccpr).
+  - Upgraded `js-yaml` in `dependencies` to `^4.3.2`, resolving high-severity empty merge source CPU denial-of-service vulnerability (GHSA-2883-xcg3-v3hh).
+  - Addresses Dependabot alerts reported in [GitHub Issue #3](https://github.com/DyanGalih/security-review/issues/3) for downstream repository consumers and Spec-Kit extension installations.
+
 - **Finding bar and verification safety** (change `finding-bar-and-verify-safety`):
   - `sr-audit`, `sr-staged`, `sr-branch`, and `sr-verify` gain a Finding Bar: a finding names the lower-trust principal, accepted input or action, intended control, crossed boundary, affected principal or resource, and observed or owner-observable result. Below-bar candidates become `needs_follow_up` or `not_applicable` coverage; checklist deviations, defense-in-depth advice, and self-impact are not findings. Coverage entries are kept per surface and risk area.
   - **Behaviour change**: `high` confidence now requires an executed reproduction; a complete source trace that was not executed is at most `medium`.
