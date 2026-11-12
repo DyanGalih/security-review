@@ -2,6 +2,12 @@
 
 ## v2.1.0
 
+- **Futuristic light theme redesign and entrypoint link integration** (change `landing-light-theme-and-entrypoint-link`):
+  - Overhauled `landing/styles.css` with a futuristic light theme design system: pearl/white canvas (`#f8fafc` / `#ffffff`), cyber micro-grid overlay, ambient glowing lighting orbs (cyan, emerald, violet), frosted glassmorphism cards (`backdrop-filter: blur(12px)`), and a high-contrast light terminal HUD.
+  - Replaced relative documentation links in `landing/index.html` with canonical GitHub repository URLs (`https://github.com/DyanGalih/security-review/blob/main/...`) to prevent HTTP 404 errors on GitHub Pages (`path: ./landing`).
+  - Added "🌐 Live Showcase" badge to `README.md` hero section and introduced an "Interactive Showcase" entrypoint section linking to both live GitHub Pages and local showcase files.
+  - Preserved zero external runtime/build dependencies under the Ponytail Core Contract.
+
 - **Harden cross-SDD command contracts and standards alignment** (change `harden-cross-sdd-command-contracts`):
   - Added adapter resolution and compact mandatory preflights across all 10 command prompts for OpenSpec, Spec-Kit, and generic workflows.
   - Aligned standards mappings to stable ASVS 5.0.0 and CVSS 4.0, preserving explicitly versioned legacy ASVS and CVSS 3.1 compatibility.
