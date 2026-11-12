@@ -10,6 +10,7 @@
 [![OWASP](https://img.shields.io/badge/OWASP-2025-ef4444)](https://owasp.org/Top10/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-f59e0b)](LICENSE)
 [![Spec Kit](https://img.shields.io/badge/Spec%20Kit-compatible-2563eb)](docs/speckit-extension.md)
+[![Live Showcase](https://img.shields.io/badge/🌐%20Showcase-GitHub%20Pages-06B6D4)](https://dyangalih.github.io/security-review/)
 
 ---
 
@@ -20,6 +21,14 @@
 - **Developer CLI Accelerator**: Fast git diff extraction, security entrypoint discovery, and report frontmatter validation.
 - **AI Agent Skills**: Pre-engineered prompt contracts for full audits, staged reviews, branch diffs, plan reviews, and remediation tasks.
 - **Spec-Kit Extension**: Separate extension commands (`speckit.security-review.*`) and optional lifecycle hooks; the standalone CLI installer is not required.
+
+---
+
+## 🌐 Interactive Showcase
+
+Explore the interactive product showcase highlighting CLI terminal workflows, AI agent slash commands, and OWASP governance:
+- **Live Hosted Site**: [dyangalih.github.io/security-review](https://dyangalih.github.io/security-review/)
+- **Local Showcase File**: [landing/index.html](landing/index.html)
 
 ---
 
