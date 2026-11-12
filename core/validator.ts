@@ -1,15 +1,11 @@
 import { readFile } from 'node:fs/promises';
 import yaml from 'js-yaml';
-import { REVIEW_TYPES } from './schema.js';
+import { ASVS_REGEX, CVSS_VERSIONS, CWE_REGEX, MITRE_REGEX, OWASP_REGEX, REVIEW_TYPES, WORKING_TREE_STATES } from './schema.js';
 import { resolveCompleteness } from './findings.js';
 import type { ValidationIssue, ValidationResult } from './types.js';
 
 const FRONTMATTER_REGEX = /^---\r?\n([\s\S]*?)\r?\n---/;
 const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
-const OWASP_REGEX = /^(A0?[1-9]|A10)(:\d{4})?(-[A-Za-z0-9_ -]+)?$/i;
-const CWE_REGEX = /^CWE-\d+$/i;
-const ASVS_REGEX = /^(?:V\d+(?:\.\d+)*|v\d+\.\d+\.\d+-\d+\.\d+\.\d+)$/;
-const MITRE_REGEX = /^T\d+(\.\d+)?$/i;
 
 /**
  * Validates a markdown security report against field-registry frontmatter specifications.
@@ -260,6 +256,11 @@ export async function validateReportFrontmatter(filePath: string): Promise<Valid
   validatePatternArray('mitre_attack', MITRE_REGEX, 'MITRE ATT&CK');
   validatePatternArray('mitre_techniques', MITRE_REGEX, 'MITRE ATT&CK');
 
+  const hasAsvs = Array.isArray(data.asvs_requirements) && data.asvs_requirements.length > 0;
+  if (hasAsvs && data.asvs_version === undefined) {
+    issues.push({ field: 'asvs_version', message: 'asvs_version is required when asvs_requirements is present.', severity: 'ERROR' });
+  }
+
   if (data.asvs_version !== undefined && (typeof data.asvs_version !== 'string' || (data.asvs_version !== 'unknown' && !/^\d+\.\d+\.\d+$/.test(data.asvs_version)))) {
     issues.push({ field: 'asvs_version', message: 'asvs_version must be a semantic version such as 5.0.0, or unknown when a legacy mapping has no version.', severity: 'ERROR' });
   }
@@ -274,7 +275,7 @@ export async function validateReportFrontmatter(filePath: string): Promise<Valid
   if (data.untracked_files_included !== undefined && typeof data.untracked_files_included !== 'boolean') {
     issues.push({ field: 'untracked_files_included', message: 'untracked_files_included must be a boolean.', severity: 'ERROR' });
   }
-  if (data.working_tree_state !== undefined && !['clean', 'dirty', 'unknown'].includes(String(data.working_tree_state))) {
+  if (data.working_tree_state !== undefined && !WORKING_TREE_STATES.includes(data.working_tree_state as any)) {
     issues.push({ field: 'working_tree_state', message: 'working_tree_state must be clean, dirty, or unknown.', severity: 'ERROR' });
   }
   if (data.reviewed_commit !== undefined && typeof data.reviewed_commit !== 'string') {
@@ -340,7 +341,7 @@ export async function validateReportFrontmatter(filePath: string): Promise<Valid
     }
   }
 
-  if (data.cvss_version !== undefined && !['3.1', '4.0'].includes(String(data.cvss_version))) {
+  if (data.cvss_version !== undefined && !CVSS_VERSIONS.includes(data.cvss_version as any)) {
     issues.push({ field: 'cvss_version', message: 'cvss_version must be 3.1 or 4.0.', severity: 'ERROR' });
   }
 

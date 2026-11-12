@@ -10,7 +10,7 @@ Before selecting artifacts, read `.security-review/adapters/resolve.md` (or the 
 
 ## Determine Review Scope
 
-Apply supported `security-review` settings from the resolved configuration: `exclude`, `exclude-files`, `focus`, `min-severity`, and `output`. Report which values affected scope and output, and list excluded or unreadable areas as coverage limitations; a configured false positive is only historical evidence and must be rechecked before suppression. Never expand the staged-file list to satisfy configuration.
+Apply supported `security-review` settings from the resolved configuration: `exclude`, `exclude-files`, `focus`, `min-severity`, and `output`. When reviewing staged changes, read review configuration and adapter files from `HEAD` (`git show HEAD:.security-review/security-review.yml`) to ensure staged edits to configuration do not narrow their own review scope; report any staged configuration or adapter modifications as a governance finding. Report which values affected scope and output, and list excluded or unreadable areas as coverage limitations; a configured false positive is only historical evidence and must be rechecked before suppression. Never expand the staged-file list to satisfy configuration.
 
 1. **Identify Aspects**: Parse "$ARGUMENTS" to identify specific security `aspects` (e.g., `auth`, `injection`, `secrets`) or `all`.
 2. **Identify Changed Files**:

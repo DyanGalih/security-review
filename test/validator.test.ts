@@ -145,10 +145,10 @@ overall_risk: NONE`;
   });
 
   it('accepts version-qualified ASVS 5 identifiers and preserves legacy ASVS 4 values', async () => {
-    const valid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\nasvs_requirements: [v5.0.0-1.2.5, V2.1.1]`);
+    const valid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\nasvs_version: 5.0.0\nasvs_requirements: [v5.0.0-1.2.5, V2.1.1]`);
     expect(valid.valid).toBe(true);
 
-    const invalid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\nasvs_requirements: [V5.0.0-1.2.5]`);
+    const invalid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\nasvs_version: 5.0.0\nasvs_requirements: [V5.0.0-1.2.5]`);
     expect(invalid.issues.some((issue) => issue.field === 'asvs_requirements')).toBe(true);
   });
 
@@ -160,11 +160,11 @@ overall_risk: NONE`;
   });
 
   it('validates the published CWE, ASVS, and MITRE frontmatter fields', async () => {
-    const valid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\ncwe_ids: [CWE-89]\nasvs_requirements: [v5.0.0-1.2.5]\nmitre_techniques: [T1190]`);
+    const valid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\nasvs_version: 5.0.0\ncwe_ids: [CWE-89]\nasvs_requirements: [v5.0.0-1.2.5]\nmitre_techniques: [T1190]`);
     expect(valid.valid).toBe(true);
 
     for (const [field, value] of [['cwe_ids', 'invalid'], ['asvs_requirements', 'v5.0-1.2.5'], ['mitre_techniques', 'bad']]) {
-      const invalid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\n${field}: [${value}]`);
+      const invalid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\nasvs_version: 5.0.0\n${field}: [${value}]`);
       expect(invalid.issues.some((issue) => issue.field === field)).toBe(true);
     }
   });
@@ -342,5 +342,63 @@ fix_suggestion_count: "1"
     const quotedCount = await validateReportFrontmatter(tmpPath);
     await unlink(tmpPath);
     expect(quotedCount.issues.some((i) => i.field === 'fix_suggestion_count')).toBe(true);
+  });
+
+  it('should require asvs_version when asvs_requirements is present', async () => {
+    const tmpPath = join(tmpdir(), `test-missing-asvs-version-${Date.now()}.md`);
+    await writeFile(
+      tmpPath,
+      `---
+document_type: security-review
+review_type: audit
+total_findings: 0
+critical_count: 0
+high_count: 0
+medium_count: 0
+low_count: 0
+overall_risk: NONE
+coverage_complete: true
+asvs_requirements:
+  - v5.0.0-1.2.5
+---
+# Content
+`,
+      'utf8'
+    );
+
+    const result = await validateReportFrontmatter(tmpPath);
+    await unlink(tmpPath);
+
+    expect(result.valid).toBe(false);
+    expect(result.issues.some((i) => i.field === 'asvs_version' && i.message.includes('required when asvs_requirements is present'))).toBe(true);
+  });
+
+  it('should accept lowercase legacy ASVS requirement identifiers', async () => {
+    const tmpPath = join(tmpdir(), `test-lowercase-asvs-${Date.now()}.md`);
+    await writeFile(
+      tmpPath,
+      `---
+document_type: security-review
+review_type: audit
+total_findings: 0
+critical_count: 0
+high_count: 0
+medium_count: 0
+low_count: 0
+overall_risk: NONE
+coverage_complete: true
+asvs_version: unknown
+asvs_requirements:
+  - v2.1.1
+---
+# Content
+`,
+      'utf8'
+    );
+
+    const result = await validateReportFrontmatter(tmpPath);
+    await unlink(tmpPath);
+
+    expect(result.valid).toBe(true);
   });
 });

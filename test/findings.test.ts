@@ -141,6 +141,38 @@ describe('parseFindingsReport', () => {
     expect(errorsOf({ findings: [], overall_risk: 'UNKNOWN' })[0]).toContain('overall_risk');
   });
 
+  it('validates finding-level taxonomy identifiers (cwe, asvs, mitre)', () => {
+    expect(errorsOf([{ ...fullFinding, cwe: 'invalid' }])[0]).toContain('cwe must match CWE pattern');
+    expect(errorsOf([{ ...fullFinding, asvs: 'ASVS 2.1.1' }])[0]).toContain('asvs must match ASVS requirement pattern');
+    expect(errorsOf([{ ...fullFinding, mitre: 'T-1190' }])[0]).toContain('mitre must match MITRE ATT&CK technique pattern');
+
+    // Valid formats should pass without error
+    const { report } = parseFindingsReport(JSON.stringify([{
+      ...fullFinding,
+      cwe: 'CWE-89',
+      asvs: 'v2.1.1',
+      mitre: 'T1190',
+    }]));
+    expect(report.findings[0].cwe).toBe('CWE-89');
+    expect(report.findings[0].asvs).toBe('v2.1.1');
+    expect(report.findings[0].mitre).toBe('T1190');
+  });
+
+  it('validates report-level taxonomy and frontmatter metadata', () => {
+    expect(errorsOf({ findings: [], asvs_requirements: 'not-an-array' })).toContain('asvs_requirements: must be an array');
+    expect(errorsOf({ findings: [], asvs_requirements: ['invalid-asvs'] })[0]).toContain('does not match ASVS pattern');
+    expect(errorsOf({ findings: [], mitre_techniques: ['T-1190'] })[0]).toContain('does not match MITRE ATT&CK pattern');
+    expect(errorsOf({ findings: [], cwe_ids: ['89'] })[0]).toContain('does not match CWE pattern');
+    expect(errorsOf({ findings: [], assessment_narrative: 123 })).toContain('assessment_narrative: must be a string');
+    expect(errorsOf({ findings: [], untracked_files_included: 'yes' })).toContain('untracked_files_included: must be a boolean');
+    expect(errorsOf({ findings: [], working_tree_state: 'invalid-state' })).toContain('working_tree_state: must be one of clean, dirty, unknown');
+    expect(errorsOf({ findings: [], reviewed_commit: 12345 })).toContain('reviewed_commit: must be a string');
+    expect(errorsOf({ findings: [], reviewed_branch: 12345 })).toContain('reviewed_branch: must be a string');
+    expect(errorsOf({ findings: [], commit_or_branch: 12345 })).toContain('commit_or_branch: must be a string');
+    expect(errorsOf({ findings: [], asvs_version: '5.0' })).toContain('asvs_version: must be a semantic version such as 5.0.0, or unknown');
+    expect(errorsOf({ findings: [], cvss_version: '2.0' })).toContain('cvss_version: must be one of 3.1, 4.0');
+  });
+
   it('rejects malformed JSON and non-report shapes', () => {
     expect(() => parseFindingsReport('{')).toThrow(FindingsValidationError);
     expect(() => parseFindingsReport('42')).toThrow(FindingsValidationError);

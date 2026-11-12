@@ -17,11 +17,11 @@ Dependency lockfiles remain in full-audit scope by default. If a user explicitly
 0. **Choose the Mode**: When a request could mean either a focused security question or a full audit (for example "is this repo secure?"), ask one question, whether a focused answer or a full audit report is wanted, before producing the full report.
 1. **Identify Aspects**: Parse "$ARGUMENTS" to identify specific security `aspects` (e.g., `auth`, `injection`, `data-leakage`, `supply-chain`) or `all`.
 2. **Resolve Exactly One Scope Mode**:
-    - With no explicit path or diff scope, review the entire repository: tracked application code, tests, manifests, dependency lockfiles, infrastructure, and security-relevant configuration. Record exclusions and unreadable areas.
+   - With no explicit path or diff scope, review the entire repository: tracked application code, tests, manifests, dependency lockfiles, infrastructure, and security-relevant configuration. Record exclusions and unreadable areas.
    - If the user names files or directories, review only those targets plus the minimum callers, configuration, and tests needed to understand their security behavior.
    - If the user explicitly requests staged or branch-diff scope, follow that request but use the staged or branch command's scope rules. Do not silently substitute changed files for a full-project audit.
- 3. State the resolved scope before analysis. If it is empty or cannot be resolved, stop and explain why; never claim a completed audit.
- 4. Record review provenance without executing repository code: `git rev-parse HEAD`, `git branch --show-current`, and `git status --porcelain`. State whether untracked files were included, list exclusions and unreadable areas, and use `unknown` for any value that cannot be established.
+3. State the resolved scope before analysis. If it is empty or cannot be resolved, stop and explain why; never claim a completed audit.
+4. Record review provenance without executing repository code: `git rev-parse HEAD`, `git branch --show-current`, and `git status --porcelain`. State whether untracked files were included, list exclusions and unreadable areas, and use `unknown` for any value that cannot be established.
 
 ## Role
 
@@ -516,8 +516,8 @@ Check for:
 ## 6. Advanced Security Frameworks
 
 ### OWASP ASVS & CWE Top 25
- - Use the project's selected ASVS version, otherwise the latest confirmed stable release (currently 5.0.0). Verify each exact mapping against that version and use its version-qualified identifier, such as OWASP's `v5.0.0-1.2.5`; if it cannot be verified, mark it unverified instead of inventing an ID.
- - Explicitly check for deep software flaws documented in the SANS/CWE Top 25 Most Dangerous Software Errors.
+- Use the project's selected ASVS version, otherwise the latest confirmed stable release (currently 5.0.0). Verify each exact mapping against that version and use its version-qualified identifier, such as OWASP's `v5.0.0-1.2.5`; if it cannot be verified, mark it unverified instead of inventing an ID.
+- Explicitly check for deep software flaws documented in the SANS/CWE Top 25 Most Dangerous Software Errors.
 
 ### CVSS Version Handling
 - Prefer CVSS 4.0 for newly assessed findings. Preserve an imported CVSS 3.1 score or vector only with its explicit version; do not silently convert or relabel it as 4.0.
@@ -983,12 +983,12 @@ If the user requested JSON findings output or token-optimized hybrid mode (e.g.,
 }
 ```
 
-## Automatic File Persistence
+## Report File Persistence
 
 When the user requests a saved report, write the Markdown report to disk; otherwise return it without creating a file:
 1. **Target File Path**: `docs/security-reviews/<YYYY-MM-DD>-audit.md` (or `docs/security-reviews/<YYYY-MM-DD>-<scope>-audit.md` if a specific scope is requested in `$ARGUMENTS`).
 2. **Directory Creation**: Automatically create the `docs/security-reviews/` directory if it does not already exist.
-3. **Response Output**: In your conversational response to the user, render an executive summary of the risk posture and top findings, and include a clickable markdown file link to the saved report (e.g. `[Audit Report](file:///absolute/path/to/docs/security-reviews/YYYY-MM-DD-audit.md)`).
+3. **Response Output**: In your conversational response to the user, render an executive summary of the risk posture and top findings. If the report was written to disk, include a clickable markdown file link to the saved report (e.g. `[Audit Report](file:///absolute/path/to/docs/security-reviews/YYYY-MM-DD-audit.md)`).
 
 ---
 

@@ -197,6 +197,9 @@ export function generateMarkdownReport(report: FindingsReport): string {
     frontmatterObj.security_task = report.findings[0].id;
   }
 
+  // ponytail: Frontmatter serialization deliberately uses deterministic key-value formatting rather than
+  // js-yaml dump to enforce flat, token-predictable, single-line YAML scalars and JSON-encoded arrays/strings,
+  // preventing multiline scalar folding and quoting variances across yaml parser versions.
   const frontmatterYaml = Object.entries(frontmatterObj)
     .map(([key, value]) => {
       const plainString = typeof value === 'string'
