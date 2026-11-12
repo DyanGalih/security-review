@@ -2,6 +2,13 @@
 
 ## v2.1.0
 
+- **Agent-first onboarding and single-CLI entrypoint cleanup** (change `agent-first-entrypoint-and-landing-cleanup`):
+  - Streamlined `src/README.md` Quickstart to a crisp 2-step agent onboarding workflow (`1. npx security-review init`, `2. /sr-staged`), removing the verbose list of manual standalone CLI commands.
+  - Clarified that no LLM API keys are required for the CLI, as all whitebox reasoning is executed directly within the host AI coding assistant session.
+  - Updated `src/landing/index.html` hero CTA to `Initialize (npx security-review init)`.
+  - Redesigned the Terminal HUD preview into a 2-step visual walkthrough demonstrating `npx security-review init` skill provisioning followed by `agent> /sr-staged` execution.
+  - Standardized the landing page Quickstart callout on `$ npx security-review init` with immediate `/sr-staged` next-step guidance.
+
 - **Harden cross-SDD command contracts and standards alignment** (change `harden-cross-sdd-command-contracts`):
   - Added adapter resolution and compact mandatory preflights across all 10 command prompts for OpenSpec, Spec-Kit, and generic workflows.
   - Aligned standards mappings to stable ASVS 5.0.0 and CVSS 4.0, preserving explicitly versioned legacy ASVS and CVSS 3.1 compatibility.
