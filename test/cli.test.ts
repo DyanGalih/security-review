@@ -14,7 +14,7 @@ describe('CLI Dispatcher', () => {
   it('should print version when requested', async () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     await runCli(['--version']);
-    expect(consoleSpy).toHaveBeenCalledWith('2.0.0');
+    expect(consoleSpy).toHaveBeenCalledWith('2.1.0');
     consoleSpy.mockRestore();
   });
 });

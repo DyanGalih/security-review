@@ -6,7 +6,7 @@
 
 > Continuous whitebox security auditing, OWASP governance, and token-optimized developer CLI & AI Agent toolkit.
 
-[![Version](https://img.shields.io/badge/version-2.0.0-22c55e)](package.json)
+[![Version](https://img.shields.io/badge/version-2.1.0-22c55e)](package.json)
 [![OWASP](https://img.shields.io/badge/OWASP-2025-ef4444)](https://owasp.org/Top10/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-f59e0b)](LICENSE)
 [![Spec Kit](https://img.shields.io/badge/Spec%20Kit-compatible-2563eb)](docs/speckit-extension.md)
@@ -85,7 +85,7 @@ Use Security Review directly with AI coding assistants (Antigravity, Claude Code
 If you are using [Spec-Kit](https://spec-kit.dev), Security Review can be added as an extension:
 
 ```bash
-specify extension add security-review --from https://github.com/DyanGalih/security-review/archive/refs/tags/v2.0.0.zip
+specify extension add security-review --from https://github.com/DyanGalih/security-review/archive/refs/tags/v2.1.0.zip
 ```
 
 Extension command IDs use `speckit.security-review.*`; the hooks are optional. Installing by name requires a catalog that contains this extension. OpenSpec projects use the standalone `security-review init` installer and bundled adapters.

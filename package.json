@@ -1,6 +1,6 @@
 {
   "name": "security-review",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Whitebox security review, OWASP auditing, and developer-accelerated agent toolkit for Spec-Kit and AI workflows",
   "type": "module",
   "main": "dist/core/index.js",

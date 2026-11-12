@@ -59,7 +59,7 @@ export async function runCli(args: string[]): Promise<void> {
   }
 
   if (args[0] === 'version' || args.includes('-v') || args.includes('--version')) {
-    console.log('2.0.0');
+    console.log('2.1.0');
     return;
   }
 

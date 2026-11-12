@@ -1,6 +1,6 @@
 # Architecture & Technical Design
 
-This document details the architectural design of **Security Review (`v2.0.0`)**, a standalone CLI and multi-agent security audit toolkit with optional Spec-Kit extension compatibility.
+This document details the architectural design of **Security Review (`v2.1.0`)**, a standalone CLI and multi-agent security audit toolkit with optional Spec-Kit extension compatibility.
 
 ---
 

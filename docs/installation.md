@@ -49,7 +49,7 @@ specify extension add security-review
 ### From GitHub Release
 ```bash
 specify extension add security-review --from \
-  https://github.com/DyanGalih/security-review/archive/refs/tags/v2.0.0.zip
+  https://github.com/DyanGalih/security-review/archive/refs/tags/v2.1.0.zip
 ```
 
 ### Local Development Link

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v2.1.0
 
 - **Harden cross-SDD command contracts and standards alignment** (change `harden-cross-sdd-command-contracts`):
   - Added adapter resolution and compact mandatory preflights across all 10 command prompts for OpenSpec, Spec-Kit, and generic workflows.
