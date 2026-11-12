@@ -434,6 +434,17 @@ nav {
   font-weight: 700;
 }
 
+.output-init {
+  color: var(--accent-emerald);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  padding: 0.65rem 0.9rem;
+  margin-bottom: 0.85rem;
+}
+
 .output-header {
   color: var(--accent-violet);
   font-weight: 700;
@@ -751,6 +762,24 @@ tr:hover td {
   color: var(--text-primary);
   font-size: 1.05rem;
   font-weight: 700;
+}
+
+.quickstart-subtext {
+  margin-top: 1.5rem !important;
+  margin-bottom: 0 !important;
+  font-size: 0.95rem !important;
+  color: var(--text-secondary) !important;
+}
+
+.quickstart-subtext code {
+  background: rgba(6, 182, 212, 0.08);
+  color: #0369a1;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: 1px solid rgba(6, 182, 212, 0.2);
 }
 
 /* Canonical Outbound Footer */
