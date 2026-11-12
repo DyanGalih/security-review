@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { fileURLToPath } from 'node:url';
 import { runInitCommand } from '../cli/commands/init.js';
 import { runCli } from '../cli/index.js';
 
@@ -38,12 +39,25 @@ describe('Security Review init command', () => {
     // Verify configuration template
     const configDest = path.join(tmpDir, '.security-review', 'security-review.yml');
     expect(fs.existsSync(configDest)).toBe(true);
+    for (const adapter of ['resolve', 'spec-kit', 'openspec', 'generic']) {
+      expect(fs.existsSync(path.join(tmpDir, '.security-review', 'adapters', `${adapter}.md`))).toBe(true);
+    }
 
     // Verify AGENTS.md
     const agentsMd = path.join(tmpDir, 'AGENTS.md');
     expect(fs.existsSync(agentsMd)).toBe(true);
     const agentsContent = fs.readFileSync(agentsMd, 'utf8');
     expect(agentsContent).toContain('## Security Review');
+  });
+
+  it('keeps extension commands usable without the standalone adapter installation', () => {
+    const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+    const manifest = fs.readFileSync(path.join(packageRoot, 'extension.yml'), 'utf8');
+    const commandsDir = path.join(packageRoot, 'commands');
+    for (const file of fs.readdirSync(commandsDir).filter((name) => name.endsWith('.md'))) {
+      expect(manifest).toContain(`file: "commands/${file}"`);
+      expect(fs.readFileSync(path.join(commandsDir, file), 'utf8')).toContain('For an extension-only Spec-Kit installation');
+    }
   });
 
   it('should support TOML format for Gemini and YAML format for Goose', async () => {
@@ -79,6 +93,18 @@ describe('Security Review init command', () => {
     });
 
     expect(fs.readFileSync(skillPath, 'utf8')).toBe('CUSTOM_CONTENT');
+  });
+
+  it('preserves existing adapter overrides unless replacement is explicitly requested', async () => {
+    const adapter = path.join(tmpDir, '.security-review', 'adapters', 'openspec.md');
+    fs.mkdirSync(path.dirname(adapter), { recursive: true });
+    fs.writeFileSync(adapter, 'custom mapping\n');
+
+    await runInitCommand(tmpDir, { yes: true, agent: 'opencode', commands: 'init' });
+    expect(fs.readFileSync(adapter, 'utf8')).toBe('custom mapping\n');
+
+    await runInitCommand(tmpDir, { yes: true, agent: 'opencode', commands: 'init', overwrite: 'replace' });
+    expect(fs.readFileSync(adapter, 'utf8')).toContain('# OpenSpec Adapter');
   });
 
   it('should respect overwrite=keep-both mode', async () => {

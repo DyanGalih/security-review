@@ -16,6 +16,8 @@ Security Review provides **token-optimized developer acceleration** for AI agent
 
 When working with an AI coding assistant, use the canonical standalone slash commands:
 
+These names are available only after `security-review init` installs them for that host. A Spec-Kit extension installation instead registers `speckit.security-review.*`; OpenSpec uses standalone commands and `.security-review/adapters/`.
+
 | Slash Command | Skill ID | Purpose | When to Use |
 |---|---|---|---|
 | `/sr-audit` | `sr-audit` | Full-repository security audit | Milestone reviews, release audits, major architecture validation. |
@@ -61,6 +63,7 @@ high_count: 2
 medium_count: 1
 low_count: 0
 owasp_categories: [A01, A03, A07]
+coverage_complete: true
 ---
 ```
 

@@ -1,11 +1,10 @@
 # Security Review - Configuration Template
 #
-# Copy this file to your project root as 'security-review.yml'
-# if you want a reusable review brief for the command.
+# Install to .security-review/security-review.yml (or use a legacy root security-review.yml)
+# This file is a reusable review brief for the command.
 #
-# Note: the toolkit is prompt-driven and reads configuration or conventions.
-# Use it as a human-readable team brief, and include the relevant settings in
-# the slash-command input when you want the agent to follow them.
+# Review prompts read this team brief; CLI diff and scan do not silently enforce it.
+# Reviewers report applied settings and revalidate historical false positives.
 #
 # All settings are optional - the toolkit works with defaults.
 
@@ -40,10 +39,6 @@ security-review:
     - '*.bundle.js'
     - '*.chunk.js'
     - '*.map'
-    - '*.lock'
-    - 'package-lock.json'
-    - 'yarn.lock'
-    - 'pnpm-lock.yaml'
 
   # ============================================================
   # FOCUS AREAS

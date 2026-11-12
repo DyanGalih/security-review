@@ -91,6 +91,13 @@ describe('parseFindingsReport', () => {
     expect(errorsOf([{ ...fullFinding, verificationStatus: 'MAYBE' }])[0]).toContain('verificationStatus');
   });
 
+  it('requires a version when a finding includes a CVSS score and preserves supported versions', () => {
+    expect(errorsOf([{ ...fullFinding, cvssScore: '8.5' }]).some(error => error.includes('cvssVersion is required when cvssScore is present'))).toBe(true);
+    expect(errorsOf([{ ...fullFinding, cvssScore: '8.5', cvssVersion: '5.0' }])[0]).toContain('cvssVersion');
+    const { report } = parseFindingsReport(JSON.stringify([{ ...fullFinding, cvssScore: '8.5', cvssVersion: '4.0' }]));
+    expect(report.findings[0].cvssVersion).toBe('4.0');
+  });
+
   it('accepts the verification FIX_SUGGESTION status through the shared loader', () => {
     const { report } = parseFindingsReport(JSON.stringify([
       { ...fullFinding, verificationStatus: 'FIX_SUGGESTION' },

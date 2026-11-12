@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **Harden cross-SDD command contracts and standards alignment** (change `harden-cross-sdd-command-contracts`):
+  - Added adapter resolution and compact mandatory preflights across all 10 command prompts for OpenSpec, Spec-Kit, and generic workflows.
+  - Aligned standards mappings to stable ASVS 5.0.0 and CVSS 4.0, preserving explicitly versioned legacy ASVS and CVSS 3.1 compatibility.
+  - Aligned validator schemas and `FindingsReport` review types (`verify`, `followup`) with canonical fields (`cwe_ids`, `asvs_requirements`, `mitre_techniques`).
+  - Added full-audit provenance tracking (`reviewed_commit`, `reviewed_branch`, `working_tree_state`, `exclusions`, `unreadable_areas`).
+  - Enforced authorization gates separating inert PoC text generation from file writes, script execution, and HTTP requests.
+  - Packaged standalone adapter templates (`generic.md`, `openspec.md`, `resolve.md`, `spec-kit.md`) under `adapters/` and automated their installation in `init`.
+
+
 - **Dependency vulnerability remediation** (change `fix-dependency-vulnerabilities`):
   - Upgraded `vitest` in `devDependencies` to `^4.1.12`, resolving arbitrary file read / path traversal (GHSA-82fw-gwwq-j7x9) and RCE vulnerabilities (GHSA-5gmw-xhrv-c9v3, GHSA-85c8-ppgw-ccpr).
   - Upgraded `js-yaml` in `dependencies` to `^4.3.2`, resolving high-severity empty merge source CPU denial-of-service vulnerability (GHSA-2883-xcg3-v3hh).

@@ -85,6 +85,8 @@ export interface FindingItem {
   cwe?: string; // e.g. "CWE-89"
   asvs?: string;
   mitre?: string;
+  cvssScore?: string;
+  cvssVersion?: '3.1' | '4.0';
   file?: string;
   lineRange?: string;
   description: string;
@@ -113,6 +115,19 @@ export interface FindingsReport {
   total_findings?: number;
   overall_risk?: FindingSeverity | 'NONE';
   assessment_kind?: 'whitebox-review' | 'report-synthesis';
+  assessment_narrative?: string;
+  source_artifacts?: string[];
+  commit_or_branch?: string;
+  reviewed_commit?: string;
+  reviewed_branch?: string;
+  working_tree_state?: 'clean' | 'dirty' | 'unknown';
+  untracked_files_included?: boolean;
+  exclusions?: string[];
+  unreadable_areas?: string[];
+  asvs_version?: string;
+  asvs_requirements?: string[];
+  mitre_techniques?: string[];
+  cvss_version?: '3.1' | '4.0';
   findings: FindingItem[];
   architectural_risks?: Array<{ pattern: string; description: string }>;
   confirmed_count?: number;

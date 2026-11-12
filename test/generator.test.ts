@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import yaml from 'js-yaml';
 import {
   generateMarkdownReport,
   generateTasksMarkdown,
@@ -12,6 +13,7 @@ import {
 } from '../core/generator.js';
 import { FindingItem, FindingsReport } from '../core/types.js';
 import { runCli } from '../cli/index.js';
+import { validateReportFrontmatter } from '../core/validator.js';
 
 /**
  * Level-2 headings of the rendered body as a Markdown reader sees them: lines inside a
@@ -112,6 +114,86 @@ describe('Core Findings Generator & CLI commands', () => {
     expect(markdown).toContain('TASK-SEC-001: SQL Injection in User Search');
     expect(markdown).toContain('Proof of Concept (PoC)');
     expect(markdown).toContain('Direct DB queries in controllers');
+  });
+
+  it('quotes YAML-reserved string values in generated frontmatter', () => {
+    const markdown = generateMarkdownReport({ findings: [], codebase_analyzed: 'true' });
+    const header = markdown.split('\n---\n')[0].replace(/^---\n/, '');
+    expect(yaml.load(header)).toMatchObject({ codebase_analyzed: 'true' });
+  });
+
+  it('preserves synthesis provenance, audit revision, standards, and explicit CVSS versions', async () => {
+    const markdown = generateMarkdownReport({
+      review_type: 'export',
+      assessment_kind: 'report-synthesis',
+      assessment_narrative: 'Synthesized supplied evidence; no new source assessment was performed.',
+      source_artifacts: ['prior-report.md'],
+      commit_or_branch: 'abc123',
+      reviewed_commit: 'abc123',
+      reviewed_branch: 'release/2',
+      working_tree_state: 'dirty',
+      untracked_files_included: false,
+      exclusions: ['build/'],
+      unreadable_areas: ['secrets store'],
+      asvs_version: '5.0.0',
+      cvss_version: '4.0',
+      findings: [{
+        ...mockFindings[0],
+        asvs: 'v5.0.0-1.2.5',
+        mitre: 'T1190',
+        cvssScore: '8.5',
+        cvssVersion: '4.0',
+      }],
+    });
+    const frontmatter = yaml.load(markdown.split('\n---\n')[0].replace(/^---\n/, '')) as Record<string, unknown>;
+    for (const [key, value] of Object.entries({
+      assessment_kind: 'report-synthesis', source_artifacts: ['prior-report.md'], commit_or_branch: 'abc123',
+      reviewed_commit: 'abc123', reviewed_branch: 'release/2', working_tree_state: 'dirty',
+      untracked_files_included: false, exclusions: ['build/'], unreadable_areas: ['secrets store'],
+      asvs_version: '5.0.0', asvs_requirements: ['v5.0.0-1.2.5'], mitre_techniques: ['T1190'], cvss_version: '4.0',
+    })) expect(frontmatter[key]).toEqual(value);
+    expect(markdown).toContain('This report synthesizes supplied assessment artifacts; no new source-code assessment was performed. Synthesized supplied evidence; no new source assessment was performed.');
+    expect(markdown).toContain('**CVSS 4.0 Score:** 8.5');
+
+    const reportPath = path.join(tmpDir, 'synthesis.md');
+    fs.writeFileSync(reportPath, markdown, 'utf8');
+    const validation = await validateReportFrontmatter(reportPath);
+    expect(validation.valid, JSON.stringify(validation.issues)).toBe(true);
+  });
+
+  it('derives ASVS version metadata from the version-qualified requirement', () => {
+    const markdown = generateMarkdownReport({ findings: [{
+      ...mockFindings[0],
+      asvs: 'v4.0.3-2.1.1',
+    }] });
+    const header = yaml.load(markdown.split('\n---\n')[0].replace(/^---\n/, '')) as Record<string, unknown>;
+    expect(header.asvs_version).toBe('4.0.3');
+  });
+
+  it('derives ASVS version metadata from report-level mappings', () => {
+    const markdown = generateMarkdownReport({ findings: [], asvs_requirements: ['v5.0.0-1.2.5'] });
+    const header = yaml.load(markdown.split('\n---\n')[0].replace(/^---\n/, '')) as Record<string, unknown>;
+    expect(header.asvs_version).toBe('5.0.0');
+  });
+
+  it('preserves legacy ASVS identifiers with unknown version metadata instead of guessing', () => {
+    const markdown = generateMarkdownReport({ findings: [{ ...mockFindings[0], asvs: 'V2.1.1' }] });
+    const header = yaml.load(markdown.split('\n---\n')[0].replace(/^---\n/, '')) as Record<string, unknown>;
+    expect(header.asvs_requirements).toEqual(['V2.1.1']);
+    expect(header.asvs_version).toBe('unknown');
+    expect(markdown).toContain('**ASVS Requirement:** V2.1.1');
+  });
+
+  it('does not assign one qualified ASVS version to legacy mappings in a mixed report', () => {
+    const markdown = generateMarkdownReport({ findings: [
+      { ...mockFindings[0], asvs: 'v5.0.0-1.2.5' },
+      { ...mockFindings[1], asvs: 'V2.1.1' },
+    ], asvs_version: '5.0.0' });
+    const header = yaml.load(markdown.split('\n---\n')[0].replace(/^---\n/, '')) as Record<string, unknown>;
+    expect(header.asvs_version).toBe('unknown');
+    expect(markdown).toContain('**ASVS Requirement:** v5.0.0-1.2.5 (ASVS 5.0.0)');
+    expect(markdown).toContain('**ASVS Requirement:** V2.1.1\n');
+    expect(markdown).not.toContain('**ASVS Requirement:** V2.1.1 (ASVS 5.0.0)');
   });
 
   it('should generate task markdown checklist items', () => {

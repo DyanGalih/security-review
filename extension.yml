@@ -9,7 +9,11 @@ extension:
   license: "MIT"
   homepage: "https://github.com/DyanGalih/security-review"
 requires:
-  speckit_version: ">=0.1.0"
+  speckit_version: ">=0.9.0"
+  commands:
+    - "speckit.plan"
+    - "speckit.tasks"
+    - "speckit.implement"
 hooks:
   after_plan:
     command: "speckit.security-review.plan"

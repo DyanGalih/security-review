@@ -78,6 +78,8 @@ export const FINDING_FIELDS = [
   'confidenceRationale',
   'counterevidence',
   'severityChangeConditions',
+  'cvssScore',
+  'cvssVersion',
   'poc',
 ] as const;
 

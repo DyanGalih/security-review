@@ -97,6 +97,135 @@ describe('security review command contracts', () => {
     expect(branch).toContain('<target>');
   });
 
+  it('reads review policy before scope selection and rechecks historical false positives', async () => {
+    for (const name of commandNames.filter((file) => file !== 'init.md' && file !== 'security-review-apply.md')) {
+      const prompt = await readCommand(name);
+      expect(prompt.indexOf('Adapter and Project Configuration Preflight'), name).toBeLessThan(prompt.indexOf('## Objective'));
+      for (const setting of ['exclude-files', 'focus', 'min-severity', 'output']) {
+        expect(prompt, `${name} applies ${setting}`).toContain(`\`${setting}\``);
+      }
+      expect(prompt, name).toContain('must be rechecked before suppression');
+      expect(prompt, name).toContain('coverage limitations');
+    }
+  });
+
+  it('records the selected ASVS version whenever a command emits ASVS mappings', async () => {
+    for (const name of commandNames) {
+      const prompt = await readCommand(name);
+      if (/^asvs_requirements:/m.test(prompt)) {
+        expect(prompt, `${name} declares asvs_version`).toMatch(/^asvs_version:/m);
+      }
+    }
+    expect(await readCommand('security-audit.md')).toContain('v5.0.0-1.2.5');
+  });
+
+  it('keeps the full-audit report contract singular and uses canonical risk values', async () => {
+    const audit = await readCommand('security-audit.md');
+    expect(audit.match(/^## Remediation & Planning Updates$/gm)).toHaveLength(1);
+    expect(audit).toContain('**Overall Security Posture:** [CRITICAL | HIGH | MEDIUM | LOW | INFORMATIONAL | NONE]');
+    expect(audit).toContain('When the user requests a saved report');
+    expect(audit).not.toContain('you MUST write the full Markdown report directly to disk');
+  });
+
+  it('places false-positive records under the installed configuration root', async () => {
+    const verify = await readCommand('security-verify.md');
+    const snippet = verify.split('## 4. False Positive Suppression Config')[1].match(/```yaml\n([\s\S]*?)\n```/)?.[1];
+    expect(snippet).toBeDefined();
+    const parsed = yaml.load(snippet!) as { 'security-review': { 'false-positives': Array<Record<string, string>> } };
+    const template = yaml.load(await readFile(join(__dirname, '../config-template.yml'), 'utf8')) as Record<string, unknown>;
+    expect(template).toHaveProperty('security-review');
+    expect(parsed['security-review']['false-positives'][0]).toHaveProperty('rule');
+    expect(parsed['security-review']['false-positives'][0]).toHaveProperty('file');
+    expect(parsed['security-review']['false-positives'][0]).toHaveProperty('reason');
+    expect(parsed['security-review']['false-positives'][0]).toHaveProperty('date');
+  });
+
+  it('registers every hook target and declares the required Spec-Kit core commands', async () => {
+    const manifest = yaml.load(await readFile(join(__dirname, '../extension.yml'), 'utf8')) as {
+      requires: { speckit_version: string; commands: string[] };
+      hooks: Record<string, { command: string }>;
+      provides: { commands: Array<{ name: string; file: string }> };
+    };
+    expect(manifest.requires.speckit_version).toBe('>=0.9.0');
+    expect(manifest.requires.commands).toEqual(['speckit.plan', 'speckit.tasks', 'speckit.implement']);
+    const registered = new Set(manifest.provides.commands.map(({ name }) => name));
+    for (const hook of Object.values(manifest.hooks)) expect(registered.has(hook.command)).toBe(true);
+    for (const { file } of manifest.provides.commands) expect(commandNames).toContain(file.replace('commands/', ''));
+  });
+
+  it('ships a resolvable adapter preflight in each installed prompt', async () => {
+    for (const adapter of ['resolve', 'spec-kit', 'openspec', 'generic']) {
+      const mapping = await readFile(join(__dirname, '../adapters', `${adapter}.md`), 'utf8');
+      expect(mapping, `${adapter} includes discovery`).toContain(adapter === 'spec-kit' ? 'feature' : 'change');
+      if (adapter !== 'resolve') {
+        expect(mapping, `${adapter} defines artifact actions`).toContain('## Actions');
+      }
+    }
+    for (const name of commandNames) {
+      const prompt = await readCommand(name);
+      expect(prompt, `${name} resolves the adapter`).toContain('.security-review/adapters/resolve.md');
+      expect(prompt, `${name} handles extension-only Spec-Kit`).toContain('For an extension-only Spec-Kit installation');
+    }
+  });
+
+  it('documents policy consumption, precedence, false-positive validation, and legacy CLI boundaries', async () => {
+    const template = await readFile(join(__dirname, '../config-template.yml'), 'utf8');
+    expect(template).toContain('CLI diff and scan do not silently enforce it');
+    for (const name of commandNames.filter((file) => file !== 'init.md')) {
+      const prompt = await readCommand(name);
+      expect(prompt, name).toContain('Read `.security-review/security-review.yml`');
+      expect(prompt, name).toContain('legacy root `security-review.yml`');
+      expect(prompt, name).toMatch(/revalidat\w+[^\n]*false positive/i);
+    }
+    const verify = await readCommand('security-verify.md');
+    expect(verify).toContain('Configuration does not authorize execution');
+  });
+
+  it('keeps dependency lockfiles in default full-audit scope and documents exclusions as coverage gaps', async () => {
+    const template = await readFile(join(__dirname, '../config-template.yml'), 'utf8');
+    expect(template).not.toMatch(/- ['"]?(?:\*\.lock|package-lock\.json|yarn\.lock|pnpm-lock\.yaml)/);
+    const audit = await readCommand('security-audit.md');
+    expect(audit).toContain('Dependency lockfiles remain in full-audit scope by default');
+    expect(audit).toContain('supply-chain coverage limitation');
+    expect(audit).toContain('coverage_caveats');
+  });
+
+  it('records reproducible revision and working-tree provenance for full audits', async () => {
+    const audit = await readCommand('security-audit.md');
+    for (const field of ['reviewed_commit', 'reviewed_branch', 'working_tree_state', 'untracked_files_included', 'exclusions', 'unreadable_areas']) {
+      expect(audit, `audit header includes ${field}`).toContain(`${field}:`);
+    }
+    expect(audit).toContain('git rev-parse HEAD');
+    expect(audit).toContain('git status --porcelain');
+    expect(audit).toContain('without executing repository code');
+  });
+
+  it('guards the second-pass supply-chain, PoC, CVSS, provenance, and export contracts', async () => {
+    const audit = await readCommand('security-audit.md');
+    expect(audit).toContain('Dependency lockfiles remain in full-audit scope by default');
+    expect(audit).toContain('Prefer CVSS 4.0 for newly assessed findings');
+    expect(audit).toContain('do not silently convert or relabel it as 4.0');
+    expect(audit).toContain('reviewed_commit:');
+    expect((await readFile(join(__dirname, '../config-template.yml'), 'utf8'))).not.toMatch(/package-lock\.json|yarn\.lock|pnpm-lock\.yaml/);
+
+    const verify = await readCommand('security-verify.md');
+    const safety = verify.split('### Mandatory PoC Safety Floor')[1].split('\n### ')[0];
+    expect(safety).toContain('explicit approval for that exact action, destination/target, and scope');
+    expect(safety).toContain('Authorization never waives the six Execution Sandbox controls');
+
+    const generatorTests = await readFile(join(__dirname, 'generator.test.ts'), 'utf8');
+    expect(generatorTests).toContain('preserves synthesis provenance, audit revision, standards, and explicit CVSS versions');
+  });
+
+  it('separates inert PoC output from file writes, execution, and HTTP side effects', async () => {
+    const verify = await readCommand('security-verify.md');
+    const safety = verify.split('### Mandatory PoC Safety Floor')[1].split('\n### ')[0];
+    expect(safety).toContain('does not itself authorize a file write, execution, or HTTP request');
+    expect(safety).toContain('explicit approval for that exact action, destination/target, and scope');
+    expect(safety).toContain('Authorization never waives the six Execution Sandbox controls');
+    expect(safety).toContain('provide inert PoC text and a validation plan instead');
+  });
+
   it('partitions committed, staged, and deleted paths in live git state via TypeScript getGitDiffSummary', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'security-review-detector-'));
     const git = (...args: string[]) => execFileAsync('git', args, { cwd: directory });

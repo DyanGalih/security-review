@@ -19,7 +19,7 @@
 
 - **Developer CLI Accelerator**: Fast git diff extraction, security entrypoint discovery, and report frontmatter validation.
 - **AI Agent Skills**: Pre-engineered prompt contracts for full audits, staged reviews, branch diffs, plan reviews, and remediation tasks.
-- **Spec-Kit Compatible**: 100% backward compatible with Spec-Kit SDD workflows via `/speckit.security-review.*` extension hooks.
+- **Spec-Kit Extension**: Separate extension commands (`speckit.security-review.*`) and optional lifecycle hooks; the standalone CLI installer is not required.
 
 ---
 
@@ -37,11 +37,11 @@ npx security-review scan
 # Compile JSON findings into full Markdown security report
 npx security-review report --input findings.json --output report.md
 
-# Generate or append remediation tasks to tasks.md (auto-detects SDD framework)
-npx security-review tasks --input findings.json --append
+# Generate remediation tasks for an explicitly selected task artifact
+npx security-review tasks --input findings.json --target path/to/tasks.md
 
-# Propose a complete SDD change (OpenSpec / Spec-Kit) from findings
-npx security-review sdd propose --input findings.json --name fix-auth-sqli
+# Inspect SDD state; select a change explicitly before writing planning artifacts
+npx security-review sdd status
 
 # Validate security report YAML frontmatter
 npx security-review validate docs/security-reviews/report.md
@@ -85,10 +85,10 @@ Use Security Review directly with AI coding assistants (Antigravity, Claude Code
 If you are using [Spec-Kit](https://spec-kit.dev), Security Review can be added as an extension:
 
 ```bash
-specify extension add security-review
+specify extension add security-review --from https://github.com/DyanGalih/security-review/archive/refs/tags/v2.0.0.zip
 ```
 
-All commands are available as `/speckit.security-review.*` and automatically hook into `/speckit.plan`, `/speckit.tasks`, and `/speckit.implement`.
+Extension command IDs use `speckit.security-review.*`; the hooks are optional. Installing by name requires a catalog that contains this extension. OpenSpec projects use the standalone `security-review init` installer and bundled adapters.
 
 👉 See the complete [Spec-Kit Extension Guide](docs/speckit-extension.md) for lifecycle hook configuration and command mappings.
 
@@ -109,3 +109,7 @@ All commands are available as `/speckit.security-review.*` and automatically hoo
 
 - **Repository**: [https://github.com/DyanGalih/security-review](https://github.com/DyanGalih/security-review)
 - **License**: MIT © DyanGalih
+
+## Acknowledgments
+
+Security Review is inspired in part by the security-auditing approaches in [Strix](https://github.com/usestrix/strix) (Apache-2.0) and [Cloudflare's security-audit-skill](https://github.com/cloudflare/security-audit-skill) (MIT). These projects are independently licensed; Security Review remains MIT-licensed under its own [LICENSE](LICENSE).

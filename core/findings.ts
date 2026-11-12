@@ -63,6 +63,15 @@ function validateFinding(finding: Record<string, unknown>, label: string, errors
   if (!isNonEmptyString(finding.description)) {
     errors.push(`${label}: description is required`);
   }
+  if (finding.cvssScore !== undefined && !isNonEmptyString(finding.cvssScore)) {
+    errors.push(`${label}: cvssScore must be a non-empty string`);
+  }
+  if (finding.cvssVersion !== undefined && !oneOf(['3.1', '4.0'] as const, finding.cvssVersion)) {
+    errors.push(`${label}: cvssVersion must be 3.1 or 4.0`);
+  }
+  if (finding.cvssScore !== undefined && finding.cvssVersion === undefined) {
+    errors.push(`${label}: cvssVersion is required when cvssScore is present`);
+  }
 
   if (finding.verificationStatus !== undefined && !oneOf(VERIFICATION_STATUSES, finding.verificationStatus)) {
     errors.push(`${label}: verificationStatus must be one of ${VERIFICATION_STATUSES.join(', ')}`);
