@@ -85,7 +85,7 @@ Each entry of the `findings` array in findings JSON (the input to `security-revi
 | `title` | string | Free text | Short finding title. | Yes |
 | `severity` | string (enum) | `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFORMATIONAL` | Rated severity. | Yes |
 | `category` | string | `AXX:Name` | OWASP Top 10 category. | Yes |
-| `cwe` | string | `CWE-NNN` | CWE identifier. | No |
+| `cwe` | string | `CWE-NNN` or `CWE-NNN: Name` | CWE identifier; the report-level `cwe_ids` field keeps only the canonical ID. | No |
 | `asvs` | string | `v5.0.0-1.2.5` or legacy `V2.1.1` | Version-qualified ASVS requirement (legacy unqualified IDs remain accepted). | No |
 | `mitre` | string | `T1190` | MITRE ATT&CK technique. | No |
 | `cvssScore` | string | Version-specific CVSS score or vector | Finding's supplied CVSS score/vector. | No |
