@@ -59,6 +59,52 @@ document_fields:
     description: "Export-only commit or branch reviewed, or 'unknown' when source was not directly accessed."
     index: false
 
+  reviewed_commit:
+    type: string
+    description: "Exact commit reviewed by a full audit, or unknown."
+    index: false
+
+  reviewed_branch:
+    type: string
+    description: "Branch reviewed by a full audit, or unknown."
+    index: false
+
+  working_tree_state:
+    type: string
+    enum: [clean, dirty, unknown]
+    description: "Whether the reviewed working tree had local changes."
+    index: false
+
+  untracked_files_included:
+    type: boolean
+    description: "Whether untracked files were included in the review."
+    index: false
+
+  exclusions:
+    type: array
+    items:
+      type: string
+    description: "Explicitly excluded paths or patterns."
+    index: false
+
+  unreadable_areas:
+    type: array
+    items:
+      type: string
+    description: "Areas the review could not inspect."
+    index: false
+
+  assessment_narrative:
+    type: string
+    description: "Provenance-aware assessment narrative."
+    index: false
+
+  cvss_version:
+    type: string
+    enum: ["3.1", "4.0"]
+    description: "CVSS version used for report-level scoring."
+    index: false
+
   findings_evaluated:
     type: integer
     minimum: 0
@@ -175,13 +221,20 @@ classification_fields:
     type: array
     items:
       type: string
+      pattern: "^(V[0-9]+(\\.[0-9]+)*|v[0-9]+\\.[0-9]+\\.[0-9]+-[0-9]+\\.[0-9]+\\.[0-9]+)$"
     description: "Verified OWASP ASVS requirements referenced by findings."
+    index: false
+
+  asvs_version:
+    type: string
+    description: "Selected ASVS release used for version-qualified requirement identifiers, or unknown for legacy IDs with no version evidence."
     index: false
 
   mitre_techniques:
     type: array
     items:
       type: string
+      pattern: "^T[0-9]+(\\.[0-9]+)?$"
     description: "Verified MITRE ATT&CK techniques applicable to findings."
     index: false
 
@@ -213,8 +266,17 @@ finding_level_fields:
 
   cvss_score:
     type: string
-    format: "N.N (Severity)"
-    description: "CVSS v3.1 base score. 9.0-10.0=Critical, 7.0-8.9=High, 4.0-6.9=Medium, 0.1-3.9=Low."
+    description: "Versioned CVSS score or vector; prefer CVSS 4.0 for new scoring and preserve historical 3.1 input."
+
+  cvssVersion:
+    type: string
+    enum: ["3.1", "4.0"]
+    description: "CVSS version for the finding score; JSON key is cvssVersion."
+
+  cvss_version:
+    type: string
+    enum: ["3.1", "4.0"]
+    description: "CVSS version for the associated finding score; preserve imported historical versions."
 
   security_task:
     type: string

@@ -10,7 +10,7 @@ Execute the canonical slash commands directly in your AI coding session:
 
 | Slash Command | Skill / ID | Description |
 |---|---|---|
-| `/sr-audit` (or `/security-audit`) | `sr-audit` | Full repository security audit against OWASP Top 10, CWEs, and trust boundaries |
+| `/sr-audit` | `sr-audit` | Full repository security audit against OWASP Top 10, CWEs, and trust boundaries |
 | `/sr-staged` | `sr-staged` | Fast pre-commit audit of staged git changes (`git add`) |
 | `/sr-branch` | `sr-branch` | PR and feature branch diff audit against base branch (`main`) |
 | `/sr-plan` | `sr-plan` | Architecture & technical plan review before coding starts |
@@ -19,14 +19,16 @@ Execute the canonical slash commands directly in your AI coding session:
 | `/sr-apply` | `sr-apply` | Apply approved security tasks into `tasks.md` and `plan.md` |
 | `/sr-export` | `sr-export` | Synthesize executive & technical pentest assessment report |
 | `/sr-verify` | `sr-verify` | Re-verify findings, test exploitability, and generate PoCs |
-| `/sr-init` | `sr-init` | Initialize or update `security_constitution.md` |
+| `/sr-init` | `sr-init` | Initialize or update the adapter-resolved security constitution |
 
 > [!NOTE]
-> For Spec-Kit extension users, all commands are additionally available via `/speckit.security-review.*` (e.g., `/speckit.security-review.audit`). See [Spec-Kit Extension Guide](speckit-extension.md).
+> Standalone names are installed by `security-review init`. Spec-Kit extension installation instead registers `speckit.security-review.*` command IDs (for example `speckit.security-review.audit`). OpenSpec uses the standalone installation, not `extension.yml`. See [Spec-Kit Extension Guide](speckit-extension.md).
 
 ---
 
 ## 2. Basic Workflows
+
+When `.security-review/security-review.yml` or a legacy root `security-review.yml` exists, review commands use its scope, focus, severity, and output settings as **agent guidance** and recheck historical false positives against current evidence. `security-review diff` and `scan` do not silently enforce those settings; report any exclusion as a coverage limitation.
 
 ### Full-Repository Audit
 ```text
@@ -101,7 +103,7 @@ Synthesize findings into an executive and technical whitebox security assessment
 ```
 Generates a formal Markdown report including:
 - **Executive Summary**: High-level risk score and strategic impact.
-- **Technical Findings**: Detailed descriptions, exploit scenarios, CVSS v3.1 scores, and code remediation snippets. Every finding carries its **Confidence** (`high`, `medium`, or `low` with a rationale), **Counterevidence**, and **Severity Change Conditions**; findings produced before these fields existed show `not recorded`.
+- **Technical Findings**: Detailed descriptions, exploit scenarios, explicitly versioned CVSS scores (prefer 4.0 for new scoring), and code remediation snippets. Every finding carries its **Confidence** (`high`, `medium`, or `low` with a rationale), **Counterevidence**, and **Severity Change Conditions**; findings produced before these fields existed show `not recorded`.
 - **Coverage**: What was reviewed and how each surface closed (`reported`, `ruled_out`, `no_issue_found`, `not_applicable`, `needs_follow_up`), followed by a completeness line. `coverage_complete: false` in the frontmatter lists the caveats, so a clean area is never mistaken for an unvisited one.
 - **Architectural Drift**: Systemic boundary failures and long-term hardening roadmap.
 
@@ -141,17 +143,12 @@ security-review tasks --input findings.json --target tasks.md --append
 
 ## 8. SDD Bridge (OpenSpec & Spec-Kit Integration)
 
-Turn findings directly into SDD change proposals or inject tasks into active changes:
+Inspect SDD state before selecting the exact artifact. The legacy `sdd propose` CLI generates draft files but does not validate the resulting change against the active SDD schema; review and validate drafts before use.
 
 ```bash
 # Check detected SDD framework and active changes
 security-review sdd status
 
-# Generate full OpenSpec / Spec-Kit proposal from findings.json
-security-review sdd propose --input findings.json --name fix-auth-vulnerabilities
-
-# Append findings directly to active OpenSpec/Spec-Kit tasks.md (auto-detected target)
-security-review tasks --input findings.json --append
+# Select the exact task artifact before writing to an OpenSpec or Spec-Kit change
+security-review tasks --input findings.json --target path/to/tasks.md --append
 ```
-
-

@@ -4,7 +4,13 @@ description: "Re-verify security findings against source code or browser E2E, cl
 
 # Security Review — Finding Verification & Proof of Concept (PoC)
 
+## Adapter and Project Configuration Preflight
+
+Before locating supporting artifacts, read `.security-review/adapters/resolve.md` (or the package's `adapters/resolve.md`) and its selected Spec-Kit, OpenSpec, or generic adapter. For an extension-only Spec-Kit installation where neither adapter file was installed, use the native `.specify/memory/security_constitution.md` and active `specs/{feature}/` artifacts instead; ask when the feature is ambiguous. Honor the persisted Architecture Guard selection when present; otherwise use unambiguous markers. Resolve `spec` and `security-constraints` through that adapter when an active feature is relevant; ask when several exist. A named finding may be statically verified without an active feature. Read `.security-review/security-review.yml` or a legacy root `security-review.yml` when present; validate its `security-review` mapping and report the settings used. Revalidate configured false positives against current evidence. Configuration does not authorize execution, HTTP requests, or PoC file writes; retain the separate authorization and sandbox gates below.
+
 ## User Input
+
+Apply supported `security-review` settings from the resolved configuration: `exclude`, `exclude-files`, `focus`, `min-severity`, and `output`. Report which values affected scope and output, and list excluded or unreadable areas as coverage limitations; a configured false positive is only historical evidence and must be rechecked before suppression. Configuration is not authorization to execute a PoC.
 
 $ARGUMENTS
 
@@ -88,6 +94,9 @@ Write reproduction files only in the scratch directory and run them against the 
 If any control is unavailable, do not execute. Keep the finding at `medium` or `low` with the missing control named in `confidenceRationale`, keep its coverage entry for that surface and risk area `reported`, set `coverage_complete: false` with a caveat naming the missing control, and write a safe validation plan in the PoC section. If the user asks you to run a reproduction without the sandbox, decline the execution and give the validation plan instead.
 
 ### Mandatory PoC Safety Floor
+- **Inert PoC generation:** Writing example code or reproduction steps into the response/report is analysis output and does not itself authorize a file write, execution, or HTTP request.
+- **Separate side-effect authorization:** Default to static analysis. Before writing a PoC/test file, executing target-controlled code, or sending any HTTP request, require the user's current request or explicit approval for that exact action, destination/target, and scope. Approval for one action does not authorize the others. Show the proposed path or request target before acting.
+- **Sandbox still required:** Authorization never waives the six Execution Sandbox controls. If any control or the explicit side-effect authorization is absent, do not perform that side effect; provide inert PoC text and a validation plan instead.
 - **Non-Destructive**: PoCs MUST NEVER execute destructive operations (`DROP`, `DELETE`, `TRUNCATE`, file unlinks, or infinite loops).
 - **Safe Mock Payloads**: Use non-destructive proof strings (e.g. `' OR '1'='1` in a dry-run test, dummy tokens, or non-malicious canary assertions).
 - **Localized Execution**: Prefer unit/integration test assertions (e.g. in Vitest/Jest/Pytest) or isolated Playwright specs that run from the scratch directory against the read-only target, entirely in-memory or in isolated fixtures. Offer a spec worth keeping as a proposed file for `tests/security/` in the report; do not write it into the target repository.
@@ -230,6 +239,8 @@ e2e_verified: <true|false>
 target_artifacts: [<source report or files evaluated>]
 owasp_categories: [<A01>, <A05>, ...]
 cwe_ids: [<CWE-89>, ...]
+asvs_version: <selected version when ASVS mappings are present, or unknown for legacy identifiers without version evidence>
+asvs_requirements: [<verified version-qualified ASVS requirement>, ...]
 coverage_complete: <true|false>
 coverage_caveats: [<reason the verification is incomplete>, ...]  # required when coverage_complete is false
 field_summaries:
@@ -339,12 +350,13 @@ test('Verify [FINDING_ID] - [Vulnerability Name]', async ({ page }) => {
 If any findings were classified as `FALSE_POSITIVE`, emit the configuration snippet to add to `.security-review/security-review.yml`:
 
 ```yaml
-# Add to .security-review/security-review.yml under false-positives:
-false-positives:
-  - rule: "<rule-or-cwe-id>"
-    file: "path/to/file.ts"
-    reason: "<Why this finding was verified as a false positive>"
-    date: "<YYYY-MM-DD>"
+# Add to .security-review/security-review.yml:
+security-review:
+  false-positives:
+    - rule: "<rule-or-cwe-id>"
+      file: "path/to/file.ts"
+      reason: "<Why this finding was verified as a false positive>"
+      date: "<YYYY-MM-DD>"
 ```
 
 ## 5. Automatic File Persistence

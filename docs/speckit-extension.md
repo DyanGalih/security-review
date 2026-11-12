@@ -6,7 +6,7 @@
 
 ## 1. Overview
 
-While `security-review` is available as an installable standalone CLI and AI Agent toolkit, it maintains **100% backward compatibility** with existing Spec-Kit projects.
+`security-review` is available as a standalone CLI and agent toolkit and as a separate Spec-Kit extension. The extension manifest declares the supported version range and required core commands.
 
 When registered in Spec-Kit, all commands are prefixed with `speckit.security-review.*` and seamlessly hook into Spec-Kit SDD development phases.
 
@@ -14,7 +14,7 @@ When registered in Spec-Kit, all commands are prefixed with `speckit.security-re
 
 ## 2. Installation in Spec-Kit
 
-### Remote Extension via Registry
+### From a curated registry containing this extension
 ```bash
 specify extension add security-review
 ```
@@ -72,10 +72,11 @@ All Spec-Kit commands are defined in `src/extension.yml`:
 You can customize rules by copying the template:
 
 ```bash
-cp config-template.yml speckit-security.yml
+mkdir -p .security-review
+cp config-template.yml .security-review/security-review.yml
 ```
 
-The extension automatically reads `speckit-security.yml` or `openspec/security.md` when evaluating trust boundaries.
+The commands read `.security-review/security-review.yml` (or a legacy root `security-review.yml`) when present and use the active adapter's security constitution. In an extension-only Spec-Kit project, that constitution is `.specify/memory/security_constitution.md`. Review settings guide the agent; they are not silently enforced by `security-review diff` or `scan`.
 
 ---
 

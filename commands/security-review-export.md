@@ -4,7 +4,13 @@ description: "Export security review findings as a formal Executive and Technica
 
 # Security Review — Formal Export (Whitebox Pentest Style)
 
+## Adapter and Project Configuration Preflight
+
+Before locating supporting artifacts, read `.security-review/adapters/resolve.md` (or the package's `adapters/resolve.md`) and its selected Spec-Kit, OpenSpec, or generic adapter. For an extension-only Spec-Kit installation where neither adapter file was installed, use the native `.specify/memory/security_constitution.md` and active `specs/{feature}/` artifacts instead; ask when the feature is ambiguous. Honor the persisted Architecture Guard selection when present; otherwise use unambiguous markers. Resolve `plan`, `tasks`, `spec`, and security constitution through that adapter when relevant; ask for the active change or feature when ambiguous. A supplied report may be exported without an active SDD change. Read `.security-review/security-review.yml` or a legacy root `security-review.yml` when present; validate its `security-review` mapping and report the settings used. Revalidate configured false positives against current evidence. Configuration is agent guidance, not hidden CLI enforcement or proof that source code was reviewed.
+
 ## User Input
+
+Apply supported `security-review` settings from the resolved configuration: `exclude`, `exclude-files`, `focus`, `min-severity`, and `output`. Report which values affected scope and output, and list excluded or unreadable areas as coverage limitations; a configured false positive is only historical evidence and must be rechecked before suppression.
 
 $ARGUMENTS
 
@@ -17,8 +23,8 @@ Synthesize one or more security review reports, follow-up plans, or finding list
 Read and analyze the following artifacts:
 
 - **Source Findings**: If a specific report file or findings list is provided in `$ARGUMENTS`, treat it as the authoritative source. Otherwise, **automatically discover and load the most recent security report** by scanning `docs/security-reviews/` (sorting by date prefix and modification time). If no reports exist in `docs/security-reviews/`, check `docs/memory/INDEX.md` or inform the user and suggest running `/sr-audit` first.
-- **Durable Context**: `constitution.md`, `security_constitution.md`, and `docs/memory/`.
-- **Implementation Context**: `plan.md` (or `design.md`), `tasks.md`, and relevant specification files.
+- **Durable Context**: The adapter-resolved constitutions and any repository memory sources that exist.
+- **Implementation Context**: The adapter-resolved `plan`, `tasks`, and relevant `spec` artifacts when an active feature is selected.
 
 Record exactly which source reports, repository paths, commit or branch, tools, and dates were used. Distinguish `tested`, `statically reviewed`, `reported by source`, and `not assessed`. Never infer full-source access from the presence of a prior report.
 
@@ -26,7 +32,7 @@ Record exactly which source reports, repository paths, commit or branch, tools, 
 
 When memory configuration has `optimizer.enabled: true` and the CLI is available:
 
-1. **Prepare Context**: Execute `flash-mem prepare-context --feature specs/<feature> --query "security decisions architecture constraints remediation"`.
+1. **Prepare Context**: When an active feature is relevant, use its adapter-resolved path with `flash-mem prepare-context --feature <active-path> --query "security decisions architecture constraints remediation"`.
 2. **Review Findings**: Ensure the export includes historical security context surfaced by the optimizer.
 3. If `flash-mem` is available, use its canonical memory tools and `prepare-context` flow. If it is not installed, use available memory MCP tools; do not call `npx memory-hub` directly.
 
@@ -109,6 +115,8 @@ low_count: <integer>
 informational_count: <integer>
 owasp_categories: [<A01>, <A05>, ...]
 cwe_ids: [<CWE-89>, ...]
+asvs_version: <selected version when ASVS mappings are present, or unknown for legacy identifiers without version evidence>
+asvs_requirements: [<verified version-qualified ASVS requirement>, ...]
 assessment_kind: <whitebox-review|report-synthesis>
 source_artifacts: [<report path or identifier>, ...]
 commit_or_branch: <commit, branch, or unknown>
@@ -171,11 +179,11 @@ For a whitebox review, state that the directly reviewed codebase scope was evalu
 **Severity**: [CRITICAL|HIGH|MEDIUM|LOW|INFORMATIONAL]
 **Evidence Provenance**: [tested|statically-reviewed|source-reported|unverified|not-assessed]
 **OWASP Category**: AXX:2025-Category
-**CWE**: CWE-XXX
-**ASVS Requirement**: V2.1.1 (if applicable)
+**CWE**: CWE-NNN
+**ASVS Requirement**: v5.0.0-1.2.5 (if applicable and verified against the selected version)
 **MITRE Technique**: T1190 (if applicable)
 **Reference Link**: https://... (direct link to OWASP, CWE, or ASVS item)
-**CVSS v3.1**: X.X
+**CVSS <3.1|4.0>**: X.X (record the version; prefer 4.0 for new scoring and preserve historical 3.1 without conversion)
 
 #### 3.X.1 Description
 [Concise technical description of the vulnerability and why it exists.]

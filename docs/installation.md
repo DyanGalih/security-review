@@ -36,11 +36,11 @@ npx security-review validate path/to/report.md
 
 ---
 
-## 2. Install as Spec-Kit Extension
+## 3. Install as Spec-Kit Extension
 
 In the Spec-Kit workflow, the `specify` CLI installs and manages extensions, and the installed commands are executed directly from your AI agent session.
 
-### From Catalog / Registry
+### From a curated catalog containing this extension
 ```bash
 cd /path/to/spec-kit-project
 specify extension add security-review
@@ -61,7 +61,11 @@ specify extension add --dev ~/src/security-review/src
 
 ---
 
-## 3. Verify Installation
+## 4. OpenSpec-Compatible Standalone Installation
+
+Install the CLI, then run `security-review init .` in the OpenSpec project. The installer copies adapter maps to `.security-review/adapters/`; no Spec-Kit manifest is used. Select a change before running artifact-dependent commands when several are active.
+
+## 5. Verify Installation
 
 Check CLI availability:
 ```bash
@@ -72,7 +76,7 @@ sec-review --version
 sr --version
 ```
 
-Check Spec-Kit extension registration:
+Check Spec-Kit extension registration only if installed through `specify`:
 ```bash
 specify extension list
 ```

@@ -26,6 +26,14 @@ These fields describe the review document itself and appear at the top of every 
 | `assessment_kind` | string (enum) | `whitebox-review`, `report-synthesis` | Export-only provenance distinguishing direct source review from synthesis. | No | Export only |
 | `source_artifacts` | string[] | Paths or identifiers | Export-only source reports or artifacts used for synthesis. | No | Export only |
 | `commit_or_branch` | string | Commit, branch, or `unknown` | Export-only source revision provenance. | No | Export only |
+| `reviewed_commit` | string | Commit hash or `unknown` | Exact repository revision reviewed by a full audit. | No | No |
+| `reviewed_branch` | string | Branch name or `unknown` | Branch reviewed by a full audit. | No | No |
+| `working_tree_state` | string (enum) | `clean`, `dirty`, `unknown` | Whether the reviewed checkout had local changes. | No | No |
+| `untracked_files_included` | boolean | `true`, `false` | Whether untracked files were part of the audit scope. | No | No |
+| `exclusions` | string[] | Paths or patterns | Explicitly excluded audit paths. | No | No |
+| `unreadable_areas` | string[] | Paths or descriptions | Areas the audit could not inspect. | No | No |
+| `assessment_narrative` | string | Free text | Provenance-aware executive narrative, especially for report synthesis. | No | No |
+| `cvss_version` | string (enum) | `3.1`, `4.0` | CVSS version used for report-level scoring. | No | No |
 | `coverage_complete` | boolean | `true`, `false` | Whether every planned surface was reviewed and closed. A report that omits completeness is rendered as `false` with the caveat `completeness not recorded`. | No | Yes |
 | `coverage_caveats` | string[] | Free text, one entry per reason | Why the review is incomplete (budget, missing runtime, unavailable credentials, unreviewed paths). | No | When false |
 | `findings_evaluated` | integer | ≥ 0 | Verification-only: total count of findings evaluated during verification, including false positives and accepted risks that are excluded from `total_findings` and the severity counts. | No | No |
@@ -61,7 +69,8 @@ These fields describe the security categories present in the document. They enab
 |---|---|---|---|---|---|
 | `owasp_categories` | string[] | `A01`–`A10` (OWASP Top 10 2025 codes) | List of OWASP categories with at least one finding. Enables queries like "all documents touching injection (A05) or access control (A01)". | Yes (comma-separated) | No |
 | `cwe_ids` | string[] | CWE identifiers, e.g. `CWE-89` | List of CWE IDs referenced in the document. For precise technical filtering in audit workflows. | No | No |
-| `asvs_requirements` | string[] | Verified ASVS identifiers, e.g. `V2.1.1` | ASVS requirements mapped to findings. | No | No |
+| `asvs_version` | string | Version, e.g. `5.0.0`, or `unknown` for legacy mappings with no version evidence | Selected ASVS release for mappings in this report; unknown is explicit and must not be inferred as current. | No | When ASVS mappings are present |
+| `asvs_requirements` | string[] | Verified identifiers, e.g. `v5.0.0-1.2.5`; legacy `V2.1.1` accepted | ASVS requirements mapped to findings. | No | No |
 | `mitre_techniques` | string[] | Verified ATT&CK identifiers, e.g. `T1190` | MITRE ATT&CK techniques mapped to findings. | No | No |
 
 ---
@@ -76,9 +85,11 @@ Each entry of the `findings` array in findings JSON (the input to `security-revi
 | `title` | string | Free text | Short finding title. | Yes |
 | `severity` | string (enum) | `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFORMATIONAL` | Rated severity. | Yes |
 | `category` | string | `AXX:Name` | OWASP Top 10 category. | Yes |
-| `cwe` | string | `CWE-NNN` | CWE identifier. | No |
-| `asvs` | string | `V2.1.1` | ASVS requirement. | No |
+| `cwe` | string | `CWE-NNN` or `CWE-NNN: Name` | CWE identifier; the report-level `cwe_ids` field keeps only the canonical ID. | No |
+| `asvs` | string | `v5.0.0-1.2.5` or legacy `V2.1.1` | Version-qualified ASVS requirement (legacy unqualified IDs remain accepted). | No |
 | `mitre` | string | `T1190` | MITRE ATT&CK technique. | No |
+| `cvssScore` | string | Version-specific CVSS score or vector | Finding's supplied CVSS score/vector. | No |
+| `cvssVersion` | string (enum) | `3.1`, `4.0` | CVSS version for the finding; preserve imported historical versions. | With `cvssScore` |
 | `file` | string | Repo-relative path | Affected file. | No |
 | `lineRange` | string | `34-40` | Affected lines. | No |
 | `description` | string | Markdown | What the weakness is. | Yes |
@@ -115,7 +126,7 @@ These labels appear in each rendered finding block of a Markdown report. Their d
 | `Evidence Provenance` | string (enum) | `tested`, `statically-reviewed`, `source-reported`, `unverified`, `not-assessed` | States how the evidence was obtained and prevents synthesized reports from implying direct source review. |
 | `OWASP Category` | string | `AXX:2025-Name` | OWASP Top 10 2025 category this finding belongs to. |
 | `CWE` | string | `CWE-NNN: Name` | Common Weakness Enumeration identifier with short name. |
-| `CVSS Score` | string | `0.0–10.0 (Severity)` | CVSS v3.1 base score. 9.0–10.0 = Critical, 7.0–8.9 = High, 4.0–6.9 = Medium, 0.1–3.9 = Low. |
+| `CVSS Score` | string | Versioned score or vector | Prefer CVSS 4.0 for new scoring; preserve explicitly versioned historical CVSS 3.1 without conversion. |
 | `Security Task` | string | `TASK-SEC-NNN` | Corresponding task ID for backlog tracking and remediation follow-up (supports legacy `Spec-Kit Task` as alias). |
 
 ---

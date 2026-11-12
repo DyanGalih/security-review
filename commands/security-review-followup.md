@@ -4,7 +4,13 @@ description: 'Create remediation plans or technical-debt tasks from security rev
 
 # Security Review — Follow-Up Planning
 
+## Adapter and Project Configuration Preflight
+
+Before locating planning artifacts, read `.security-review/adapters/resolve.md` (or the package's `adapters/resolve.md`) and its selected Spec-Kit, OpenSpec, or generic adapter. For an extension-only Spec-Kit installation where neither adapter file was installed, use the native `.specify/memory/security_constitution.md` and active `specs/{feature}/` artifacts instead; ask when the feature is ambiguous. Honor the persisted Architecture Guard selection when present; otherwise use unambiguous markers. Resolve one active change or feature and its concrete `tasks`, `plan`, and `spec` paths through the adapter when checking existing work; ask for selection or explicit paths when ambiguous. Do not infer an OpenSpec change from a capability name. Read `.security-review/security-review.yml` or a legacy root `security-review.yml` when present; validate its `security-review` mapping and report the settings used. Revalidate configured false positives against current evidence. Configuration is agent guidance, not hidden CLI enforcement or approval to mutate artifacts.
+
 ## User Input
+
+Apply supported `security-review` settings from the resolved configuration: `exclude`, `exclude-files`, `focus`, `min-severity`, and `output`. Report which values affected scope and output, and list excluded or unreadable areas as coverage limitations; a configured false positive is only historical evidence and must be rechecked before suppression.
 
 $ARGUMENTS
 
@@ -91,28 +97,12 @@ Before planning follow-ups, check the Flash-Mem context.
 
 When memory configuration has `optimizer.enabled: true` and the CLI is available:
 
-1. **Prepare Context**: Execute `flash-mem prepare-context --feature specs/<feature> --query "security constraints vulnerabilities authentication authorization data-leakage"`.
-2. **Read Synthesis**: Read `specs/<feature>/memory-synthesis.md` (or the search results) first.
+1. **Prepare Context**: Execute `flash-mem prepare-context --feature <adapter-resolved-active-path> --query "security constraints vulnerabilities authentication authorization data-leakage"`.
+2. **Read Synthesis**: Read the returned synthesis or search results first.
 
 ### Markdown-Only Flow
 
-When the optimizer is disabled or unavailable, you **MUST** read these files explicitly using your file-reading tools (absolute or relative paths). Do not rely solely on workspace search or semantic indexers, as these files are often in `.gitignore`:
-
-- recent security review reports or pasted findings
-- `tasks.md`
-- `plan.md` or `design.md`
-- `spec.md` or `proposal.md`
-- `research.md`
-- `data-model.md`
-- `contracts/`
-- `quickstart.md`
-- `docs/memory/INDEX.md`
-- `docs/memory/`
-- `constitution.md` or `security_constitution.md`
-- `specs/<feature>/memory.md`
-- `specs/<feature>/memory-synthesis.md`
-- `.github/copilot-instructions.md` or `AGENTS.md`
-- Other project memory or architecture notes
+When the optimizer is disabled or unavailable, explicitly read recent reports or supplied findings and the adapter-resolved `tasks`, `plan`, `spec`, and security constitution where relevant. Read additional memory and agent guidance at the paths actually used by this project; do not require Spec-Kit directories. Read known ignored files directly rather than relying only on search.
 
 ## What to Check
 
@@ -147,7 +137,7 @@ Use `Already covered` only when current evidence identifies an active task or co
 ## Steps
 
 1. Read the latest security review findings or the finding list provided in `$ARGUMENTS`.
-2. Read `tasks.md` and any related planning artifacts to identify unfinished security work.
+2. Read the adapter-resolved `tasks` and related planning artifacts to identify unfinished security work.
 3. Compare the findings against the current task backlog and Flash-Mem context.
 4. Group the findings into immediate remediation, technical debt, and already-covered items.
 5. Generate structured follow-up tasks for the items that should be implemented now.
@@ -174,7 +164,8 @@ low_count: <integer>
 informational_count: <integer>
 owasp_categories: [<A01>, <A05>, ...]
 cwe_ids: [<CWE-89>, ...]
-asvs_requirements: [<V2.1.1>, ...]
+asvs_version: <selected version, e.g. 5.0.0, or unknown for legacy identifiers without version evidence>
+asvs_requirements: [<v5.0.0-1.2.5>, ...]
 mitre_techniques: [<T1190>, ...]
 coverage_complete: <true|false>
 coverage_caveats: [<reason the review is incomplete>, ...]  # required when coverage_complete is false
@@ -198,7 +189,7 @@ field_summaries:
   location: "Artifact or code path and line number supporting the finding (path/to/artifact:line)."
   owasp_category: "OWASP Top 10 2025 category for this finding (AXX:2025-Name)."
   cwe: "Common Weakness Enumeration identifier with short name (CWE-NNN: Name)."
-  cvss_score: "CVSS v3.1 base score (0.0-10.0). 9.0+=Critical, 7.0-8.9=High, 4.0-6.9=Medium, 0.1-3.9=Low."
+  cvss_score: "Versioned CVSS score or vector; new assessments prefer CVSS 4.0. Preserve explicitly versioned historical CVSS 3.1 values."
   security_task: "Security task ID for backlog tracking and remediation follow-up (TASK-SEC-NNN). Supports legacy spec_kit_task as alias."
 ---
 ````
@@ -274,4 +265,3 @@ To turn these follow-up findings into a dedicated SDD change or auto-inject them
    ```bash
    security-review tasks --input findings.json --append
    ```
-

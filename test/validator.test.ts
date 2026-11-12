@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { readFile, writeFile, unlink, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
+import yaml from 'js-yaml';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -143,6 +144,31 @@ overall_risk: NONE`;
     expect(issue?.message).toContain('audit, branch, staged, plan, tasks, followup, export, verify');
   });
 
+  it('accepts version-qualified ASVS 5 identifiers and preserves legacy ASVS 4 values', async () => {
+    const valid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\nasvs_version: 5.0.0\nasvs_requirements: [v5.0.0-1.2.5, V2.1.1]`);
+    expect(valid.valid).toBe(true);
+
+    const invalid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\nasvs_version: 5.0.0\nasvs_requirements: [V5.0.0-1.2.5]`);
+    expect(invalid.issues.some((issue) => issue.field === 'asvs_requirements')).toBe(true);
+  });
+
+  it('accepts explicit unknown ASVS version only as provenance for preserved legacy mappings', async () => {
+    const legacy = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\nasvs_version: unknown\nasvs_requirements: [V2.1.1]`);
+    expect(legacy.valid).toBe(true);
+    const invalid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\nasvs_version: v5\nasvs_requirements: [V2.1.1]`);
+    expect(invalid.issues.some((issue) => issue.field === 'asvs_version')).toBe(true);
+  });
+
+  it('validates the published CWE, ASVS, and MITRE frontmatter fields', async () => {
+    const valid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\nasvs_version: 5.0.0\ncwe_ids: [CWE-89]\nasvs_requirements: [v5.0.0-1.2.5]\nmitre_techniques: [T1190]`);
+    expect(valid.valid).toBe(true);
+
+    for (const [field, value] of [['cwe_ids', 'invalid'], ['asvs_requirements', 'v5.0-1.2.5'], ['mitre_techniques', 'bad']]) {
+      const invalid = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}\ncoverage_complete: true\nasvs_version: 5.0.0\n${field}: [${value}]`);
+      expect(invalid.issues.some((issue) => issue.field === field)).toBe(true);
+    }
+  });
+
   it('requires coverage_complete and caveats when the review is incomplete', async () => {
     const missing = await validateFrontmatter(`document_type: security-review\nreview_type: audit\n${baseCounts}`);
     expect(missing.valid).toBe(false);
@@ -183,6 +209,91 @@ overall_risk: NONE`;
     expect(header).toBeDefined();
     for (const field of ['total_findings', 'overall_risk', 'critical_count', 'high_count', 'medium_count', 'low_count']) {
       expect(header).toContain(`${field}:`);
+    }
+  });
+
+  it('validates populated headers extracted from every report-producing command', async () => {
+    const commands = [
+      ['security-audit.md', 'audit'],
+      ['security-review-branch.md', 'branch'],
+      ['security-review-staged.md', 'staged'],
+      ['security-review-plan.md', 'plan'],
+      ['security-review-tasks.md', 'tasks'],
+      ['security-review-followup.md', 'followup'],
+      ['security-review-export.md', 'export'],
+      ['security-verify.md', 'verify'],
+    ];
+    for (const [file, type] of commands) {
+      const prompt = await readFile(join(__dirname, '../commands', file), 'utf8');
+      const headerSection = prompt.split('## Document Header')[1] ?? '';
+      const headerBlock = headerSection.match(/(`{3,4})yaml\r?\n([\s\S]*?)\r?\n\1/)?.[2];
+      expect(headerBlock, `${file} contains a YAML header`).toBeDefined();
+      const headerBody = headerBlock!.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1];
+      expect(headerBody, `${file} contains frontmatter`).toBeDefined();
+      const metadata = yaml.load(headerBody!) as Record<string, unknown>;
+      expect(metadata.review_type).toBe(type);
+      Object.assign(metadata, {
+        document_type: 'security-review', assessment_date: '2026-11-11', codebase_analyzed: 'sample',
+        total_files_analyzed: 0, total_findings: 0, overall_risk: 'NONE', critical_count: 0,
+        high_count: 0, medium_count: 0, low_count: 0, informational_count: 0,
+        owasp_categories: [], cwe_ids: [], asvs_version: '5.0.0',
+        asvs_requirements: ['v5.0.0-1.2.5'], mitre_techniques: [], cvss_version: '4.0',
+        reviewed_commit: 'unknown', reviewed_branch: 'unknown', working_tree_state: 'clean',
+        untracked_files_included: false, exclusions: [], unreadable_areas: [],
+        coverage_complete: true, coverage_caveats: [],
+      });
+      if (type === 'export') Object.assign(metadata, {
+        assessment_kind: 'report-synthesis', source_artifacts: ['source.md'], commit_or_branch: 'main',
+      });
+      if (type === 'verify') Object.assign(metadata, {
+        findings_evaluated: 0, confirmed_count: 0, false_positive_count: 0,
+        fix_suggestion_count: 0, mitigated_count: 0, accepted_risk_count: 0, e2e_verified: false,
+      });
+      const result = await validateFrontmatter(JSON.stringify(metadata));
+      expect(result.valid, `${file}: ${JSON.stringify(result.issues)}`).toBe(true);
+    }
+  });
+
+  it('parses and validates a populated header extracted from the full-audit prompt', async () => {
+    const prompt = await readFile(join(__dirname, '../commands/security-audit.md'), 'utf8');
+    const block = prompt.match(/````yaml\r?\n([\s\S]*?)\r?\n````/)?.[1];
+    expect(block).toBeDefined();
+    const frontmatterText = block!.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1];
+    expect(frontmatterText).toBeDefined();
+    const metadata = yaml.load(frontmatterText!) as Record<string, unknown>;
+    Object.assign(metadata, {
+      assessment_date: '2026-11-11',
+      codebase_analyzed: 'sample',
+      total_files_analyzed: 0,
+      total_findings: 0,
+      overall_risk: 'NONE',
+      critical_count: 0,
+      high_count: 0,
+      medium_count: 0,
+      low_count: 0,
+      informational_count: 0,
+      owasp_categories: [],
+      cwe_ids: [],
+      asvs_version: '5.0.0',
+      asvs_requirements: ['v5.0.0-1.2.5'],
+      mitre_techniques: [],
+      cvss_version: '4.0',
+      reviewed_commit: 'unknown',
+      reviewed_branch: 'unknown',
+      working_tree_state: 'clean',
+      untracked_files_included: false,
+      exclusions: [],
+      unreadable_areas: [],
+      coverage_complete: true,
+      coverage_caveats: [],
+    });
+    const reportPath = join(tmpdir(), `test-audit-template-${randomUUID()}.md`);
+    await writeFile(reportPath, `---\n${JSON.stringify(metadata, null, 2)}\n---\n# Audit\n`, 'utf8');
+    try {
+      const result = await validateReportFrontmatter(reportPath);
+      expect(result.valid, JSON.stringify(result.issues)).toBe(true);
+    } finally {
+      await unlink(reportPath);
     }
   });
 
@@ -231,5 +342,63 @@ fix_suggestion_count: "1"
     const quotedCount = await validateReportFrontmatter(tmpPath);
     await unlink(tmpPath);
     expect(quotedCount.issues.some((i) => i.field === 'fix_suggestion_count')).toBe(true);
+  });
+
+  it('should require asvs_version when asvs_requirements is present', async () => {
+    const tmpPath = join(tmpdir(), `test-missing-asvs-version-${Date.now()}.md`);
+    await writeFile(
+      tmpPath,
+      `---
+document_type: security-review
+review_type: audit
+total_findings: 0
+critical_count: 0
+high_count: 0
+medium_count: 0
+low_count: 0
+overall_risk: NONE
+coverage_complete: true
+asvs_requirements:
+  - v5.0.0-1.2.5
+---
+# Content
+`,
+      'utf8'
+    );
+
+    const result = await validateReportFrontmatter(tmpPath);
+    await unlink(tmpPath);
+
+    expect(result.valid).toBe(false);
+    expect(result.issues.some((i) => i.field === 'asvs_version' && i.message.includes('required when asvs_requirements is present'))).toBe(true);
+  });
+
+  it('should accept lowercase legacy ASVS requirement identifiers', async () => {
+    const tmpPath = join(tmpdir(), `test-lowercase-asvs-${Date.now()}.md`);
+    await writeFile(
+      tmpPath,
+      `---
+document_type: security-review
+review_type: audit
+total_findings: 0
+critical_count: 0
+high_count: 0
+medium_count: 0
+low_count: 0
+overall_risk: NONE
+coverage_complete: true
+asvs_version: unknown
+asvs_requirements:
+  - v2.1.1
+---
+# Content
+`,
+      'utf8'
+    );
+
+    const result = await validateReportFrontmatter(tmpPath);
+    await unlink(tmpPath);
+
+    expect(result.valid).toBe(true);
   });
 });

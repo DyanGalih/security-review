@@ -31,12 +31,12 @@ Security Review delivers token-budgeted, multi-agent security intelligence by sp
 │            │                                                           │
 │            ├──▶ .agent/skills/         (Antigravity)                   │
 │            ├──▶ .claude/skills/        (Claude Code)                   │
-│            ├──▶ .cursor/rules/         (Cursor)                        │
+│            ├──▶ .cursor/skills/        (Cursor)                        │
 │            ├──▶ .opencode/commands/    (OpenCode)                      │
 │            ├──▶ .codex/skills/         (Codex CLI)                     │
 │            ├──▶ .gemini/commands/      (Gemini Code Assist)            │
 │            ├──▶ .goose/recipes/        (Goose CLI)                     │
-│            └──▶ .windsurf/rules/       (Windsurf)                      │
+│            └──▶ .windsurf/workflows/   (Windsurf)                      │
 │                                                                        │
 │   Slash Command Execution:                                             │
 │   /sr-audit, /sr-staged, /sr-branch, /sr-plan, /sr-tasks, /sr-apply     │
@@ -53,25 +53,26 @@ Security Review delivers token-budgeted, multi-agent security intelligence by sp
 
 ## 3. Command Catalog & Prefix Mapping
 
-All commands are provisioned with standardized short prefixes (`sr-*`) and support canonical alias mappings:
+Standalone installation provisions `sr-*` commands; the Spec-Kit extension separately registers `speckit.security-review.*` identifiers. The catalog below shows installed standalone names:
 
-| Command | Short Prefix | Standalone Alias | Purpose |
-|---|---|---|---|
-| `security-audit` | `sr-audit` | `security-review`, `audit` | Full repository security audit |
-| `security-review-staged` | `sr-staged` | `staged` | Pre-commit staged diff review |
-| `security-review-branch` | `sr-branch` | `branch` | Feature branch / PR diff review |
-| `security-review-plan` | `sr-plan` | `plan` | Technical plan & architecture review |
-| `security-review-tasks` | `sr-tasks` | `tasks` | Implementation tasks review |
-| `security-review-followup`| `sr-followup` | `followup` | Findings to backlog conversion |
-| `security-review-apply` | `sr-apply` | `apply` | Apply approved tasks to `tasks.md` |
-| `security-review-export`| `sr-export` | `export` | Formal pentest report synthesis |
-| `init` | `sr-init` | `init` | Security constitution initialization |
+| Command | Installed name | Purpose |
+|---|---|---|
+| `security-audit` | `sr-audit` | Full repository security audit |
+| `security-review-staged` | `sr-staged` | Pre-commit staged diff review |
+| `security-review-branch` | `sr-branch` | Feature branch / PR diff review |
+| `security-review-plan` | `sr-plan` | Technical plan review |
+| `security-review-tasks` | `sr-tasks` | Implementation tasks review |
+| `security-review-followup` | `sr-followup` | Findings to backlog conversion |
+| `security-review-apply` | `sr-apply` | Apply approved tasks to resolved artifacts |
+| `security-review-export` | `sr-export` | Formal report synthesis |
+| `security-verify` | `sr-verify` | Finding verification |
+| `init` | `sr-init` | Security constitution initialization |
 
 ---
 
 ## 4. Spec-Kit Compatibility Layer
 
-To maintain 100% backward compatibility for projects built on Spec-Kit:
+For projects using a supported Spec-Kit extension installation:
 - `src/extension.yml` defines the extension manifest.
 - Upstream command names like `speckit.security-review.audit` map directly to `commands/security-audit.md`.
 - Lifecycle hooks (`after_plan`, `after_tasks`, `after_implement`) are declared and functional.
@@ -86,7 +87,7 @@ Every generated security review output starts with a strict YAML frontmatter blo
 ```yaml
 ---
 document_type: security-review
-review_type: <audit|staged|branch|plan|tasks|export>
+review_type: <audit|staged|branch|plan|tasks|followup|export|verify>
 assessment_date: "2026-08-19"
 codebase_analyzed: "src/"
 total_files_analyzed: 14
@@ -100,6 +101,7 @@ informational_count: 0
 owasp_categories: [A01, A05]
 cwe_ids: [CWE-89, CWE-285]
 security_task: TASK-SEC-001
+coverage_complete: true
 ---
 ```
 

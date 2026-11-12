@@ -22,8 +22,11 @@ security-review <command> [options]
 
 ## 3. Commands
 
+`security-review.yml` is a prompt policy for agent review commands. CLI `diff` and `scan` do not automatically apply its exclusions, severity thresholds, or false-positive records; reviewers must report which settings they used and revalidate suppressions.
+Full-project audits include dependency lockfiles by default. If a review explicitly excludes one, record that supply-chain coverage limitation.
+
 ### `init`
-Installs Security Review prompt templates and skills into the target workspace for selected AI coding agents, provisions `security-review.yml`, and configures `AGENTS.md`.
+Installs Security Review prompt templates, adapter maps under `.security-review/adapters/`, and configuration in the target workspace for selected AI coding agents. This standalone installer does not install a Spec-Kit extension.
 
 ```bash
 # Interactive setup in current directory
@@ -36,7 +39,7 @@ security-review init . --yes --agent antigravity,claude
 security-review init /path/to/project --yes --agent all
 
 # Specify individual commands and overwrite behavior
-security-review init . --yes --agent cursor-agent,opencode --commands security-review,security-review-staged --overwrite replace
+security-review init . --yes --agent cursor-agent,opencode --commands security-audit,security-review-staged --overwrite replace
 ```
 
 **Options:**
@@ -44,7 +47,7 @@ security-review init . --yes --agent cursor-agent,opencode --commands security-r
 - `-y, --yes`: Non-interactive mode (uses defaults or supplied flags without prompting).
 - `--agent <names>`: Comma-separated list of agent keys (`antigravity`, `claude`, `cursor-agent`, `opencode`, `codex`, `copilot`, `gemini`, `windsurf`, `cline`, etc., or `all`).
 - `--commands <list>`: Comma-separated list of command keys (`security-audit`, `security-review-staged`, `security-review-branch`, `security-review-plan`, `security-review-tasks`, `security-review-followup`, `security-review-apply`, `security-review-export`, `security-verify`, `init`, or `all`).
-- `--overwrite <mode>`: Overwrite strategy when target files exist (`replace` | `skip` | `keep-both`). Default in `--yes` mode is `replace`.
+- `--overwrite <mode>`: Prompt overwrite strategy (`replace` | `skip` | `keep-both`); prompts default to `replace`. Existing local adapter maps are preserved unless `replace` is explicitly requested.
 
 ---
 
@@ -136,7 +139,7 @@ security-review tasks --input findings.json --target tasks.md --append
 
 **Options:**
 - `--input <file>`: Path to the JSON findings file (required).
-- `--target <file>`: Path to `tasks.md` file (if omitted, auto-detects active OpenSpec or Spec-Kit tasks target).
+- `--target <file>`: Explicit task artifact path. If omitted, the legacy CLI guesses an active target; specify it when several changes or features exist.
 - `--append`: Appends tasks to existing file without overwriting.
 
 ---
@@ -145,7 +148,7 @@ security-review tasks --input findings.json --target tasks.md --append
 Provides SDD framework auto-detection and automated change proposal generation from security findings.
 
 #### `sdd status`
-Inspects workspace and identifies active SDD framework (`OpenSpec`, `Spec-Kit`, or `Generic`) along with resolved active change paths.
+Inspects workspace and heuristically identifies an SDD framework (`OpenSpec`, `Spec-Kit`, or `Generic`). The legacy CLI may select the first OpenSpec change; select concrete artifact paths before writes.
 
 ```bash
 # Display framework status
@@ -156,7 +159,7 @@ security-review sdd status --json
 ```
 
 #### `sdd propose`
-Generates a complete SDD change directory (`proposal.md`, `spec.md`, `design.md`, `tasks.md`) directly from a findings JSON file.
+Generates draft SDD change files from findings JSON. This legacy operation does not validate the generated artifacts against the selected SDD schema and may overwrite an existing change; inspect its target and validate drafts before use.
 
 ```bash
 # Auto-detect framework and generate remediation change package
@@ -186,7 +189,7 @@ Enforces:
 - Canonical risk levels (`CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFORMATIONAL`, `NONE`)
 - Non-negative integer count totals
 - ISO date formats (`YYYY-MM-DD`)
-- Standard identifier patterns (OWASP `A01-A10`, CWE `CWE-\d+`, ASVS `V\d+`, MITRE `T\d+`)
+- Standard identifier patterns (OWASP `A01-A10`, CWE `CWE-\d+`, version-qualified ASVS `v5.0.0-1.2.5` or legacy `V2.1.1`, MITRE `T\d+`)
 - Export provenance fields for `review_type: export` (`assessment_kind`, `source_artifacts`, `commit_or_branch`)
 
 ---

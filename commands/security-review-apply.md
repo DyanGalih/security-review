@@ -4,6 +4,10 @@ description: 'Apply approved security follow-up items into planning and task art
 
 # Security Review - Apply Follow-Ups
 
+## Adapter and Project Configuration Preflight
+
+Before reading or writing planning artifacts, read `.security-review/adapters/resolve.md` (or the package's `adapters/resolve.md`) and its selected Spec-Kit, OpenSpec, or generic adapter. For an extension-only Spec-Kit installation where neither adapter file was installed, use the native `.specify/memory/security_constitution.md` and active `specs/{feature}/` artifacts instead; ask when the feature is ambiguous. Honor the persisted Architecture Guard selection when present; otherwise use unambiguous markers. Resolve one active change or feature and its concrete `tasks`, `plan`, and `spec` paths through the adapter; ask for selection or explicit paths when ambiguous. Do not infer an OpenSpec change from a capability name. Read `.security-review/security-review.yml` or a legacy root `security-review.yml` when present; validate its `security-review` mapping and report the settings used. Revalidate configured false positives against current evidence. Configuration is agent guidance, not hidden CLI enforcement or approval to mutate artifacts.
+
 ## User Input
 
 $ARGUMENTS
@@ -16,8 +20,8 @@ If `flash-mem` is available, use `flash-mem prepare-context` and the canonical m
 Use this command when you want to:
 
 - turn security findings into concrete backlog updates
-- add new security tasks to `tasks.md`
-- update `plan.md` (or `design.md`) only when a security decision, acceptance criterion, or sequencing rule must change
+- add new security tasks to the adapter-resolved task artifact
+- update the adapter-resolved plan only when a security decision, acceptance criterion, or sequencing rule must change
 - preserve the existing project workflow instead of replacing it
 
 Treat only user-approved follow-up items as authorized mutations. If the user does not provide or identify an approved finding set or follow-up plan, locate candidates but present them for approval before editing.
@@ -91,28 +95,12 @@ Before applying updates, check the Flash-Mem context.
 
 When memory configuration has `optimizer.enabled: true` and the CLI is available:
 
-1. **Prepare Context**: Execute `flash-mem prepare-context --feature specs/<feature> --query "security constraints vulnerabilities authentication authorization data-leakage"`.
-2. **Read Synthesis**: Read `specs/<feature>/memory-synthesis.md` (or the search results) first.
+1. **Prepare Context**: Execute `flash-mem prepare-context --feature <adapter-resolved-active-path> --query "security constraints vulnerabilities authentication authorization data-leakage"`.
+2. **Read Synthesis**: Read the returned synthesis or search results first.
 
 ### Markdown-Only Flow
 
-When the optimizer is disabled or unavailable, you **MUST** read these files explicitly using your file-reading tools (absolute or relative paths). Do not rely solely on workspace search or semantic indexers, as these files are often in `.gitignore`:
-
-- latest security review findings or follow-up plan
-- `tasks.md`
-- `plan.md` or `design.md`
-- `spec.md` or `proposal.md`
-- `research.md`
-- `data-model.md`
-- `contracts/`
-- `quickstart.md`
-- `docs/memory/INDEX.md`
-- `docs/memory/`
-- `constitution.md` or `security_constitution.md`
-- `specs/<feature>/memory.md`
-- `specs/<feature>/memory-synthesis.md`
-- `.github/copilot-instructions.md` or `AGENTS.md`
-- Other project memory or architecture notes
+When the optimizer is disabled or unavailable, explicitly read the approved findings or follow-up plan and the adapter-resolved `tasks`, `plan`, `spec`, and security constitution. Read additional research, memory, and agent guidance at the paths actually used by this project; do not require Spec-Kit directories. Read known ignored files directly rather than relying only on search.
 
 ## What to Check
 
@@ -120,13 +108,13 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 - Security tasks are added in a way that preserves existing task sequencing
 - High-severity issues remain prioritized for immediate remediation
 - Deferred items stay clearly marked as technical debt when appropriate
-- `plan.md` (or `design.md`) only changes when the security design or sequencing needs to change
+- the adapter-resolved plan only changes when the security design or sequencing needs to change
 - The resulting artifacts remain testable and reviewable
 - The update preserves the intent of the Flash-Mem context and the current implementation
 
 ## Apply Rules
 
-1. Prefer updating `tasks.md` over `plan.md` (or `design.md`) unless the plan itself needs a security correction.
+1. Prefer updating the adapter-resolved tasks over the plan unless the plan itself needs a security correction.
 2. Keep changes minimal and scoped to the security follow-up items.
 3. Preserve existing formatting, headings, and task numbering style.
 4. Add only the backlog entries that are necessary for the approved security items.
@@ -136,11 +124,11 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 ## Steps
 
 1. Read the latest security review findings or follow-up plan provided in `$ARGUMENTS`.
-2. Read `tasks.md`, `plan.md` (or `design.md`), and related planning artifacts to understand the current backlog.
+2. Read the adapter-resolved `tasks`, `plan`, and related artifacts to understand the current backlog.
 3. Compare the findings against the current task backlog and Flash-Mem context.
 4. Identify which items should become new tasks, which belong in technical debt, and which are already covered.
-5. Update `tasks.md` with any approved security tasks.
-6. Update `plan.md` (or `design.md`) only if the security design or sequencing needs to change.
+5. Update the adapter-resolved `tasks` artifact with any approved security tasks.
+6. Update the adapter-resolved `plan` only if the security design or sequencing needs to change.
 7. Summarize the files changed and the rationale for each change.
 8. If Architecture Guard is available, resolve its selected adapter, apply Ponytail, and run the post-change architecture review for boundary drift, DRY violations, and repository hygiene. Report the result; if unavailable, report the skipped integration.
 9. **Durable Memory Preservation**: If durable lessons exist, ask for authorization before capturing them with any backend.

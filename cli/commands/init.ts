@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const status = (message: string) => process.stdout.write(message + '\n');
+
 // Find package root (handles dev /src and compiled /dist)
 function findPackageRoot(): string {
   const candidates = [
@@ -112,7 +114,7 @@ async function ask(promptText: string, choices?: any[], multi = false): Promise<
     return await input({ message });
   } catch (error: any) {
     if (error?.name === 'ExitPromptError' || error?.message?.includes('User force closed the prompt')) {
-      console.log('\nInitialization aborted.');
+      status('\nInitialization aborted.');
       process.exit(0);
     }
     throw error;
@@ -242,13 +244,13 @@ ${agentList}
     const current = fs.readFileSync(agentsPath, 'utf8');
     if (!current.includes('## Security Review')) {
       fs.appendFileSync(agentsPath, preamble, 'utf8');
-      console.log(`  ✓ Appended rules to AGENTS.md`);
+      status(`  ✓ Appended rules to AGENTS.md`);
     } else {
-      console.log(`  → AGENTS.md already has Security Review rules, skipped`);
+      status(`  → AGENTS.md already has Security Review rules, skipped`);
     }
   } else {
     fs.writeFileSync(agentsPath, preamble.trimStart(), 'utf8');
-    console.log(`  ✓ Created AGENTS.md with Security Review rules`);
+    status(`  ✓ Created AGENTS.md with Security Review rules`);
   }
 }
 
@@ -265,14 +267,30 @@ export function provisionConfigTemplate(pkgRoot: string, targetDir: string): voi
   fs.mkdirSync(secReviewDir, { recursive: true });
 
   if (fs.existsSync(configDest)) {
-    console.log(`  → .security-review/security-review.yml already exists, skipped`);
+    status(`  → .security-review/security-review.yml already exists, skipped`);
   } else if (fs.existsSync(legacyDest)) {
     fs.copyFileSync(legacyDest, configDest);
-    console.log(`  ✓ Migrated config from security-review.yml to .security-review/security-review.yml`);
+    status(`  ✓ Migrated config from security-review.yml to .security-review/security-review.yml`);
   } else {
     fs.copyFileSync(configSource, configDest);
-    console.log(`  ✓ Created default config at .security-review/security-review.yml`);
+    status(`  ✓ Created default config at .security-review/security-review.yml`);
   }
+}
+
+function provisionAdapters(pkgRoot: string, targetDir: string, overwrite: InitOptions['overwrite']): string[] {
+  const sourceDir = path.join(pkgRoot, 'adapters');
+  const target = path.join(targetDir, '.security-review', 'adapters');
+  const installed: string[] = [];
+  for (const name of ['resolve.md', 'spec-kit.md', 'openspec.md', 'generic.md']) {
+    const source = path.join(sourceDir, name);
+    if (!fs.existsSync(source)) throw new Error(`Missing packaged adapter: ${source}`);
+    const destination = path.join(target, name);
+    if (fs.existsSync(destination) && overwrite !== 'replace') continue;
+    fs.mkdirSync(target, { recursive: true });
+    fs.copyFileSync(source, destination);
+    installed.push(destination);
+  }
+  return installed;
 }
 
 export async function runInitCommand(
@@ -291,7 +309,7 @@ export async function runInitCommand(
     fs.mkdirSync(targetDir, { recursive: true });
   }
 
-  console.log(`\n🛡️  Initializing Security Review in ${targetDir}\n`);
+  status(`\n🛡️  Initializing Security Review in ${targetDir}\n`);
 
   // Detect which agents already exist in the target directory
   const allAgentNames = Object.keys(AGENT_CONFIGS).sort();
@@ -332,7 +350,7 @@ export async function runInitCommand(
 
     selectedAgents = await ask('Select AI agent(s) to install commands for:', agentChoices, true);
     if (!selectedAgents || selectedAgents.length === 0) {
-      console.log('No agents selected. Exiting.');
+      status('No agents selected. Exiting.');
       return { success: false, installedFiles: [] };
     }
   }
@@ -380,7 +398,7 @@ export async function runInitCommand(
     if (!agentCfg) continue;
 
     const baseAgentDir = path.join(targetDir, agentCfg.dir);
-    console.log(`\n📦 Installing for agent [${agentKey}] → ${agentCfg.dir}`);
+    status(`\n📦 Installing for agent [${agentKey}] → ${agentCfg.dir}`);
 
     for (const cmdKey of selectedCommands) {
       const promptFile = COMMAND_CATALOG[cmdKey];
@@ -394,7 +412,7 @@ export async function runInitCommand(
 
       if (fs.existsSync(dest)) {
         if (overwriteMode === 'skip') {
-          console.log(`  → ${getCommandPrefix(cmdKey)}: skipped (file exists)`);
+          status(`  → ${getCommandPrefix(cmdKey)}: skipped (file exists)`);
           continue;
         } else if (overwriteMode === 'keep-both') {
           dest = availableCopy(dest, agentCfg, cmdKey, baseAgentDir);
@@ -412,15 +430,16 @@ export async function runInitCommand(
       }
 
       installedFiles.push(dest);
-      console.log(`  ✓ ${getCommandPrefix(cmdKey)} → ${path.relative(targetDir, dest)}`);
+      status(`  ✓ ${getCommandPrefix(cmdKey)} → ${path.relative(targetDir, dest)}`);
     }
   }
 
-  console.log('\n📄 Provisioning Project Governance Artifacts:');
+  status('\n📄 Provisioning Project Governance Artifacts:');
   provisionConfigTemplate(pkgRoot, targetDir);
+  installedFiles.push(...provisionAdapters(pkgRoot, targetDir, options.overwrite));
   appendAgentsMd(targetDir, selectedAgents);
 
-  console.log('\n✅ Security Review initialization complete.\n');
+  status('\n✅ Security Review initialization complete.\n');
 
   return { success: true, installedFiles };
 }

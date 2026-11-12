@@ -1,13 +1,19 @@
 import {
+  ASVS_REGEX,
   CLOSURE_FINDING_FIELDS,
   COMPLETENESS_NOT_RECORDED,
   CONFIDENCE_LEVELS,
   COVERAGE_OUTCOMES,
   COVERAGE_OUTCOMES_REQUIRING_EVIDENCE,
+  CVSS_VERSIONS,
+  CWE_REGEX,
+  FINDING_CWE_REGEX,
   FINDING_SEVERITIES,
+  MITRE_REGEX,
   OVERALL_RISKS,
   REVIEW_TYPES,
   VERIFICATION_STATUSES,
+  WORKING_TREE_STATES,
 } from './schema.js';
 import type { CoverageEntry, FindingItem, FindingsReport } from './types.js';
 
@@ -62,6 +68,24 @@ function validateFinding(finding: Record<string, unknown>, label: string, errors
   }
   if (!isNonEmptyString(finding.description)) {
     errors.push(`${label}: description is required`);
+  }
+  if (finding.cwe !== undefined && (typeof finding.cwe !== 'string' || !FINDING_CWE_REGEX.test(finding.cwe))) {
+    errors.push(`${label}: cwe must match CWE pattern (e.g. CWE-89 or CWE-89: SQL Injection)`);
+  }
+  if (finding.asvs !== undefined && (typeof finding.asvs !== 'string' || !ASVS_REGEX.test(finding.asvs))) {
+    errors.push(`${label}: asvs must match ASVS requirement pattern (e.g. v5.0.0-1.2.5 or V2.1.1)`);
+  }
+  if (finding.mitre !== undefined && (typeof finding.mitre !== 'string' || !MITRE_REGEX.test(finding.mitre))) {
+    errors.push(`${label}: mitre must match MITRE ATT&CK technique pattern (e.g. T1190)`);
+  }
+  if (finding.cvssScore !== undefined && !isNonEmptyString(finding.cvssScore)) {
+    errors.push(`${label}: cvssScore must be a non-empty string`);
+  }
+  if (finding.cvssVersion !== undefined && !oneOf(CVSS_VERSIONS, finding.cvssVersion)) {
+    errors.push(`${label}: cvssVersion must be 3.1 or 4.0`);
+  }
+  if (finding.cvssScore !== undefined && finding.cvssVersion === undefined) {
+    errors.push(`${label}: cvssVersion is required when cvssScore is present`);
   }
 
   if (finding.verificationStatus !== undefined && !oneOf(VERIFICATION_STATUSES, finding.verificationStatus)) {
@@ -186,6 +210,53 @@ export function parseFindingsReport(raw: string): ParsedFindings {
 
   const completeness = resolveCompleteness(base);
   if (completeness.error) errors.push(completeness.error);
+
+  const validateStringArray = (field: string, regex?: RegExp, name?: string) => {
+    if (base[field] === undefined) return;
+    if (!Array.isArray(base[field])) {
+      errors.push(`${field}: must be an array`);
+      return;
+    }
+    base[field].forEach((item: unknown, idx: number) => {
+      if (!isNonEmptyString(item)) {
+        errors.push(`${field}[${idx}]: must be a non-empty string`);
+      } else if (regex && !regex.test(item)) {
+        errors.push(`${field}[${idx}]: "${item}" does not match ${name ?? field} pattern`);
+      }
+    });
+  };
+
+  validateStringArray('asvs_requirements', ASVS_REGEX, 'ASVS');
+  validateStringArray('mitre_techniques', MITRE_REGEX, 'MITRE ATT&CK');
+  validateStringArray('cwe_ids', CWE_REGEX, 'CWE');
+  validateStringArray('exclusions');
+  validateStringArray('unreadable_areas');
+  validateStringArray('source_artifacts');
+
+  if (base.assessment_narrative !== undefined && typeof base.assessment_narrative !== 'string') {
+    errors.push('assessment_narrative: must be a string');
+  }
+  if (base.untracked_files_included !== undefined && typeof base.untracked_files_included !== 'boolean') {
+    errors.push('untracked_files_included: must be a boolean');
+  }
+  if (base.working_tree_state !== undefined && !oneOf(WORKING_TREE_STATES, base.working_tree_state)) {
+    errors.push(`working_tree_state: must be one of ${WORKING_TREE_STATES.join(', ')}`);
+  }
+  if (base.reviewed_commit !== undefined && typeof base.reviewed_commit !== 'string') {
+    errors.push('reviewed_commit: must be a string');
+  }
+  if (base.reviewed_branch !== undefined && typeof base.reviewed_branch !== 'string') {
+    errors.push('reviewed_branch: must be a string');
+  }
+  if (base.commit_or_branch !== undefined && typeof base.commit_or_branch !== 'string') {
+    errors.push('commit_or_branch: must be a string');
+  }
+  if (base.asvs_version !== undefined && (typeof base.asvs_version !== 'string' || (base.asvs_version !== 'unknown' && !/^\d+\.\d+\.\d+$/.test(base.asvs_version)))) {
+    errors.push('asvs_version: must be a semantic version such as 5.0.0, or unknown');
+  }
+  if (base.cvss_version !== undefined && !oneOf(CVSS_VERSIONS, base.cvss_version)) {
+    errors.push(`cvss_version: must be one of ${CVSS_VERSIONS.join(', ')}`);
+  }
 
   if (errors.length > 0) {
     throw new FindingsValidationError(errors);

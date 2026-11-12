@@ -78,10 +78,22 @@ export const FINDING_FIELDS = [
   'confidenceRationale',
   'counterevidence',
   'severityChangeConditions',
+  'cvssScore',
+  'cvssVersion',
   'poc',
 ] as const;
 
 export const COVERAGE_FIELDS = ['surface', 'riskArea', 'outcome', 'evidence'] as const;
+
+export const WORKING_TREE_STATES = ['clean', 'dirty', 'unknown'] as const;
+
+export const CVSS_VERSIONS = ['3.1', '4.0'] as const;
+
+export const OWASP_REGEX = /^(A0?[1-9]|A10)(:\d{4})?(-[A-Za-z0-9_ -]+)?$/i;
+export const CWE_REGEX = /^CWE-\d+$/i;
+export const FINDING_CWE_REGEX = /^CWE-\d+(?::\s*.+)?$/i;
+export const ASVS_REGEX = /^(?:[Vv]\d+(?:\.\d+)*|v\d+\.\d+\.\d+-\d+\.\d+\.\d+)$/;
+export const MITRE_REGEX = /^T\d+(\.\d+)?$/i;
 
 /** Caveat recorded when findings JSON does not state completeness. */
 export const COMPLETENESS_NOT_RECORDED = 'completeness not recorded';

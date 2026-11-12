@@ -17,6 +17,7 @@
     "bin",
     "dist",
     "commands",
+    "adapters",
     "extension.yml",
     "config-template.yml",
     "examples",

@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import yaml from 'js-yaml';
 import { isLegacyFinding, resolveCompleteness } from './findings.js';
 import { FindingItem, FindingsReport, FindingSeverity } from './types.js';
 
@@ -14,6 +13,8 @@ export function computeReportStats(findings: FindingItem[]): {
   overallRisk: FindingSeverity | 'NONE';
   owaspCategories: string[];
   cweIds: string[];
+  asvsRequirements: string[];
+  mitreTechniques: string[];
 } {
   let critical = 0;
   let high = 0;
@@ -23,6 +24,8 @@ export function computeReportStats(findings: FindingItem[]): {
 
   const owaspSet = new Set<string>();
   const cweSet = new Set<string>();
+  const asvsSet = new Set<string>();
+  const mitreSet = new Set<string>();
 
   for (const f of findings) {
     const sev = f.severity?.toUpperCase() as FindingSeverity;
@@ -40,6 +43,8 @@ export function computeReportStats(findings: FindingItem[]): {
       const match = f.cwe.match(/CWE-\d+/i);
       if (match) cweSet.add(match[0].toUpperCase());
     }
+    if (f.asvs) asvsSet.add(f.asvs);
+    if (f.mitre) mitreSet.add(f.mitre);
   }
 
   let overallRisk: FindingSeverity | 'NONE' = 'NONE';
@@ -59,6 +64,8 @@ export function computeReportStats(findings: FindingItem[]): {
     overallRisk,
     owaspCategories: Array.from(owaspSet),
     cweIds: Array.from(cweSet),
+    asvsRequirements: Array.from(asvsSet),
+    mitreTechniques: Array.from(mitreSet),
   };
 }
 
@@ -136,6 +143,8 @@ export function generateMarkdownReport(report: FindingsReport): string {
   const codebase = inline(report.codebase_analyzed || 'src/');
   const filesCount = report.total_files_analyzed ?? 0;
   const reviewType = report.review_type || 'audit';
+  const cvssVersions = [...new Set(report.findings.flatMap(finding => finding.cvssVersion ? [finding.cvssVersion] : []))];
+  const asvsRequirements = [...new Set([...(report.asvs_requirements ?? []), ...stats.asvsRequirements])];
   const completeness = resolveCompleteness(report);
   if (completeness.error) {
     throw new Error(completeness.error);
@@ -156,8 +165,30 @@ export function generateMarkdownReport(report: FindingsReport): string {
     informational_count: stats.informational,
     owasp_categories: stats.owaspCategories,
     cwe_ids: stats.cweIds,
+    asvs_requirements: asvsRequirements,
+    mitre_techniques: [...new Set([...(report.mitre_techniques ?? []), ...stats.mitreTechniques])],
     coverage_complete: completeness.complete,
   };
+  const mappedAsvsVersions = [...new Set(asvsRequirements.flatMap(value => {
+    const match = /^v(\d+\.\d+\.\d+)-/.exec(value);
+    return match ? [match[1]] : [];
+  }))];
+  const hasLegacyAsvsRequirements = asvsRequirements.some(value => /^V\d+(?:\.\d+)*$/i.test(value));
+  const asvsVersion = asvsRequirements.length > 0 && hasLegacyAsvsRequirements
+    ? 'unknown'
+    : report.asvs_version ?? (mappedAsvsVersions.length === 1
+      ? mappedAsvsVersions[0]
+      : asvsRequirements.length > 0 ? 'unknown' : undefined);
+  if (asvsVersion) frontmatterObj.asvs_version = asvsVersion;
+  if (!report.cvss_version && cvssVersions.length === 1) frontmatterObj.cvss_version = cvssVersions[0];
+  for (const field of [
+    'assessment_kind', 'source_artifacts', 'commit_or_branch', 'reviewed_commit', 'reviewed_branch',
+    'working_tree_state', 'untracked_files_included', 'exclusions', 'unreadable_areas', 'cvss_version',
+  ] as const) {
+    const value = report[field];
+    if (value !== undefined) frontmatterObj[field] = value;
+  }
+  if (report.assessment_narrative) frontmatterObj.assessment_narrative = report.assessment_narrative;
   if (!completeness.complete) {
     frontmatterObj.coverage_caveats = completeness.caveats;
   }
@@ -166,7 +197,17 @@ export function generateMarkdownReport(report: FindingsReport): string {
     frontmatterObj.security_task = report.findings[0].id;
   }
 
-  const frontmatterYaml = yaml.dump(frontmatterObj, { lineWidth: -1 }).trim();
+  // ponytail: Frontmatter serialization deliberately uses deterministic key-value formatting rather than
+  // js-yaml dump to enforce flat, token-predictable, single-line YAML scalars and JSON-encoded arrays/strings,
+  // preventing multiline scalar folding and quoting variances across yaml parser versions.
+  const frontmatterYaml = Object.entries(frontmatterObj)
+    .map(([key, value]) => {
+      const plainString = typeof value === 'string'
+        && /^[A-Za-z][A-Za-z0-9_-]*$/.test(value)
+        && !/^(?:true|false|null|yes|no|on|off)$/i.test(value);
+      return `${key}: ${plainString ? value : JSON.stringify(value)}`;
+    })
+    .join('\n');
 
   let md = `---\n${frontmatterYaml}\n---\n\n`;
   md += `# Security Assessment Report\n\n`;
@@ -176,7 +217,10 @@ export function generateMarkdownReport(report: FindingsReport): string {
 
   // Executive Summary
   md += `## 1. Executive Summary\n\n`;
-  md += `This assessment evaluated the target codebase for security vulnerabilities, architectural trust boundaries, and OWASP compliance.\n\n`;
+  const narrative = report.assessment_narrative ? escapeBlockStarters(report.assessment_narrative) : '';
+  md += `${report.assessment_kind === 'report-synthesis'
+    ? `This report synthesizes supplied assessment artifacts; no new source-code assessment was performed.${narrative ? ` ${narrative}` : ''}`
+    : narrative || 'This assessment evaluated the target codebase for security vulnerabilities, architectural trust boundaries, and OWASP compliance.'}\n\n`;
   md += `### Risk Posture Overview\n\n`;
   md += `| Severity | Count | Primary Categories |\n`;
   md += `|---|---|---|\n`;
@@ -197,6 +241,12 @@ export function generateMarkdownReport(report: FindingsReport): string {
       md += `- **Severity:** ${inline(finding.severity)}\n`;
       md += `- **Category:** ${inline(finding.category)}\n`;
       if (finding.cwe) md += `- **CWE:** ${inline(finding.cwe)}\n`;
+      if (finding.asvs) {
+        const findingAsvsVersion = /^v(\d+\.\d+\.\d+)-/.exec(finding.asvs)?.[1];
+        md += `- **ASVS Requirement:** ${inline(finding.asvs)}${findingAsvsVersion ? ` (ASVS ${findingAsvsVersion})` : ''}\n`;
+      }
+      if (finding.mitre) md += `- **MITRE ATT&CK:** ${inline(finding.mitre)}\n`;
+      if (finding.cvssScore) md += `- **CVSS ${inline(finding.cvssVersion ?? 'unversioned')} Score:** ${inline(finding.cvssScore)}\n`;
       if (finding.file) {
         md += `- **Location:** \`${inline(finding.file)}${finding.lineRange ? `:${inline(finding.lineRange)}` : ''}\`\n`;
       }

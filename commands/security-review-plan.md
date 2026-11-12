@@ -4,7 +4,13 @@ description: 'Security review of technical planning artifacts and supporting des
 
 # Security Review — Plan Review
 
+## Adapter and Project Configuration Preflight
+
+Before reading an artifact, read `.security-review/adapters/resolve.md` (or the package's `adapters/resolve.md`) and its selected Spec-Kit, OpenSpec, or generic adapter. For an extension-only Spec-Kit installation where neither adapter file was installed, use the native `.specify/memory/security_constitution.md` and active `specs/{feature}/` artifacts instead; ask when the feature is ambiguous. Honor the persisted Architecture Guard selection when present; otherwise use unambiguous markers. Resolve one active change or feature and its concrete `plan`, `spec`, and `security-constraints` paths through the adapter; ask for selection or explicit paths when ambiguous. Do not infer an OpenSpec change from a capability name. Read `.security-review/security-review.yml` or a legacy root `security-review.yml` when present; validate its `security-review` mapping and report the settings used. Revalidate configured false positives against current evidence. Configuration is agent guidance, not hidden CLI enforcement or approval to run code.
+
 ## User Input
+
+Apply supported `security-review` settings from the resolved configuration: `exclude`, `exclude-files`, `focus`, `min-severity`, and `output`. Report which values affected scope and output, and list excluded or unreadable areas as coverage limitations; a configured false positive is only historical evidence and must be rechecked before suppression.
 
 $ARGUMENTS
 
@@ -82,27 +88,12 @@ Before reviewing the design, check the Flash-Mem context.
 
 When memory configuration has `optimizer.enabled: true` and the CLI is available:
 
-1. **Prepare Context**: Execute `flash-mem prepare-context --feature specs/<feature> --query "security constraints vulnerabilities authentication authorization data-leakage"`.
-2. **Read Synthesis**: Read `specs/<feature>/memory-synthesis.md` (or the search results) first.
+1. **Prepare Context**: Execute `flash-mem prepare-context --feature <adapter-resolved-active-path> --query "security constraints vulnerabilities authentication authorization data-leakage"`.
+2. **Read Synthesis**: Read the returned synthesis or search results first.
 
 ### Markdown-Only Flow
 
-When the optimizer is disabled or unavailable, you **MUST** read these files explicitly using your file-reading tools (absolute or relative paths). Do not rely solely on workspace search or semantic indexers, as these files are often in `.gitignore`:
-
-- `plan.md` or `design.md`
-- `spec.md` or `proposal.md`
-- `research.md`
-- `data-model.md`
-- `docs/memory/INDEX.md`
-- `docs/memory/`
-- `constitution.md` or `security_constitution.md`
-- `contracts/`
-- `quickstart.md`
-- `specs/<feature>/memory.md`
-- `specs/<feature>/memory-synthesis.md`
-- `specs/<feature>/security-constraints.md`
-- `.github/copilot-instructions.md` or `AGENTS.md`
-- Other project memory or architecture notes
+When the optimizer is disabled or unavailable, explicitly read the selected adapter's `plan`, `spec`, `security-constitution`, and existing `security-constraints` files. Read additional research, contracts, memory, and agent guidance only where the selected project keeps them; do not assume Spec-Kit directory names. Read known ignored files directly rather than relying only on workspace search.
 
 ## What to Check
 
@@ -122,7 +113,7 @@ When the optimizer is disabled or unavailable, you **MUST** read these files exp
 
 1. Locate the active feature directory or planning documents for the current work.
 2. If more than one candidate plan artifact exists, ask the user which one to review before proceeding.
-3. Read `plan.md` (or `design.md`) and any related design artifacts.
+3. Read the adapter-resolved `plan` and any related design artifacts.
 4. Compare the plan against the project Flash-Mem context.
 5. Report secure-by-design gaps, unsafe assumptions, and any follow-up changes needed before implementation.
 
@@ -148,7 +139,8 @@ low_count: <integer>
 informational_count: <integer>
 owasp_categories: [<A01>, <A05>, ...]
 cwe_ids: [<CWE-89>, ...]
-asvs_requirements: [<V2.1.1>, ...]
+asvs_version: <selected version, e.g. 5.0.0, or unknown for legacy identifiers without version evidence>
+asvs_requirements: [<v5.0.0-1.2.5>, ...]
 mitre_techniques: [<T1190>, ...]
 coverage_complete: <true|false>
 coverage_caveats: [<reason the review is incomplete>, ...]  # required when coverage_complete is false
@@ -166,13 +158,13 @@ field_summaries:
   informational_count: "Number of Informational findings."
   owasp_categories: "OWASP Top 10 2025 categories (A01-A10) that have at least one finding."
   cwe_ids: "CWE identifiers referenced in this document."
-  asvs_requirements: "ASVS v4.0 requirements mapped to findings."
+  asvs_requirements: "Verified, version-qualified ASVS requirements mapped to findings."
   mitre_techniques: "MITRE ATT&CK techniques applicable to findings."
   finding_id: "Unique finding identifier (SEC-NNN) for cross-referencing and task linkage."
   location: "Artifact or code path and line number supporting the finding (path/to/artifact:line)."
   owasp_category: "OWASP Top 10 2025 category for this finding (AXX:2025-Name)."
   cwe: "Common Weakness Enumeration identifier with short name (CWE-NNN: Name)."
-  cvss_score: "CVSS v3.1 base score (0.0-10.0). 9.0+=Critical, 7.0-8.9=High, 4.0-6.9=Medium, 0.1-3.9=Low."
+  cvss_score: "Versioned CVSS score or vector; new assessments prefer CVSS 4.0. Preserve explicitly versioned historical CVSS 3.1 values."
   security_task: "Security task ID for backlog tracking and remediation follow-up (TASK-SEC-NNN). Supports legacy spec_kit_task as alias."
 ---
 ````
