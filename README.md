@@ -34,37 +34,25 @@ Explore the interactive product showcase highlighting CLI terminal workflows, AI
 
 ## ⚡ Quickstart
 
-### 1. Instant Execution (Zero Install)
+### 1. Initialize for Your AI Coding Assistant (One-Time Setup)
 
 ```bash
-# Analyze staged changes for security sensitivity before commit
-npx security-review diff --staged
-
-# Scan project for security entrypoints & trust boundaries
-npx security-review scan
-
-# Compile JSON findings into full Markdown security report
-npx security-review report --input findings.json --output report.md
-
-# Generate remediation tasks for an explicitly selected task artifact
-npx security-review tasks --input findings.json --target path/to/tasks.md
-
-# Inspect SDD state; select a change explicitly before writing planning artifacts
-npx security-review sdd status
-
-# Validate security report YAML frontmatter
-npx security-review validate docs/security-reviews/report.md
+# Provision skills and governance config into your workspace
+npx security-review init
 ```
 
-### 2. Global Installation
+Automatically detects and configures slash commands for **Antigravity**, **Claude Code**, **Cursor**, **OpenCode**, **Codex**, **Gemini**, and **Goose**.
 
-```bash
-npm install -g security-review
-# or
-pnpm add -g security-review
-```
+### 2. Run in Your AI Agent
 
-After installation, use any of the binary aliases: `security-review`, `sec-review`, or `sr`.
+Execute slash commands directly inside your AI coding assistant:
+
+- **Pre-commit review**: Run `/sr-staged` to audit staged git changes before committing.
+- **Full repository audit**: Run `/sr-audit` to evaluate the codebase against the OWASP 2025 standard.
+- **Branch / PR review**: Run `/sr-branch` to review security regressions against the destination branch.
+
+> [!TIP]
+> No separate LLM API keys are required. All security reasoning and threat modeling run directly within your AI assistant's session. For advanced standalone utilities, see the [CLI Reference](docs/cli-reference.md).
 
 ---
 
