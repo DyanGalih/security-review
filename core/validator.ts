@@ -275,7 +275,7 @@ export async function validateReportFrontmatter(filePath: string): Promise<Valid
   if (data.untracked_files_included !== undefined && typeof data.untracked_files_included !== 'boolean') {
     issues.push({ field: 'untracked_files_included', message: 'untracked_files_included must be a boolean.', severity: 'ERROR' });
   }
-  if (data.working_tree_state !== undefined && !WORKING_TREE_STATES.includes(data.working_tree_state as any)) {
+  if (data.working_tree_state !== undefined && !(WORKING_TREE_STATES as readonly unknown[]).includes(data.working_tree_state)) {
     issues.push({ field: 'working_tree_state', message: 'working_tree_state must be clean, dirty, or unknown.', severity: 'ERROR' });
   }
   if (data.reviewed_commit !== undefined && typeof data.reviewed_commit !== 'string') {
@@ -341,7 +341,7 @@ export async function validateReportFrontmatter(filePath: string): Promise<Valid
     }
   }
 
-  if (data.cvss_version !== undefined && !CVSS_VERSIONS.includes(data.cvss_version as any)) {
+  if (data.cvss_version !== undefined && !(CVSS_VERSIONS as readonly unknown[]).includes(data.cvss_version)) {
     issues.push({ field: 'cvss_version', message: 'cvss_version must be 3.1 or 4.0.', severity: 'ERROR' });
   }
 

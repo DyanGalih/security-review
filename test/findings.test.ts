@@ -146,14 +146,14 @@ describe('parseFindingsReport', () => {
     expect(errorsOf([{ ...fullFinding, asvs: 'ASVS 2.1.1' }])[0]).toContain('asvs must match ASVS requirement pattern');
     expect(errorsOf([{ ...fullFinding, mitre: 'T-1190' }])[0]).toContain('mitre must match MITRE ATT&CK technique pattern');
 
-    // Valid formats should pass without error
+    // Valid formats should pass without error (including descriptive CWE)
     const { report } = parseFindingsReport(JSON.stringify([{
       ...fullFinding,
-      cwe: 'CWE-89',
+      cwe: 'CWE-89: SQL Injection',
       asvs: 'v2.1.1',
       mitre: 'T1190',
     }]));
-    expect(report.findings[0].cwe).toBe('CWE-89');
+    expect(report.findings[0].cwe).toBe('CWE-89: SQL Injection');
     expect(report.findings[0].asvs).toBe('v2.1.1');
     expect(report.findings[0].mitre).toBe('T1190');
   });

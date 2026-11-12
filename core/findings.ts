@@ -7,6 +7,7 @@ import {
   COVERAGE_OUTCOMES_REQUIRING_EVIDENCE,
   CVSS_VERSIONS,
   CWE_REGEX,
+  FINDING_CWE_REGEX,
   FINDING_SEVERITIES,
   MITRE_REGEX,
   OVERALL_RISKS,
@@ -68,8 +69,8 @@ function validateFinding(finding: Record<string, unknown>, label: string, errors
   if (!isNonEmptyString(finding.description)) {
     errors.push(`${label}: description is required`);
   }
-  if (finding.cwe !== undefined && (typeof finding.cwe !== 'string' || !CWE_REGEX.test(finding.cwe))) {
-    errors.push(`${label}: cwe must match CWE pattern (e.g. CWE-89)`);
+  if (finding.cwe !== undefined && (typeof finding.cwe !== 'string' || !FINDING_CWE_REGEX.test(finding.cwe))) {
+    errors.push(`${label}: cwe must match CWE pattern (e.g. CWE-89 or CWE-89: SQL Injection)`);
   }
   if (finding.asvs !== undefined && (typeof finding.asvs !== 'string' || !ASVS_REGEX.test(finding.asvs))) {
     errors.push(`${label}: asvs must match ASVS requirement pattern (e.g. v5.0.0-1.2.5 or V2.1.1)`);

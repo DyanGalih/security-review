@@ -11,6 +11,7 @@
   - Packaged standalone adapter templates (`generic.md`, `openspec.md`, `resolve.md`, `spec-kit.md`) under `adapters/` and automated their installation in `init`.
   - In branch and staged review modes, resolved review policy from base/HEAD ref to prevent reviewed diffs from narrowing their own audit scope.
   - Made full-audit Markdown report persistence conditional on user request and updated section guidance.
+  - Preserved backward compatibility for descriptive finding-level CWE identifiers in findings JSON loader.
 
 
 - **Dependency vulnerability remediation** (change `fix-dependency-vulnerabilities`):

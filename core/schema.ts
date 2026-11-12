@@ -91,6 +91,7 @@ export const CVSS_VERSIONS = ['3.1', '4.0'] as const;
 
 export const OWASP_REGEX = /^(A0?[1-9]|A10)(:\d{4})?(-[A-Za-z0-9_ -]+)?$/i;
 export const CWE_REGEX = /^CWE-\d+$/i;
+export const FINDING_CWE_REGEX = /^CWE-\d+(?::\s*.+)?$/i;
 export const ASVS_REGEX = /^(?:[Vv]\d+(?:\.\d+)*|v\d+\.\d+\.\d+-\d+\.\d+\.\d+)$/;
 export const MITRE_REGEX = /^T\d+(\.\d+)?$/i;
 
